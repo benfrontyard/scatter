@@ -1,10 +1,11 @@
-import type { BrandPreset, MotionBlockInstance, ProjectTypography } from "@/types";
 import {
-  bodyWeight,
-  headingWeight,
-  scaleFontSize,
-  trackingEm,
+  clampFontSize,
+  clampHeadlineText,
+  resolveBlockSlotStyle,
+  resolveFontStack,
+  resolvedTypeStyleToCss,
 } from "@/lib/typography";
+import type { BrandPreset, MotionBlockInstance, MotionFormat } from "@/types";
 import { interpolate, useCurrentFrame } from "remotion";
 import { getEasingFunction } from "@/lib/easing";
 import {
@@ -20,20 +21,13 @@ import { formatStatValue, parseStatValue } from "./stat-card-motion";
 type StatCardBlockProps = {
   brand: BrandPreset;
   block: MotionBlockInstance;
-  formatWidth: number;
-  formatHeight: number;
-  projectTypography?: ProjectTypography;
+  format: MotionFormat;
 };
 
-export function StatCardBlock({
-  brand,
-  block,
-  formatWidth,
-  formatHeight,
-  projectTypography,
-}: StatCardBlockProps) {
+export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
   const frame = useCurrentFrame();
   const duration = block.duration;
+  const { width: formatWidth, height: formatHeight } = format;
 
   const { direction, intensity, speed, stagger, entranceEasing, exitEasing } =
     resolveBlockMotionParams(brand, block);
@@ -95,9 +89,29 @@ export function StatCardBlock({
   );
 
   const emphasis = Number(block.motion.controls.emphasis ?? 1);
-  const valueSize = scaleFontSize(Math.round(formatHeight * 0.13 * emphasis), projectTypography);
-  const labelSize = scaleFontSize(Math.round(formatHeight * 0.032), projectTypography);
-  const supportSize = scaleFontSize(Math.round(formatHeight * 0.024), projectTypography);
+  const labelStyleName = brand.typography.defaults.labelStyle;
+
+  const valueType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    "display",
+    block.typographyOverride,
+    "display",
+  );
+  const labelType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    labelStyleName,
+    block.typographyOverride,
+    "label",
+  );
+  const supportType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    "caption",
+    block.typographyOverride,
+    "caption",
+  );
 
   return (
     <div
@@ -106,7 +120,7 @@ export function StatCardBlock({
         height: formatHeight,
         position: "relative",
         overflow: "hidden",
-        fontFamily: brand.typography.bodyFont,
+        fontFamily: resolveFontStack(brand.typography, "body"),
         color: brand.colors.foreground,
         backgroundColor: brand.colors.background,
       }}
@@ -138,12 +152,12 @@ export function StatCardBlock({
           style={{
             opacity: valueOpacity,
             transform: `translate(${valueTranslate.x}px, ${valueTranslate.y}px)`,
-            fontFamily: brand.typography.headingFont,
-            fontSize: valueSize,
-            fontWeight: headingWeight(projectTypography),
+            ...resolvedTypeStyleToCss({
+              ...valueType,
+              fontSize: clampFontSize(valueType.fontSize * emphasis),
+            }),
             color: brand.colors.accent,
             lineHeight: 1,
-            letterSpacing: trackingEm("-0.02em", projectTypography),
             fontVariantNumeric: "tabular-nums",
           }}
         >
@@ -155,10 +169,7 @@ export function StatCardBlock({
             style={{
               opacity: labelOpacity,
               transform: `translateY(${labelTranslate.y}px)`,
-              fontSize: labelSize,
-              fontWeight: bodyWeight(projectTypography),
-              textTransform: "uppercase",
-              letterSpacing: trackingEm("0.1em", projectTypography),
+              ...resolvedTypeStyleToCss(labelType),
               color: brand.colors.foreground,
             }}
           >
@@ -170,13 +181,12 @@ export function StatCardBlock({
           <div
             style={{
               opacity: supportOpacity,
-              fontSize: supportSize,
+              ...resolvedTypeStyleToCss(supportType),
               color: brand.colors.muted,
-              maxWidth: formatWidth * 0.65,
-              lineHeight: 1.45,
+              maxWidth: supportType.maxWidth ?? formatWidth * 0.65,
             }}
           >
-            {supportingText}
+            {clampHeadlineText(supportingText, 140)}
           </div>
         ) : null}
       </div>

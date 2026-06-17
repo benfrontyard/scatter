@@ -1,9 +1,8 @@
 import { useEditor } from "@/context/editor-context";
-import { FontSelector } from "@/components/editor/FontSelector";
+import { BrandTypographyPanel } from "@/components/editor/BrandTypographyPanel";
 import { EasingPicker } from "@/components/editor/EasingPicker";
 import { CUSTOM_BRAND_ID } from "@/lib/brand-utils";
 import { normalizeBrandMotion } from "@/lib/easing";
-import { normalizeBrandTypography } from "@/lib/typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -91,11 +90,8 @@ export function BrandSettingsModal() {
     }));
   };
 
-  const updateFontFamily = (fontFamily: string) => {
-    updateCustomBrand((b) => ({
-      ...b,
-      typography: normalizeBrandTypography({ ...b.typography, fontFamily }),
-    }));
+  const updateTypography = (typography: typeof brand.typography) => {
+    updateCustomBrand((b) => ({ ...b, typography }));
   };
 
   const updateMotion = <K extends keyof typeof brand.motion>(
@@ -120,7 +116,7 @@ export function BrandSettingsModal() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="brand-settings-title"
-        className="mb-8 w-full max-w-lg rounded-lg border border-border bg-card shadow-xl"
+        className="mb-8 w-full max-w-2xl rounded-lg border border-border bg-card shadow-xl"
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h2 id="brand-settings-title" className="text-sm font-semibold">
@@ -221,10 +217,7 @@ export function BrandSettingsModal() {
             />
           </fieldset>
 
-          <fieldset className="space-y-3">
-            <legend className="text-xs font-medium text-muted-foreground">Typography</legend>
-            <FontSelector value={brand.typography.fontFamily} onChange={updateFontFamily} />
-          </fieldset>
+          <BrandTypographyPanel brand={brand} onChange={updateTypography} />
 
           <fieldset className="space-y-3">
             <legend className="text-xs font-medium text-muted-foreground">Motion DNA</legend>

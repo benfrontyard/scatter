@@ -63,7 +63,9 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
     registerPlayer,
   } = useEditor();
 
-  useGoogleFont(brand.typography.fontFamily);
+  useGoogleFont(brand.typography.fontFamilies.heading);
+  useGoogleFont(brand.typography.fontFamilies.body);
+  useGoogleFont(brand.typography.fontFamilies.accent);
 
   const playerRef = useRef<PlayerRef>(null);
   const canvasAreaRef = useRef<HTMLDivElement>(null);

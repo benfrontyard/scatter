@@ -1,5 +1,9 @@
+import {
+  defaultBrandTypography,
+  editorialBrandTypography,
+  saasBrandTypography,
+} from "@/config/typography/defaults";
 import type { BrandPreset } from "@/types";
-import { defaultProjectFont } from "@/config/fonts";
 import {
   DEFAULT_EASING_ID,
   DEFAULT_ENTRANCE_EASING_ID,
@@ -17,11 +21,7 @@ export const brandPresets: BrandPreset[] = [
       accent: "#60a5fa",
       muted: "#737373",
     },
-    typography: {
-      fontFamily: defaultProjectFont,
-      headingFont: "Inter, system-ui, sans-serif",
-      bodyFont: "Inter, system-ui, sans-serif",
-    },
+    typography: defaultBrandTypography,
     motion: {
       defaultEasingId: DEFAULT_EASING_ID,
       entranceEasingId: DEFAULT_ENTRANCE_EASING_ID,
@@ -42,11 +42,7 @@ export const brandPresets: BrandPreset[] = [
       accent: "#8b7355",
       muted: "#9ca3af",
     },
-    typography: {
-      fontFamily: "Georgia",
-      headingFont: "Georgia, serif",
-      bodyFont: "Georgia, serif",
-    },
+    typography: editorialBrandTypography,
     motion: {
       defaultEasingId: "soft-reveal",
       entranceEasingId: "soft-reveal",
@@ -67,11 +63,7 @@ export const brandPresets: BrandPreset[] = [
       accent: "#6366f1",
       muted: "#64748b",
     },
-    typography: {
-      fontFamily: defaultProjectFont,
-      headingFont: "Inter, system-ui, sans-serif",
-      bodyFont: "Inter, system-ui, sans-serif",
-    },
+    typography: saasBrandTypography,
     motion: {
       defaultEasingId: "snappy",
       entranceEasingId: "snappy",

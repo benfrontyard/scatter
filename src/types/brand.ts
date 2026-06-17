@@ -1,4 +1,5 @@
 import type { EasingName } from "./easing";
+import type { BodyStyleName, HeadingStyleName, TypeStyle, TypeStyleName } from "./typography";
 
 export type BrandColors = {
   background: string;
@@ -8,12 +9,17 @@ export type BrandColors = {
 };
 
 export type BrandTypography = {
-  /** Curated Google Font family name */
-  fontFamily: string;
-  /** CSS font stack for headings — derived from fontFamily */
-  headingFont: string;
-  /** CSS font stack for body — derived from fontFamily */
-  bodyFont: string;
+  fontFamilies: {
+    heading: string;
+    body: string;
+    accent?: string;
+  };
+  scale: Record<TypeStyleName, TypeStyle>;
+  defaults: {
+    headingStyle: HeadingStyleName;
+    bodyStyle: BodyStyleName;
+    labelStyle: "label" | "caption";
+  };
 };
 
 export type BrandMotion = {

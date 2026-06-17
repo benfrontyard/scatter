@@ -1,5 +1,5 @@
+import { BlockAdvancedTypography } from "@/components/editor/BlockAdvancedTypography";
 import { ExportPanel } from "@/components/editor/ExportPanel";
-import { TypographyControls } from "@/components/editor/TypographyControls";
 import { EasingPicker } from "@/components/editor/EasingPicker";
 import { motionBlockMap } from "@/config/blocks";
 import { motionFormats } from "@/config/formats";
@@ -342,8 +342,15 @@ function MotionControlField({
 }
 
 function BlockSettings({ className }: { className?: string }) {
-  const { brand, fps, updateBlockContent, updateBlockMotion, updateBlockEasing, updateBlockDuration } =
-    useEditor();
+  const {
+    brand,
+    fps,
+    updateBlockContent,
+    updateBlockMotion,
+    updateBlockEasing,
+    updateBlockDuration,
+    updateBlockTypographyOverride,
+  } = useEditor();
   const selectedBlock = useSelectedBlock();
   if (!selectedBlock) return null;
 
@@ -448,6 +455,18 @@ function BlockSettings({ className }: { className?: string }) {
               </AccordionContent>
             </AccordionItem>
           ) : null}
+
+          <AccordionItem value="typography" className="border-border">
+            <AccordionTrigger className="text-muted-foreground">Advanced typography</AccordionTrigger>
+            <AccordionContent>
+              <BlockAdvancedTypography
+                block={selectedBlock}
+                onChange={(override) =>
+                  updateBlockTypographyOverride(selectedBlock.id, override)
+                }
+              />
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
       </div>
     </PanelShell>
@@ -582,7 +601,6 @@ function ProjectSettings({ className }: { className?: string }) {
     setBrand,
     setFormat,
     setFps,
-    setProjectTypography,
     setCanvasBackground,
     setShowBrandSettings,
   } = useEditor();
@@ -636,11 +654,6 @@ function ProjectSettings({ className }: { className?: string }) {
             </Button>
           </div>
         </div>
-
-        <TypographyControls
-          value={sequence.typography}
-          onChange={setProjectTypography}
-        />
 
         <div className="space-y-1.5">
           <Label htmlFor="project-fps">FPS</Label>

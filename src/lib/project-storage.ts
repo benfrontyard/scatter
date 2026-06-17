@@ -37,43 +37,65 @@ export function projectToJson(project: ScatterProject): string {
   return JSON.stringify(project, null, 2);
 }
 
+function migrateCustomBrands(customBrands: BrandPreset[]): BrandPreset[] {
+  return customBrands.map((brand) => ({
+    ...brand,
+    typography: normalizeBrandTypography(brand.typography),
+  }));
+}
+
 function migrateProject(project: ScatterProject): ScatterProject {
   const legacyFont = (project.sequence as MotionSequence & { fontFamily?: string }).fontFamily;
-  if (!legacyFont) return project;
-
-  const { fontFamily: _removed, ...sequence } = project.sequence as MotionSequence & {
-    fontFamily?: string;
-  };
-  const customBrands = [...project.customBrands];
-  const existingCustom = customBrands.find((brand) => brand.id === CUSTOM_BRAND_ID);
-
-  if (existingCustom) {
-    const index = customBrands.findIndex((brand) => brand.id === CUSTOM_BRAND_ID);
-    customBrands[index] = {
-      ...existingCustom,
-      typography: normalizeBrandTypography({
-        ...existingCustom.typography,
-        fontFamily: legacyFont,
-      }),
+  const legacyTypography = (project.sequence as MotionSequence & { typography?: unknown })
+    .typography;
+  const { fontFamily: _fontFamily, typography: _typography, ...sequence } =
+    project.sequence as MotionSequence & {
+      fontFamily?: string;
+      typography?: unknown;
     };
-    return {
-      ...project,
-      sequence: { ...sequence, brandPresetId: CUSTOM_BRAND_ID },
-      customBrands,
-    };
+
+  let customBrands = migrateCustomBrands(project.customBrands);
+  let brandPresetId = sequence.brandPresetId;
+
+  if (legacyFont) {
+    const existingCustom = customBrands.find((brand) => brand.id === CUSTOM_BRAND_ID);
+    if (existingCustom) {
+      customBrands = customBrands.map((brand) =>
+        brand.id === CUSTOM_BRAND_ID
+          ? {
+              ...brand,
+              typography: normalizeBrandTypography({
+                ...brand.typography,
+                fontFamilies: {
+                  ...brand.typography.fontFamilies,
+                  heading: legacyFont,
+                  body: legacyFont,
+                },
+              }),
+            }
+          : brand,
+      );
+    } else {
+      const baseBrand = resolveBrand(sequence.brandPresetId, customBrands);
+      customBrands = [
+        ...customBrands,
+        {
+          ...duplicateBrandAsCustom(baseBrand),
+          typography: normalizeBrandTypography({
+            fontFamilies: { heading: legacyFont, body: legacyFont },
+          }),
+        },
+      ];
+    }
+    brandPresetId = CUSTOM_BRAND_ID;
   }
 
-  const baseBrand = resolveBrand(sequence.brandPresetId, customBrands);
+  void legacyTypography;
+
   return {
     ...project,
-    sequence: { ...sequence, brandPresetId: CUSTOM_BRAND_ID },
-    customBrands: [
-      ...customBrands,
-      {
-        ...duplicateBrandAsCustom(baseBrand),
-        typography: normalizeBrandTypography({ fontFamily: legacyFont }),
-      },
-    ],
+    sequence: { ...sequence, brandPresetId },
+    customBrands,
   };
 }
 

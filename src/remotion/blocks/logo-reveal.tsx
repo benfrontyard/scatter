@@ -1,9 +1,10 @@
-import type { BrandPreset, MotionBlockInstance, ProjectTypography } from "@/types";
 import {
-  headingWeight,
-  scaleFontSize,
-  trackingEm,
+  clampHeadlineText,
+  resolveBlockSlotStyle,
+  resolveFontStack,
+  resolvedTypeStyleToCss,
 } from "@/lib/typography";
+import type { BrandPreset, MotionBlockInstance, MotionFormat } from "@/types";
 import { useCurrentFrame } from "remotion";
 import {
   getEnterProgress,
@@ -19,20 +20,13 @@ import {
 type LogoRevealBlockProps = {
   brand: BrandPreset;
   block: MotionBlockInstance;
-  formatWidth: number;
-  formatHeight: number;
-  projectTypography?: ProjectTypography;
+  format: MotionFormat;
 };
 
-export function LogoRevealBlock({
-  brand,
-  block,
-  formatWidth,
-  formatHeight,
-  projectTypography,
-}: LogoRevealBlockProps) {
+export function LogoRevealBlock({ brand, block, format }: LogoRevealBlockProps) {
   const frame = useCurrentFrame();
   const duration = block.duration;
+  const { width: formatWidth, height: formatHeight } = format;
 
   const { direction, intensity, speed, stagger, entranceEasing, exitEasing } =
     resolveBlockMotionParams(brand, block);
@@ -76,8 +70,25 @@ export function LogoRevealBlock({
     intensity === "hero" ? "standard" : intensity,
   );
 
-  const logoSize = scaleFontSize(Math.round(formatHeight * 0.09), projectTypography);
-  const taglineSize = scaleFontSize(Math.round(formatHeight * 0.028), projectTypography);
+  const headingStyle = brand.typography.defaults.headingStyle;
+  const bodyStyle = brand.typography.defaults.bodyStyle;
+
+  const logoType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    headingStyle,
+    block.typographyOverride,
+    "headline",
+  );
+  const taglineType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    bodyStyle,
+    block.typographyOverride,
+    "body",
+  );
+
+  const logoSize = logoType.fontSize;
   const padding = formatHeight * 0.08;
 
   return (
@@ -87,7 +98,7 @@ export function LogoRevealBlock({
         height: formatHeight,
         position: "relative",
         overflow: "hidden",
-        fontFamily: brand.typography.bodyFont,
+        fontFamily: resolveFontStack(brand.typography, "body"),
         color: brand.colors.foreground,
         backgroundColor: brand.colors.background,
       }}
@@ -135,10 +146,10 @@ export function LogoRevealBlock({
           />
           <span
             style={{
-              fontFamily: brand.typography.headingFont,
-              fontSize: logoSize,
-              fontWeight: headingWeight(projectTypography),
-              letterSpacing: trackingEm("0.14em", projectTypography),
+              ...resolvedTypeStyleToCss({
+                ...logoType,
+                fontFamily: resolveFontStack(brand.typography, "accent"),
+              }),
               color: brand.colors.accent,
               lineHeight: 1,
             }}
@@ -152,13 +163,12 @@ export function LogoRevealBlock({
             style={{
               opacity: taglineOpacity,
               transform: `translateY(${taglineTranslate.y}px)`,
-              fontSize: taglineSize,
+              ...resolvedTypeStyleToCss(taglineType),
               color: brand.colors.muted,
-              letterSpacing: trackingEm("0.04em", projectTypography),
-              maxWidth: formatWidth * 0.7,
+              maxWidth: taglineType.maxWidth ?? formatWidth * 0.7,
             }}
           >
-            {tagline}
+            {clampHeadlineText(tagline, 120)}
           </div>
         ) : null}
       </div>

@@ -1,9 +1,10 @@
-import type { BrandPreset, MotionBlockInstance, ProjectTypography } from "@/types";
 import {
-  headingWeight,
-  scaleFontSize,
-  trackingEm,
+  clampHeadlineText,
+  resolveBlockSlotStyle,
+  resolveFontStack,
+  resolvedTypeStyleToCss,
 } from "@/lib/typography";
+import type { BrandPreset, MotionBlockInstance, MotionFormat } from "@/types";
 import { useCurrentFrame } from "remotion";
 import {
   getEnterProgress,
@@ -19,20 +20,13 @@ import {
 type FeatureAnnouncementBlockProps = {
   brand: BrandPreset;
   block: MotionBlockInstance;
-  formatWidth: number;
-  formatHeight: number;
-  projectTypography?: ProjectTypography;
+  format: MotionFormat;
 };
 
-export function FeatureAnnouncementBlock({
-  brand,
-  block,
-  formatWidth,
-  formatHeight,
-  projectTypography,
-}: FeatureAnnouncementBlockProps) {
+export function FeatureAnnouncementBlock({ brand, block, format }: FeatureAnnouncementBlockProps) {
   const frame = useCurrentFrame();
   const duration = block.duration;
+  const { width: formatWidth, height: formatHeight } = format;
 
   const { direction, intensity, speed, stagger, entranceEasing, exitEasing } =
     resolveBlockMotionParams(brand, block);
@@ -113,12 +107,40 @@ export function FeatureAnnouncementBlock({
   const isPortrait = formatHeight > formatWidth;
   const paddingX = formatWidth * 0.08;
   const paddingY = formatHeight * 0.07;
-  const headlineSize = scaleFontSize(
-    Math.round(formatHeight * (isPortrait ? 0.058 : 0.065)),
-    projectTypography,
+
+  const headingStyle = brand.typography.defaults.headingStyle;
+  const bodyStyle = brand.typography.defaults.bodyStyle;
+  const labelStyle = brand.typography.defaults.labelStyle;
+
+  const headlineType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    headingStyle,
+    block.typographyOverride,
+    "headline",
   );
-  const subheadSize = scaleFontSize(Math.round(formatHeight * 0.028), projectTypography);
-  const logoSize = scaleFontSize(Math.round(formatHeight * 0.022), projectTypography);
+  const subheadType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    bodyStyle,
+    block.typographyOverride,
+    "body",
+  );
+  const logoType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    labelStyle,
+    block.typographyOverride,
+    "label",
+  );
+  const placeholderType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    "caption",
+    block.typographyOverride,
+    "caption",
+  );
+
   const imageWidth = formatWidth * (isPortrait ? 0.82 : 0.58);
   const imageHeight = formatHeight * (isPortrait ? 0.32 : 0.38);
 
@@ -129,11 +151,10 @@ export function FeatureAnnouncementBlock({
         height: formatHeight,
         position: "relative",
         overflow: "hidden",
-        fontFamily: brand.typography.bodyFont,
+        fontFamily: resolveFontStack(brand.typography, "body"),
         color: brand.colors.foreground,
       }}
     >
-      {/* Background */}
       <div
         style={{
           position: "absolute",
@@ -143,7 +164,6 @@ export function FeatureAnnouncementBlock({
         }}
       />
 
-      {/* Accent gradient wash */}
       <div
         style={{
           position: "absolute",
@@ -153,7 +173,6 @@ export function FeatureAnnouncementBlock({
         }}
       />
 
-      {/* Content */}
       <div
         style={{
           position: "relative",
@@ -173,15 +192,11 @@ export function FeatureAnnouncementBlock({
           style={{
             opacity: headlineOpacity,
             transform: `translate(${headlineTranslate.x}px, ${headlineTranslate.y}px)`,
-            fontFamily: brand.typography.headingFont,
-            fontSize: headlineSize,
-            fontWeight: headingWeight(projectTypography),
-            lineHeight: 1.08,
-            letterSpacing: trackingEm("-0.02em", projectTypography),
-            maxWidth: formatWidth * 0.85,
+            ...resolvedTypeStyleToCss(headlineType),
+            maxWidth: headlineType.maxWidth ?? formatWidth * 0.85,
           }}
         >
-          {headline}
+          {clampHeadlineText(headline, 90)}
         </div>
 
         {subhead ? (
@@ -189,17 +204,15 @@ export function FeatureAnnouncementBlock({
             style={{
               opacity: subheadOpacity,
               transform: `translate(${subheadTranslate.x}px, ${subheadTranslate.y}px)`,
-              fontSize: subheadSize,
-              lineHeight: 1.45,
+              ...resolvedTypeStyleToCss(subheadType),
               color: brand.colors.muted,
-              maxWidth: formatWidth * 0.72,
+              maxWidth: subheadType.maxWidth ?? formatWidth * 0.72,
             }}
           >
-            {subhead}
+            {clampHeadlineText(subhead, 160)}
           </div>
         ) : null}
 
-        {/* Image / screenshot placeholder */}
         <div
           style={{
             marginTop: formatHeight * 0.02,
@@ -240,10 +253,8 @@ export function FeatureAnnouncementBlock({
           </svg>
           <span
             style={{
-              fontSize: scaleFontSize(Math.round(formatHeight * 0.018), projectTypography),
+              ...resolvedTypeStyleToCss(placeholderType),
               color: brand.colors.muted,
-              letterSpacing: trackingEm("0.06em", projectTypography),
-              textTransform: "uppercase",
             }}
           >
             Screenshot
@@ -251,7 +262,6 @@ export function FeatureAnnouncementBlock({
         </div>
       </div>
 
-      {/* Logo lockup */}
       <div
         style={{
           position: "absolute",
@@ -286,10 +296,10 @@ export function FeatureAnnouncementBlock({
           />
           <span
             style={{
-              fontFamily: brand.typography.headingFont,
-              fontSize: logoSize,
-              fontWeight: headingWeight(projectTypography),
-              letterSpacing: trackingEm("0.14em", projectTypography),
+              ...resolvedTypeStyleToCss({
+                ...logoType,
+                fontFamily: resolveFontStack(brand.typography, "accent"),
+              }),
               color: accentColor,
             }}
           >

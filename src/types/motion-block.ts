@@ -1,3 +1,5 @@
+import type { BlockTypographyOverride } from "./typography";
+
 export type MotionBehaviorName =
   | "fade"
   | "slide-up"
@@ -47,4 +49,5 @@ export type MotionBlockInstance = {
   duration: number;
   content: BlockContent;
   motion: BlockMotionDefaults;
+  typographyOverride?: BlockTypographyOverride;
 };

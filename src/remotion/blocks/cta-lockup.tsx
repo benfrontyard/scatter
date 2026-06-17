@@ -1,10 +1,10 @@
-import type { BrandPreset, MotionBlockInstance, ProjectTypography } from "@/types";
 import {
-  bodyWeight,
-  headingWeight,
-  scaleFontSize,
-  trackingEm,
+  clampHeadlineText,
+  resolveBlockSlotStyle,
+  resolveFontStack,
+  resolvedTypeStyleToCss,
 } from "@/lib/typography";
+import type { BrandPreset, MotionBlockInstance, MotionFormat } from "@/types";
 import { useCurrentFrame } from "remotion";
 import {
   getEnterProgress,
@@ -19,20 +19,13 @@ import {
 type CtaLockupBlockProps = {
   brand: BrandPreset;
   block: MotionBlockInstance;
-  formatWidth: number;
-  formatHeight: number;
-  projectTypography?: ProjectTypography;
+  format: MotionFormat;
 };
 
-export function CtaLockupBlock({
-  brand,
-  block,
-  formatWidth,
-  formatHeight,
-  projectTypography,
-}: CtaLockupBlockProps) {
+export function CtaLockupBlock({ brand, block, format }: CtaLockupBlockProps) {
   const frame = useCurrentFrame();
   const duration = block.duration;
+  const { width: formatWidth, height: formatHeight } = format;
 
   const { direction, intensity, speed, stagger, entranceEasing, exitEasing } =
     resolveBlockMotionParams(brand, block);
@@ -82,10 +75,37 @@ export function CtaLockupBlock({
   const ctaScale = getScale(ctaProgress, intensity);
 
   const buttonScale = Number(block.motion.controls.buttonScale ?? 1);
-  const messageSize = scaleFontSize(Math.round(formatHeight * 0.042), projectTypography);
-  const ctaSize = scaleFontSize(Math.round(formatHeight * 0.03 * buttonScale), projectTypography);
-  const logoSize = scaleFontSize(Math.round(formatHeight * 0.034), projectTypography);
-  const urlSize = scaleFontSize(Math.round(formatHeight * 0.02), projectTypography);
+
+  const messageType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    "title",
+    block.typographyOverride,
+    "headline",
+  );
+  const ctaType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    "label",
+    block.typographyOverride,
+    "title",
+  );
+  const logoType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    brand.typography.defaults.labelStyle,
+    block.typographyOverride,
+    "label",
+  );
+  const urlType = resolveBlockSlotStyle(
+    brand.typography,
+    format,
+    "caption",
+    block.typographyOverride,
+    "caption",
+  );
+
+  const logoSize = logoType.fontSize;
 
   return (
     <div
@@ -94,7 +114,7 @@ export function CtaLockupBlock({
         height: formatHeight,
         position: "relative",
         overflow: "hidden",
-        fontFamily: brand.typography.bodyFont,
+        fontFamily: resolveFontStack(brand.typography, "body"),
         color: brand.colors.foreground,
         backgroundColor: brand.colors.background,
       }}
@@ -127,15 +147,11 @@ export function CtaLockupBlock({
             style={{
               opacity: messageOpacity,
               transform: `translate(${messageTranslate.x}px, ${messageTranslate.y}px)`,
-              fontFamily: brand.typography.headingFont,
-              fontSize: messageSize,
-              fontWeight: bodyWeight(projectTypography),
-              lineHeight: 1.2,
-              maxWidth: formatWidth * 0.75,
-              letterSpacing: trackingEm("-0.01em", projectTypography),
+              ...resolvedTypeStyleToCss(messageType),
+              maxWidth: messageType.maxWidth ?? formatWidth * 0.75,
             }}
           >
-            {message}
+            {clampHeadlineText(message, 100)}
           </div>
         ) : null}
 
@@ -147,9 +163,10 @@ export function CtaLockupBlock({
             borderRadius: formatHeight * 0.012,
             backgroundColor: brand.colors.accent,
             color: brand.colors.background,
-            fontSize: ctaSize,
-            fontFamily: brand.typography.headingFont,
-            fontWeight: headingWeight(projectTypography),
+            ...resolvedTypeStyleToCss({
+              ...ctaType,
+              fontSize: ctaType.fontSize * buttonScale,
+            }),
             boxShadow: `0 ${formatHeight * 0.012}px ${formatHeight * 0.03}px ${brand.colors.accent}44`,
           }}
         >
@@ -177,10 +194,7 @@ export function CtaLockupBlock({
             />
             <span
               style={{
-                fontFamily: brand.typography.headingFont,
-                fontSize: logoSize,
-                fontWeight: headingWeight(projectTypography),
-                letterSpacing: trackingEm("0.12em", projectTypography),
+                ...resolvedTypeStyleToCss(logoType),
                 color: brand.colors.foreground,
               }}
             >
@@ -188,7 +202,7 @@ export function CtaLockupBlock({
             </span>
           </div>
           {url ? (
-            <span style={{ fontSize: urlSize, color: brand.colors.muted }}>{url}</span>
+            <span style={{ ...resolvedTypeStyleToCss(urlType), color: brand.colors.muted }}>{url}</span>
           ) : null}
         </div>
       </div>

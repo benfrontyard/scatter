@@ -20,11 +20,11 @@ import {
 import { useHistory } from "@/hooks/use-history";
 import type {
   BlockTransition,
+  BlockTypographyOverride,
   BrandPreset,
   MotionBlockInstance,
   MotionSequence,
   ProjectAsset,
-  ProjectTypography,
 } from "@/types";
 import { EDITOR_FPS, type EditorStep } from "@/types/editor";
 import type { PlayerRef } from "@remotion/player";
@@ -36,8 +36,11 @@ type EditorActions = {
   setCanvasBackground: (color: string) => void;
   setProjectName: (name: string) => void;
   setFps: (fps: number) => void;
-  setProjectTypography: (key: keyof ProjectTypography, value: number) => void;
   setLogoText: (text: string) => void;
+  updateBlockTypographyOverride: (
+    blockId: string,
+    override: BlockTypographyOverride | undefined,
+  ) => void;
   selectBlock: (blockId: string | null) => void;
   selectTransition: (transitionId: string | null) => void;
   clearSelection: () => void;
@@ -256,12 +259,19 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           sequence: { ...prev.sequence, fps: nextFps },
         }));
       },
-      setProjectTypography: (key, value) => {
+      updateBlockTypographyOverride: (blockId, override) => {
         updateSnapshot((prev) => ({
           ...prev,
           sequence: {
             ...prev.sequence,
-            typography: { ...prev.sequence.typography, [key]: value },
+            blocks: prev.sequence.blocks.map((block) =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    typographyOverride: override,
+                  }
+                : block,
+            ),
           },
         }));
       },
