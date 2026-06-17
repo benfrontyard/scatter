@@ -16,6 +16,7 @@ import {
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { GrainOverlay, getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 
 type LogoRevealBlockProps = {
   brand: BrandPreset;
@@ -91,6 +92,9 @@ export function LogoRevealBlock({ brand, block, format }: LogoRevealBlockProps) 
   const logoSize = logoType.fontSize;
   const padding = formatHeight * 0.08;
 
+  const backgroundStyle = getTargetEffectStyle(brand, block, "background");
+  const logoEffectStyle = getTargetEffectStyle(brand, block, "logo");
+
   return (
     <div
       style={{
@@ -101,6 +105,7 @@ export function LogoRevealBlock({ brand, block, format }: LogoRevealBlockProps) 
         fontFamily: resolveFontStack(brand.typography, "body"),
         color: brand.colors.foreground,
         backgroundColor: brand.colors.background,
+        ...backgroundStyle,
       }}
     >
       <div
@@ -110,6 +115,7 @@ export function LogoRevealBlock({ brand, block, format }: LogoRevealBlockProps) 
           background: `radial-gradient(ellipse 70% 50% at 50% 40%, ${brand.colors.accent}18 0%, transparent 70%)`,
         }}
       />
+      <GrainOverlay grain={brand.effects.defaultGrain} />
 
       <div
         style={{
@@ -127,35 +133,43 @@ export function LogoRevealBlock({ brand, block, format }: LogoRevealBlockProps) 
         }}
       >
         <div
-          style={{
-            opacity: logoOpacity,
-            transform: `translate(${logoTranslate.x}px, ${logoTranslate.y}px) scale(${logoScale})`,
-            clipPath: getMaskReveal(logoProgress),
-            display: "flex",
-            alignItems: "center",
-            gap: formatWidth * 0.014,
-          }}
+          style={mergeMotionAndEffectStyle(
+            {
+              opacity: logoOpacity,
+              transform: `translate(${logoTranslate.x}px, ${logoTranslate.y}px) scale(${logoScale})`,
+              clipPath: getMaskReveal(logoProgress),
+            },
+            logoEffectStyle,
+          )}
         >
           <div
             style={{
-              width: logoSize * 0.55,
-              height: logoSize * 0.55,
-              borderRadius: logoSize * 0.12,
-              backgroundColor: brand.colors.accent,
-            }}
-          />
-          <span
-            style={{
-              ...resolvedTypeStyleToCss({
-                ...logoType,
-                fontFamily: resolveFontStack(brand.typography, "accent"),
-              }),
-              color: brand.colors.accent,
-              lineHeight: 1,
+              display: "flex",
+              alignItems: "center",
+              gap: formatWidth * 0.014,
             }}
           >
-            {logoText}
-          </span>
+            <div
+              style={{
+                width: logoSize * 0.55,
+                height: logoSize * 0.55,
+                borderRadius: logoSize * 0.12,
+                backgroundColor: brand.colors.accent,
+              }}
+            />
+            <span
+              style={{
+                ...resolvedTypeStyleToCss({
+                  ...logoType,
+                  fontFamily: resolveFontStack(brand.typography, "accent"),
+                }),
+                color: brand.colors.accent,
+                lineHeight: 1,
+              }}
+            >
+              {logoText}
+            </span>
+          </div>
         </div>
 
         {tagline ? (

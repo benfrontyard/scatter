@@ -1,7 +1,9 @@
 import { defaultMotionSequence } from "@/config/sequences/default";
 import { CUSTOM_BRAND_ID, duplicateBrandAsCustom, resolveBrand } from "@/lib/brand-utils";
+import { normalizeBlockEffects, normalizeBrandEffects } from "@/lib/effects";
+import { normalizeBrandColors } from "@/lib/brand-colors";
 import { normalizeBrandTypography } from "@/lib/typography";
-import type { BrandPreset, MotionSequence, ScatterProject, RecentProjectEntry } from "@/types";
+import type { BrandPreset, MotionBlockInstance, MotionSequence, ScatterProject, RecentProjectEntry } from "@/types";
 
 const PROJECTS_KEY = "scatter:projects";
 const RECENT_KEY = "scatter:recent";
@@ -40,7 +42,16 @@ export function projectToJson(project: ScatterProject): string {
 function migrateCustomBrands(customBrands: BrandPreset[]): BrandPreset[] {
   return customBrands.map((brand) => ({
     ...brand,
+    colors: normalizeBrandColors(brand.colors),
     typography: normalizeBrandTypography(brand.typography),
+    effects: normalizeBrandEffects(brand.effects),
+  }));
+}
+
+function migrateBlockEffects(blocks: MotionBlockInstance[]): MotionBlockInstance[] {
+  return blocks.map((block) => ({
+    ...block,
+    effects: normalizeBlockEffects(block.effects),
   }));
 }
 
@@ -94,7 +105,11 @@ function migrateProject(project: ScatterProject): ScatterProject {
 
   return {
     ...project,
-    sequence: { ...sequence, brandPresetId },
+    sequence: {
+      ...sequence,
+      brandPresetId,
+      blocks: migrateBlockEffects(sequence.blocks),
+    },
     customBrands,
   };
 }

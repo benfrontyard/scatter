@@ -15,6 +15,7 @@ import {
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { GrainOverlay, getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 
 type CtaLockupBlockProps = {
   brand: BrandPreset;
@@ -107,6 +108,11 @@ export function CtaLockupBlock({ brand, block, format }: CtaLockupBlockProps) {
 
   const logoSize = logoType.fontSize;
 
+  const backgroundStyle = getTargetEffectStyle(brand, block, "background");
+  const cardStyle = getTargetEffectStyle(brand, block, "card");
+  const ctaEffectStyle = getTargetEffectStyle(brand, block, "cta");
+  const logoEffectStyle = getTargetEffectStyle(brand, block, "logo");
+
   return (
     <div
       style={{
@@ -117,6 +123,7 @@ export function CtaLockupBlock({ brand, block, format }: CtaLockupBlockProps) {
         fontFamily: resolveFontStack(brand.typography, "body"),
         color: brand.colors.foreground,
         backgroundColor: brand.colors.background,
+        ...backgroundStyle,
       }}
     >
       <div
@@ -126,6 +133,7 @@ export function CtaLockupBlock({ brand, block, format }: CtaLockupBlockProps) {
           background: `radial-gradient(ellipse 75% 55% at 50% 60%, ${brand.colors.accent}16 0%, transparent 70%)`,
         }}
       />
+      <GrainOverlay grain={brand.effects.defaultGrain} />
 
       <div
         style={{
@@ -138,50 +146,76 @@ export function CtaLockupBlock({ brand, block, format }: CtaLockupBlockProps) {
           alignItems: "center",
           justifyContent: "center",
           padding: formatHeight * 0.08,
-          gap: formatHeight * 0.035,
-          textAlign: "center",
         }}
       >
-        {message ? (
-          <div
-            style={{
-              opacity: messageOpacity,
-              transform: `translate(${messageTranslate.x}px, ${messageTranslate.y}px)`,
-              ...resolvedTypeStyleToCss(messageType),
-              maxWidth: messageType.maxWidth ?? formatWidth * 0.75,
-            }}
-          >
-            {clampHeadlineText(message, 100)}
-          </div>
-        ) : null}
-
         <div
           style={{
-            opacity: ctaOpacity,
-            transform: `translateY(${ctaTranslate.y}px) scale(${ctaScale})`,
-            padding: `${formatHeight * 0.018 * buttonScale}px ${formatWidth * 0.055 * buttonScale}px`,
-            borderRadius: formatHeight * 0.012,
-            backgroundColor: brand.colors.accent,
-            color: brand.colors.background,
-            ...resolvedTypeStyleToCss({
-              ...ctaType,
-              fontSize: ctaType.fontSize * buttonScale,
-            }),
-            boxShadow: `0 ${formatHeight * 0.012}px ${formatHeight * 0.03}px ${brand.colors.accent}44`,
-          }}
-        >
-          {cta}
-        </div>
-
-        <div
-          style={{
-            opacity: logoOpacity,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: formatHeight * 0.008,
-            marginTop: formatHeight * 0.01,
+            gap: formatHeight * 0.035,
+            textAlign: "center",
+            padding: `${formatHeight * 0.04}px ${formatWidth * 0.06}px`,
+            maxWidth: formatWidth * 0.82,
+            backgroundColor: `${brand.colors.foreground}04`,
+            ...cardStyle,
           }}
+        >
+          {message ? (
+            <div
+              style={{
+                opacity: messageOpacity,
+                transform: `translate(${messageTranslate.x}px, ${messageTranslate.y}px)`,
+              }}
+            >
+              <span
+                style={{
+                  ...resolvedTypeStyleToCss(messageType),
+                  maxWidth: messageType.maxWidth ?? formatWidth * 0.75,
+                }}
+              >
+                {clampHeadlineText(message, 100)}
+              </span>
+            </div>
+          ) : null}
+
+          <div
+            style={mergeMotionAndEffectStyle(
+              {
+                opacity: ctaOpacity,
+                transform: `translateY(${ctaTranslate.y}px) scale(${ctaScale})`,
+                padding: `${formatHeight * 0.018 * buttonScale}px ${formatWidth * 0.055 * buttonScale}px`,
+                backgroundColor: brand.colors.accent,
+                color: brand.colors.background,
+              },
+              ctaEffectStyle,
+            )}
+          >
+            <span
+              style={{
+                ...resolvedTypeStyleToCss({
+                  ...ctaType,
+                  fontSize: ctaType.fontSize * buttonScale,
+                }),
+              }}
+            >
+              {cta}
+            </span>
+          </div>
+        </div>
+
+        <div
+          style={mergeMotionAndEffectStyle(
+            {
+              opacity: logoOpacity,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: formatHeight * 0.008,
+              marginTop: formatHeight * 0.04,
+            },
+            logoEffectStyle,
+          )}
         >
           <div style={{ display: "flex", alignItems: "center", gap: formatWidth * 0.012 }}>
             <div

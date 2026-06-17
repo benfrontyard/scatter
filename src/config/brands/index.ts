@@ -3,6 +3,11 @@ import {
   editorialBrandTypography,
   saasBrandTypography,
 } from "@/config/typography/defaults";
+import {
+  defaultBrandEffects,
+  editorialBrandEffects,
+  saasBrandEffects,
+} from "@/config/effects/defaults";
 import type { BrandPreset } from "@/types";
 import {
   DEFAULT_EASING_ID,
@@ -22,6 +27,7 @@ export const brandPresets: BrandPreset[] = [
       muted: "#737373",
     },
     typography: defaultBrandTypography,
+    effects: defaultBrandEffects,
     motion: {
       defaultEasingId: DEFAULT_EASING_ID,
       entranceEasingId: DEFAULT_ENTRANCE_EASING_ID,
@@ -43,6 +49,7 @@ export const brandPresets: BrandPreset[] = [
       muted: "#9ca3af",
     },
     typography: editorialBrandTypography,
+    effects: editorialBrandEffects,
     motion: {
       defaultEasingId: "soft-reveal",
       entranceEasingId: "soft-reveal",
@@ -64,6 +71,7 @@ export const brandPresets: BrandPreset[] = [
       muted: "#64748b",
     },
     typography: saasBrandTypography,
+    effects: saasBrandEffects,
     motion: {
       defaultEasingId: "snappy",
       entranceEasingId: "snappy",

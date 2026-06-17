@@ -1,4 +1,5 @@
 import { BlockAdvancedTypography } from "@/components/editor/BlockAdvancedTypography";
+import { BlockAdvancedEffects } from "@/components/editor/BlockAdvancedEffects";
 import { ExportPanel } from "@/components/editor/ExportPanel";
 import { EasingPicker } from "@/components/editor/EasingPicker";
 import { motionBlockMap } from "@/config/blocks";
@@ -31,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Film, Layers, Palette, SlidersHorizontal } from "lucide-react";
+import { Film, Layers, SlidersHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -350,6 +351,7 @@ function BlockSettings({ className }: { className?: string }) {
     updateBlockEasing,
     updateBlockDuration,
     updateBlockTypographyOverride,
+    updateBlockEffects,
   } = useEditor();
   const selectedBlock = useSelectedBlock();
   if (!selectedBlock) return null;
@@ -464,6 +466,17 @@ function BlockSettings({ className }: { className?: string }) {
                 onChange={(override) =>
                   updateBlockTypographyOverride(selectedBlock.id, override)
                 }
+              />
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="effects" className="border-border">
+            <AccordionTrigger className="text-muted-foreground">Advanced effects</AccordionTrigger>
+            <AccordionContent>
+              <BlockAdvancedEffects
+                brand={brand}
+                block={selectedBlock}
+                onChange={(effects) => updateBlockEffects(selectedBlock.id, effects)}
               />
             </AccordionContent>
           </AccordionItem>
@@ -602,7 +615,7 @@ function ProjectSettings({ className }: { className?: string }) {
     setFormat,
     setFps,
     setCanvasBackground,
-    setShowBrandSettings,
+    setShowBrandSystem,
   } = useEditor();
   const sequenceDuration = getSequenceDurationInFrames(sequence);
   const canvasBackground = sequence.canvasBackground ?? "";
@@ -644,13 +657,11 @@ function ProjectSettings({ className }: { className?: string }) {
             <Button
               type="button"
               variant="outline"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              onClick={() => setShowBrandSettings(true)}
-              aria-label="Customize brand"
-              title="Customize brand"
+              size="sm"
+              className="h-8 shrink-0 px-2 text-xs"
+              onClick={() => setShowBrandSystem(true)}
             >
-              <Palette className="h-3.5 w-3.5" />
+              Edit brand
             </Button>
           </div>
         </div>

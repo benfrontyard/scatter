@@ -1,4 +1,5 @@
 import type { BlockTypographyOverride } from "./typography";
+import type { EffectInstance } from "./effects";
 
 export type MotionBehaviorName =
   | "fade"
@@ -50,4 +51,5 @@ export type MotionBlockInstance = {
   content: BlockContent;
   motion: BlockMotionDefaults;
   typographyOverride?: BlockTypographyOverride;
+  effects?: EffectInstance[];
 };

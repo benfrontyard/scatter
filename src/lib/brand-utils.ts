@@ -1,5 +1,7 @@
 import { brandPresetMap, brandPresets } from "@/config/brands";
+import { normalizeBrandColors } from "@/lib/brand-colors";
 import { normalizeBrand } from "@/lib/easing";
+import { normalizeBrandEffects } from "@/lib/effects";
 import { normalizeBrandTypography } from "@/lib/typography";
 import type { BrandPreset } from "@/types";
 
@@ -19,7 +21,9 @@ export function resolveBrand(
 
   return normalizeBrand({
     ...brand,
+    colors: normalizeBrandColors(brand.colors),
     typography: normalizeBrandTypography(brand.typography),
+    effects: normalizeBrandEffects(brand.effects),
   });
 }
 
@@ -42,8 +46,9 @@ export function createEmptyCustomBrand(base?: BrandPreset): BrandPreset {
   return {
     id: CUSTOM_BRAND_ID,
     name: "Custom Brand",
-    colors: { ...source.colors },
+    colors: normalizeBrandColors(source.colors),
     typography: normalizeBrandTypography(source.typography),
+    effects: normalizeBrandEffects(source.effects),
     motion: { ...source.motion },
   };
 }

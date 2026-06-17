@@ -3,7 +3,7 @@ import { EditorLayout } from "@/components/layout/EditorLayout";
 import { KeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { KeyboardShortcutsModal } from "@/components/editor/KeyboardShortcutsModal";
 import { ProjectMenu } from "@/components/editor/ProjectMenu";
-import { BrandSettingsModal } from "@/components/editor/BrandSettingsModal";
+import { BrandSystemView } from "@/components/brand-system/BrandSystemView";
 
 export default function App() {
   return (
@@ -12,7 +12,7 @@ export default function App() {
       <EditorLayout />
       <KeyboardShortcutsModal />
       <ProjectMenu />
-      <BrandSettingsModal />
+      <BrandSystemView />
     </EditorProvider>
   );
 }

@@ -12,7 +12,6 @@ import {
   Download,
   FolderOpen,
   HelpCircle,
-  Palette,
   Redo2,
   Save,
   Undo2,
@@ -41,7 +40,7 @@ export function AppHeader({ compact }: AppHeaderProps) {
     redo,
     saveProject,
     setShowProjectMenu,
-    setShowBrandSettings,
+    setShowBrandSystem,
     setShowShortcuts,
   } = useEditor();
 
@@ -134,16 +133,20 @@ export function AppHeader({ compact }: AppHeaderProps) {
             </SelectContent>
           </Select>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setShowBrandSettings(true)}
-            aria-label="Customize brand"
-            title="Brand settings"
-          >
-            <Palette className="h-3.5 w-3.5" />
-          </Button>
+          <div className="flex items-center gap-1 rounded-md border border-border bg-secondary/30 px-2 py-1">
+            <span className="max-w-[120px] truncate text-xs text-muted-foreground">
+              {brand.name}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => setShowBrandSystem(true)}
+            >
+              Edit brand
+            </Button>
+          </div>
 
           <Select value={format.id} onValueChange={setFormat}>
             <SelectTrigger className="h-8 w-[120px] text-xs" aria-label="Aspect ratio">

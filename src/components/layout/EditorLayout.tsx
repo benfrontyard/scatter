@@ -18,11 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Palette } from "lucide-react";
 import { useEffect, useState } from "react";
 
 function MobileControlsBar() {
-  const { brand, allBrands, format, setBrand, setFormat, setShowBrandSettings } = useEditor();
+  const { brand, allBrands, format, setBrand, setFormat, setShowBrandSystem } = useEditor();
 
   return (
     <div className="grid shrink-0 grid-cols-2 gap-2 border-b border-border bg-card px-3 py-2">
@@ -44,12 +43,11 @@ function MobileControlsBar() {
           <Button
             type="button"
             variant="outline"
-            size="icon"
-            className="h-8 w-8 shrink-0"
-            onClick={() => setShowBrandSettings(true)}
-            aria-label="Customize brand"
+            size="sm"
+            className="h-8 shrink-0 px-2 text-[10px]"
+            onClick={() => setShowBrandSystem(true)}
           >
-            <Palette className="h-3.5 w-3.5" />
+            Edit
           </Button>
         </div>
       </div>

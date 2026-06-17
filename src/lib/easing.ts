@@ -6,6 +6,7 @@ import {
   DEFAULT_TRANSITION_EASING_ID,
   builtinEasingPresetMap,
 } from "@/config/easing-presets";
+import { normalizeBrandEffects } from "@/lib/effects";
 import type { BrandMotion, BrandPreset, MotionBlockInstance } from "@/types";
 import type { BlockTransition, EasingName } from "@/types/transition";
 import type { EasingBezier, EasingCategory, EasingPreset } from "@/types/easing";
@@ -213,6 +214,7 @@ export function normalizeBrand(brand: BrandPreset): BrandPreset {
   return {
     ...brand,
     motion: normalizeBrandMotion(brand.motion),
+    effects: normalizeBrandEffects(brand.effects),
   };
 }
 

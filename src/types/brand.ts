@@ -1,11 +1,21 @@
 import type { EasingName } from "./easing";
+import type { BrandEffects } from "./effects";
 import type { BodyStyleName, HeadingStyleName, TypeStyle, TypeStyleName } from "./typography";
+
+export type BrandPersonality =
+  | "calm"
+  | "precise"
+  | "editorial"
+  | "playful"
+  | "premium";
 
 export type BrandColors = {
   background: string;
   foreground: string;
   accent: string;
   muted: string;
+  surface?: string;
+  border?: string;
 };
 
 export type BrandTypography = {
@@ -38,7 +48,9 @@ export type BrandMotion = {
 export type BrandPreset = {
   id: string;
   name: string;
+  personality?: BrandPersonality;
   colors: BrandColors;
   typography: BrandTypography;
   motion: BrandMotion;
+  effects: BrandEffects;
 };

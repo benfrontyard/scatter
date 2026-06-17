@@ -16,6 +16,7 @@ import {
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { GrainOverlay, getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 import { formatStatValue, parseStatValue } from "./stat-card-motion";
 
 type StatCardBlockProps = {
@@ -113,6 +114,11 @@ export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
     "caption",
   );
 
+  const backgroundStyle = getTargetEffectStyle(brand, block, "background");
+  const cardStyle = getTargetEffectStyle(brand, block, "card");
+  const numberStyle = getTargetEffectStyle(brand, block, "number");
+  const labelEffectStyle = getTargetEffectStyle(brand, block, "label");
+
   return (
     <div
       style={{
@@ -123,6 +129,7 @@ export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
         fontFamily: resolveFontStack(brand.typography, "body"),
         color: brand.colors.foreground,
         backgroundColor: brand.colors.background,
+        ...backgroundStyle,
       }}
     >
       <div
@@ -132,6 +139,7 @@ export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
           background: `radial-gradient(ellipse 60% 45% at 50% 50%, ${brand.colors.accent}14 0%, transparent 65%)`,
         }}
       />
+      <GrainOverlay grain={brand.effects.defaultGrain} />
 
       <div
         style={{
@@ -144,51 +152,79 @@ export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
           alignItems: "center",
           justifyContent: "center",
           padding: formatHeight * 0.08,
-          gap: formatHeight * 0.018,
-          textAlign: "center",
         }}
       >
         <div
           style={{
-            opacity: valueOpacity,
-            transform: `translate(${valueTranslate.x}px, ${valueTranslate.y}px)`,
-            ...resolvedTypeStyleToCss({
-              ...valueType,
-              fontSize: clampFontSize(valueType.fontSize * emphasis),
-            }),
-            color: brand.colors.accent,
-            lineHeight: 1,
-            fontVariantNumeric: "tabular-nums",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: `${formatHeight * 0.05}px ${formatWidth * 0.08}px`,
+            gap: formatHeight * 0.018,
+            textAlign: "center",
+            backgroundColor: `${brand.colors.foreground}06`,
+            ...cardStyle,
           }}
         >
-          {displayValue}
+          <div
+            style={mergeMotionAndEffectStyle(
+              {
+                opacity: valueOpacity,
+                transform: `translate(${valueTranslate.x}px, ${valueTranslate.y}px)`,
+              },
+              numberStyle,
+            )}
+          >
+            <span
+              style={{
+                ...resolvedTypeStyleToCss({
+                  ...valueType,
+                  fontSize: clampFontSize(valueType.fontSize * emphasis),
+                }),
+                color: brand.colors.accent,
+                lineHeight: 1,
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {displayValue}
+            </span>
+          </div>
+
+          {label ? (
+            <div
+              style={mergeMotionAndEffectStyle(
+                {
+                  opacity: labelOpacity,
+                  transform: `translateY(${labelTranslate.y}px)`,
+                },
+                labelEffectStyle,
+              )}
+            >
+              <span
+                style={{
+                  ...resolvedTypeStyleToCss(labelType),
+                  color: brand.colors.foreground,
+                }}
+              >
+                {label}
+              </span>
+            </div>
+          ) : null}
+
+          {supportingText ? (
+            <div
+              style={{
+                opacity: supportOpacity,
+                ...resolvedTypeStyleToCss(supportType),
+                color: brand.colors.muted,
+                maxWidth: supportType.maxWidth ?? formatWidth * 0.65,
+              }}
+            >
+              {clampHeadlineText(supportingText, 140)}
+            </div>
+          ) : null}
         </div>
-
-        {label ? (
-          <div
-            style={{
-              opacity: labelOpacity,
-              transform: `translateY(${labelTranslate.y}px)`,
-              ...resolvedTypeStyleToCss(labelType),
-              color: brand.colors.foreground,
-            }}
-          >
-            {label}
-          </div>
-        ) : null}
-
-        {supportingText ? (
-          <div
-            style={{
-              opacity: supportOpacity,
-              ...resolvedTypeStyleToCss(supportType),
-              color: brand.colors.muted,
-              maxWidth: supportType.maxWidth ?? formatWidth * 0.65,
-            }}
-          >
-            {clampHeadlineText(supportingText, 140)}
-          </div>
-        ) : null}
       </div>
     </div>
   );

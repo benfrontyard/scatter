@@ -22,6 +22,7 @@ import type {
   BlockTransition,
   BlockTypographyOverride,
   BrandPreset,
+  EffectInstance,
   MotionBlockInstance,
   MotionSequence,
   ProjectAsset,
@@ -41,6 +42,7 @@ type EditorActions = {
     blockId: string,
     override: BlockTypographyOverride | undefined,
   ) => void;
+  updateBlockEffects: (blockId: string, effects: EffectInstance[] | undefined) => void;
   selectBlock: (blockId: string | null) => void;
   selectTransition: (transitionId: string | null) => void;
   clearSelection: () => void;
@@ -59,6 +61,7 @@ type EditorActions = {
   ) => void;
   updateTransitionDuration: (transitionId: string, duration: number) => void;
   updateCustomBrand: (updater: (brand: BrandPreset) => BrandPreset) => void;
+  commitBrandDraft: (brand: BrandPreset, logoText: string) => void;
   duplicateBrandToCustom: (sourceBrandId: string) => void;
   saveCustomBrand: () => void;
   addAsset: (file: File) => Promise<ProjectAsset | null>;
@@ -97,8 +100,8 @@ type EditorContextValue = {
   isPlaying: boolean;
   showShortcuts: boolean;
   setShowShortcuts: (show: boolean) => void;
-  showBrandSettings: boolean;
-  setShowBrandSettings: (show: boolean) => void;
+  showBrandSystem: boolean;
+  setShowBrandSystem: (show: boolean) => void;
   showProjectMenu: boolean;
   setShowProjectMenu: (show: boolean) => void;
 } & EditorActions;
@@ -127,7 +130,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const [currentFrame, setCurrentFrameState] = useState(0);
   const [isPlaying, setIsPlayingState] = useState(true);
   const [showShortcuts, setShowShortcuts] = useState(false);
-  const [showBrandSettings, setShowBrandSettings] = useState(false);
+  const [showBrandSystem, setShowBrandSystem] = useState(false);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
 
   const playerRef = useRef<PlayerRef | null>(null);
@@ -224,8 +227,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       isPlaying,
       showShortcuts,
       setShowShortcuts,
-      showBrandSettings,
-      setShowBrandSettings,
+      showBrandSystem,
+      setShowBrandSystem,
       showProjectMenu,
       setShowProjectMenu,
       setStep,
@@ -269,6 +272,23 @@ export function EditorProvider({ children }: { children: ReactNode }) {
                 ? {
                     ...block,
                     typographyOverride: override,
+                  }
+                : block,
+            ),
+          },
+        }));
+      },
+
+      updateBlockEffects: (blockId, effects) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            blocks: prev.sequence.blocks.map((block) =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    effects,
                   }
                 : block,
             ),
@@ -467,7 +487,26 @@ export function EditorProvider({ children }: { children: ReactNode }) {
             sequence: { ...prev.sequence, brandPresetId: CUSTOM_BRAND_ID },
           };
         });
-        setShowBrandSettings(true);
+        setShowBrandSystem(true);
+      },
+      commitBrandDraft: (brandDraft, logoText) => {
+        updateSnapshot((prev) => {
+          const existing = prev.customBrands.find((b) => b.id === CUSTOM_BRAND_ID);
+          const base =
+            existing ??
+            createEmptyCustomBrand(resolveBrand(prev.sequence.brandPresetId, prev.customBrands));
+          const updated: BrandPreset = {
+            ...brandDraft,
+            id: CUSTOM_BRAND_ID,
+            name: brandDraft.name || base.name,
+          };
+          const others = prev.customBrands.filter((b) => b.id !== CUSTOM_BRAND_ID);
+          return {
+            ...prev,
+            customBrands: [...others, updated],
+            sequence: { ...prev.sequence, brandPresetId: CUSTOM_BRAND_ID, logoText },
+          };
+        });
       },
       saveCustomBrand: () => {
         const custom = customBrands.find((b) => b.id === CUSTOM_BRAND_ID);
@@ -583,7 +622,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       currentFrame,
       isPlaying,
       showShortcuts,
-      showBrandSettings,
+      showBrandSystem,
       showProjectMenu,
       updateSnapshot,
       loadSnapshot,

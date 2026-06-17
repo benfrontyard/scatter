@@ -44,9 +44,10 @@ const TEXT_TRANSFORMS: TextTransform[] = ["none", "uppercase", "lowercase", "cap
 type BrandTypographyPanelProps = {
   brand: BrandPreset;
   onChange: (typography: BrandTypography) => void;
+  embedded?: boolean;
 };
 
-export function BrandTypographyPanel({ brand, onChange }: BrandTypographyPanelProps) {
+export function BrandTypographyPanel({ brand, onChange, embedded = false }: BrandTypographyPanelProps) {
   const typography = brand.typography;
   const previewFormat = motionFormatMap[defaultFormatId];
 
@@ -100,20 +101,20 @@ export function BrandTypographyPanel({ brand, onChange }: BrandTypographyPanelPr
     [typography, previewFormat],
   );
 
-  return (
-    <fieldset className="space-y-3">
-      <legend className="text-xs font-medium text-muted-foreground">Typography system</legend>
-
-      {contrastWarning ? (
+  const content = (
+    <>
+      {!embedded && contrastWarning ? (
         <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 text-[11px] leading-relaxed text-amber-200">
           Foreground and background may have low contrast. Check readability on the canvas.
         </p>
       ) : null}
 
-      <div className="space-y-3 rounded-md border border-border bg-background/40 p-2.5">
-        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-          Font families
-        </p>
+      <div className={embedded ? "space-y-4" : "space-y-3 rounded-md border border-border bg-background/40 p-2.5"}>
+        {!embedded ? (
+          <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            Font families
+          </p>
+        ) : null}
         <div className="space-y-2">
           <Label className="text-xs">Heading</Label>
           <FontSelector
@@ -305,6 +306,17 @@ export function BrandTypographyPanel({ brand, onChange }: BrandTypographyPanelPr
           );
         })}
       </Accordion>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="space-y-4">{content}</div>;
+  }
+
+  return (
+    <fieldset className="space-y-3">
+      <legend className="text-xs font-medium text-muted-foreground">Typography system</legend>
+      {content}
     </fieldset>
   );
 }

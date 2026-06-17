@@ -16,6 +16,7 @@ import {
   getTranslate,
   resolveBlockMotionParams,
 } from "./feature-announcement-motion";
+import { GrainOverlay, getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 
 type FeatureAnnouncementBlockProps = {
   brand: BrandPreset;
@@ -144,6 +145,12 @@ export function FeatureAnnouncementBlock({ brand, block, format }: FeatureAnnoun
   const imageWidth = formatWidth * (isPortrait ? 0.82 : 0.58);
   const imageHeight = formatHeight * (isPortrait ? 0.32 : 0.38);
 
+  const backgroundStyle = getTargetEffectStyle(brand, block, "background");
+  const headlineEffectStyle = getTargetEffectStyle(brand, block, "headline");
+  const subheadEffectStyle = getTargetEffectStyle(brand, block, "subhead");
+  const imageEffectStyle = getTargetEffectStyle(brand, block, "image");
+  const logoEffectStyle = getTargetEffectStyle(brand, block, "logo");
+
   return (
     <div
       style={{
@@ -161,6 +168,7 @@ export function FeatureAnnouncementBlock({ brand, block, format }: FeatureAnnoun
           inset: 0,
           backgroundColor,
           opacity: getFadeOpacity(bgProgress),
+          ...backgroundStyle,
         }}
       />
 
@@ -172,6 +180,7 @@ export function FeatureAnnouncementBlock({ brand, block, format }: FeatureAnnoun
           opacity: getFadeOpacity(bgProgress) * 0.9,
         }}
       />
+      <GrainOverlay grain={brand.effects.defaultGrain} />
 
       <div
         style={{
@@ -189,49 +198,65 @@ export function FeatureAnnouncementBlock({ brand, block, format }: FeatureAnnoun
         }}
       >
         <div
-          style={{
-            opacity: headlineOpacity,
-            transform: `translate(${headlineTranslate.x}px, ${headlineTranslate.y}px)`,
-            ...resolvedTypeStyleToCss(headlineType),
-            maxWidth: headlineType.maxWidth ?? formatWidth * 0.85,
-          }}
+          style={mergeMotionAndEffectStyle(
+            {
+              opacity: headlineOpacity,
+              transform: `translate(${headlineTranslate.x}px, ${headlineTranslate.y}px)`,
+            },
+            headlineEffectStyle,
+          )}
         >
-          {clampHeadlineText(headline, 90)}
+          <span
+            style={{
+              ...resolvedTypeStyleToCss(headlineType),
+              maxWidth: headlineType.maxWidth ?? formatWidth * 0.85,
+            }}
+          >
+            {clampHeadlineText(headline, 90)}
+          </span>
         </div>
 
         {subhead ? (
           <div
-            style={{
-              opacity: subheadOpacity,
-              transform: `translate(${subheadTranslate.x}px, ${subheadTranslate.y}px)`,
-              ...resolvedTypeStyleToCss(subheadType),
-              color: brand.colors.muted,
-              maxWidth: subheadType.maxWidth ?? formatWidth * 0.72,
-            }}
+            style={mergeMotionAndEffectStyle(
+              {
+                opacity: subheadOpacity,
+                transform: `translate(${subheadTranslate.x}px, ${subheadTranslate.y}px)`,
+              },
+              subheadEffectStyle,
+            )}
           >
-            {clampHeadlineText(subhead, 160)}
+            <span
+              style={{
+                ...resolvedTypeStyleToCss(subheadType),
+                color: brand.colors.muted,
+                maxWidth: subheadType.maxWidth ?? formatWidth * 0.72,
+              }}
+            >
+              {clampHeadlineText(subhead, 160)}
+            </span>
           </div>
         ) : null}
 
         <div
-          style={{
-            marginTop: formatHeight * 0.02,
-            width: imageWidth,
-            height: imageHeight,
-            opacity: imageOpacity,
-            transform: `scale(${imageScale})`,
-            clipPath: getMaskReveal(imageProgress),
-            borderRadius: formatHeight * 0.014,
-            border: `1px solid ${accentColor}44`,
-            background: `linear-gradient(145deg, ${accentColor}18 0%, ${backgroundColor} 50%, ${accentColor}0d 100%)`,
-            boxShadow: `0 ${formatHeight * 0.02}px ${formatHeight * 0.05}px rgba(0,0,0,0.35)`,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: formatHeight * 0.012,
-            overflow: "hidden",
-          }}
+          style={mergeMotionAndEffectStyle(
+            {
+              marginTop: formatHeight * 0.02,
+              width: imageWidth,
+              height: imageHeight,
+              opacity: imageOpacity,
+              transform: `scale(${imageScale})`,
+              clipPath: getMaskReveal(imageProgress),
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: formatHeight * 0.012,
+              overflow: "hidden",
+              background: `linear-gradient(145deg, ${accentColor}18 0%, ${backgroundColor} 50%, ${accentColor}0d 100%)`,
+            },
+            imageEffectStyle,
+          )}
         >
           <svg
             width={formatHeight * 0.06}
@@ -270,41 +295,43 @@ export function FeatureAnnouncementBlock({ brand, block, format }: FeatureAnnoun
           right: 0,
           display: "flex",
           justifyContent: "center",
-          opacity: logoOpacity,
           transform: `translateY(${logoTranslate.y}px)`,
         }}
       >
         <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: formatWidth * 0.012,
-            padding: `${formatHeight * 0.01}px ${formatWidth * 0.025}px`,
-            borderRadius: formatHeight * 0.008,
-            border: `1px solid ${accentColor}55`,
-            backgroundColor: `${backgroundColor}cc`,
-            backdropFilter: "blur(8px)",
-          }}
+          style={mergeMotionAndEffectStyle(
+            { opacity: logoOpacity },
+            logoEffectStyle,
+          )}
         >
           <div
             style={{
-              width: formatHeight * 0.022,
-              height: formatHeight * 0.022,
-              borderRadius: formatHeight * 0.005,
-              backgroundColor: accentColor,
-            }}
-          />
-          <span
-            style={{
-              ...resolvedTypeStyleToCss({
-                ...logoType,
-                fontFamily: resolveFontStack(brand.typography, "accent"),
-              }),
-              color: accentColor,
+              display: "flex",
+              alignItems: "center",
+              gap: formatWidth * 0.012,
+              padding: `${formatHeight * 0.01}px ${formatWidth * 0.025}px`,
             }}
           >
-            {logoText}
-          </span>
+            <div
+              style={{
+                width: formatHeight * 0.022,
+                height: formatHeight * 0.022,
+                borderRadius: formatHeight * 0.005,
+                backgroundColor: accentColor,
+              }}
+            />
+            <span
+              style={{
+                ...resolvedTypeStyleToCss({
+                  ...logoType,
+                  fontFamily: resolveFontStack(brand.typography, "accent"),
+                }),
+                color: accentColor,
+              }}
+            >
+              {logoText}
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,23 @@
-export type { BrandPreset, BrandColors, BrandTypography, BrandMotion } from "./brand";
+export type { BrandPreset, BrandColors, BrandTypography, BrandMotion, BrandPersonality } from "./brand";
+export type {
+  EffectCategory,
+  EffectControlDefinition,
+  EffectControlType,
+  EffectDefinition,
+  EffectInheritanceCategory,
+  EffectInstance,
+  EffectTarget,
+  EffectValuesMap,
+  BrandEffects,
+  BlurStyle,
+  GlassStyle,
+  GrainStyle,
+  ImageTreatmentStyle,
+  RadiusStyle,
+  ShadowStyle,
+  StarterEffectId,
+  StrokeStyle,
+} from "./effects";
 export type {
   MotionBlockDefinition,
   MotionBlockInstance,
