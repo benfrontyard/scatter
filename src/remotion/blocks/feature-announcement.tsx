@@ -1,0 +1,286 @@
+import type { BrandPreset, MotionBlockInstance } from "@/types";
+import { useCurrentFrame } from "remotion";
+import {
+  getEnterProgress,
+  getFadeOpacity,
+  getFeatureAnnouncementTiming,
+  getMaskReveal,
+  getOutroOpacity,
+  getScale,
+  getTranslate,
+  parseMotionDirection,
+  parseMotionIntensity,
+  parseMotionSpeed,
+} from "./feature-announcement-motion";
+
+type FeatureAnnouncementBlockProps = {
+  brand: BrandPreset;
+  block: MotionBlockInstance;
+  formatWidth: number;
+  formatHeight: number;
+};
+
+export function FeatureAnnouncementBlock({
+  brand,
+  block,
+  formatWidth,
+  formatHeight,
+}: FeatureAnnouncementBlockProps) {
+  const frame = useCurrentFrame();
+  const duration = block.duration;
+
+  const direction = parseMotionDirection(block.motion.controls.direction);
+  const intensity = parseMotionIntensity(block.motion.controls.intensity);
+  const speed = parseMotionSpeed(block.motion.controls.speed);
+  const stagger = Math.round(Number(block.motion.controls.stagger ?? 8));
+
+  const headline = block.content.headline ?? "Ship faster";
+  const subhead = block.content.subhead ?? block.content.body ?? "";
+  const logoText = block.content.logoText || "SCATTER";
+  const backgroundColor = block.content.backgroundColor || brand.colors.background;
+  const accentColor = block.content.accentColor || brand.colors.accent;
+
+  const timing = getFeatureAnnouncementTiming(duration, stagger, speed);
+  const outroOpacity = getOutroOpacity(frame, duration);
+
+  const bgProgress = getEnterProgress(
+    frame,
+    timing.backgroundStart,
+    Math.round(timing.enterFrames * 0.35),
+    speed,
+  );
+  const headlineProgress = getEnterProgress(
+    frame,
+    timing.headlineStart,
+    timing.enterFrames,
+    speed,
+  );
+  const subheadProgress = getEnterProgress(
+    frame,
+    timing.subheadStart,
+    timing.enterFrames,
+    speed,
+  );
+  const imageProgress = getEnterProgress(frame, timing.imageStart, timing.enterFrames, speed);
+  const logoProgress = getEnterProgress(
+    frame,
+    timing.logoStart,
+    Math.round(timing.enterFrames * 0.85),
+    speed,
+  );
+
+  const headlineOpacity = getFadeOpacity(headlineProgress) * outroOpacity;
+  const subheadOpacity = getFadeOpacity(subheadProgress) * outroOpacity;
+  const imageOpacity = getFadeOpacity(imageProgress) * outroOpacity;
+  const logoOpacity = getFadeOpacity(logoProgress) * outroOpacity;
+
+  const headlineTranslate = getTranslate(
+    headlineProgress,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
+  const subheadTranslate = getTranslate(
+    subheadProgress,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
+  const imageScale = getScale(imageProgress, intensity);
+  const logoTranslate = getTranslate(
+    logoProgress,
+    "up",
+    formatWidth,
+    formatHeight,
+    intensity === "hero" ? "standard" : intensity,
+  );
+
+  const isPortrait = formatHeight > formatWidth;
+  const paddingX = formatWidth * 0.08;
+  const paddingY = formatHeight * 0.07;
+  const headlineSize = Math.round(formatHeight * (isPortrait ? 0.058 : 0.065));
+  const subheadSize = Math.round(formatHeight * 0.028);
+  const logoSize = Math.round(formatHeight * 0.022);
+  const imageWidth = formatWidth * (isPortrait ? 0.82 : 0.58);
+  const imageHeight = formatHeight * (isPortrait ? 0.32 : 0.38);
+
+  return (
+    <div
+      style={{
+        width: formatWidth,
+        height: formatHeight,
+        position: "relative",
+        overflow: "hidden",
+        fontFamily: brand.typography.bodyFont,
+        color: brand.colors.foreground,
+      }}
+    >
+      {/* Background */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundColor,
+          opacity: getFadeOpacity(bgProgress),
+        }}
+      />
+
+      {/* Accent gradient wash */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${accentColor}22 0%, transparent 70%)`,
+          opacity: getFadeOpacity(bgProgress) * 0.9,
+        }}
+      />
+
+      {/* Content */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: `${paddingY}px ${paddingX}px`,
+          gap: formatHeight * 0.028,
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            opacity: headlineOpacity,
+            transform: `translate(${headlineTranslate.x}px, ${headlineTranslate.y}px)`,
+            fontFamily: brand.typography.headingFont,
+            fontSize: headlineSize,
+            fontWeight: 700,
+            lineHeight: 1.08,
+            letterSpacing: "-0.02em",
+            maxWidth: formatWidth * 0.85,
+          }}
+        >
+          {headline}
+        </div>
+
+        {subhead ? (
+          <div
+            style={{
+              opacity: subheadOpacity,
+              transform: `translate(${subheadTranslate.x}px, ${subheadTranslate.y}px)`,
+              fontSize: subheadSize,
+              lineHeight: 1.45,
+              color: brand.colors.muted,
+              maxWidth: formatWidth * 0.72,
+            }}
+          >
+            {subhead}
+          </div>
+        ) : null}
+
+        {/* Image / screenshot placeholder */}
+        <div
+          style={{
+            marginTop: formatHeight * 0.02,
+            width: imageWidth,
+            height: imageHeight,
+            opacity: imageOpacity,
+            transform: `scale(${imageScale})`,
+            clipPath: getMaskReveal(imageProgress),
+            borderRadius: formatHeight * 0.014,
+            border: `1px solid ${accentColor}44`,
+            background: `linear-gradient(145deg, ${accentColor}18 0%, ${backgroundColor} 50%, ${accentColor}0d 100%)`,
+            boxShadow: `0 ${formatHeight * 0.02}px ${formatHeight * 0.05}px rgba(0,0,0,0.35)`,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: formatHeight * 0.012,
+            overflow: "hidden",
+          }}
+        >
+          <svg
+            width={formatHeight * 0.06}
+            height={formatHeight * 0.06}
+            viewBox="0 0 48 48"
+            fill="none"
+            aria-hidden
+          >
+            <rect x="4" y="8" width="40" height="32" rx="4" stroke={accentColor} strokeWidth="2" />
+            <circle cx="16" cy="20" r="4" fill={accentColor} opacity="0.6" />
+            <path
+              d="M8 32 L18 24 L26 30 L34 22 L40 28"
+              stroke={accentColor}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity="0.7"
+            />
+          </svg>
+          <span
+            style={{
+              fontSize: Math.round(formatHeight * 0.018),
+              color: brand.colors.muted,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+            }}
+          >
+            Screenshot
+          </span>
+        </div>
+      </div>
+
+      {/* Logo lockup */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: paddingY,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "center",
+          opacity: logoOpacity,
+          transform: `translateY(${logoTranslate.y}px)`,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: formatWidth * 0.012,
+            padding: `${formatHeight * 0.01}px ${formatWidth * 0.025}px`,
+            borderRadius: formatHeight * 0.008,
+            border: `1px solid ${accentColor}55`,
+            backgroundColor: `${backgroundColor}cc`,
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <div
+            style={{
+              width: formatHeight * 0.022,
+              height: formatHeight * 0.022,
+              borderRadius: formatHeight * 0.005,
+              backgroundColor: accentColor,
+            }}
+          />
+          <span
+            style={{
+              fontFamily: brand.typography.headingFont,
+              fontSize: logoSize,
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              color: accentColor,
+            }}
+          >
+            {logoText}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
