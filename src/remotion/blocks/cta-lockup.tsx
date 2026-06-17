@@ -7,9 +7,7 @@ import {
   getOutroOpacity,
   getScale,
   getTranslate,
-  parseMotionDirection,
-  parseMotionIntensity,
-  parseMotionSpeed,
+  resolveBlockMotionParams,
 } from "../shared-motion";
 
 type CtaLockupBlockProps = {
@@ -28,10 +26,8 @@ export function CtaLockupBlock({
   const frame = useCurrentFrame();
   const duration = block.duration;
 
-  const direction = parseMotionDirection(block.motion.controls.direction);
-  const intensity = parseMotionIntensity(block.motion.controls.intensity);
-  const speed = parseMotionSpeed(block.motion.controls.speed);
-  const stagger = Math.round(Number(block.motion.controls.stagger ?? 7));
+  const { direction, intensity, speed, stagger, entranceEasing, exitEasing } =
+    resolveBlockMotionParams(brand, block);
 
   const message = block.content.message ?? "";
   const cta = block.content.cta ?? "Get started";
@@ -39,20 +35,28 @@ export function CtaLockupBlock({
   const logoText = block.content.logoText || "SCATTER";
 
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.08);
+  const outroOpacity = getOutroOpacity(frame, duration, 0.08, exitEasing);
 
   const messageProgress = getEnterProgress(
     frame,
     timing.primaryStart,
     Math.round(timing.enterFrames * 0.9),
     speed,
+    entranceEasing,
   );
-  const ctaProgress = getEnterProgress(frame, timing.secondaryStart, timing.enterFrames, speed);
+  const ctaProgress = getEnterProgress(
+    frame,
+    timing.secondaryStart,
+    timing.enterFrames,
+    speed,
+    entranceEasing,
+  );
   const logoProgress = getEnterProgress(
     frame,
     timing.tertiaryStart,
     Math.round(timing.enterFrames * 0.8),
     speed,
+    entranceEasing,
   );
 
   const messageOpacity = getFadeOpacity(messageProgress) * outroOpacity;

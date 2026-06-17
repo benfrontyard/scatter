@@ -1,4 +1,4 @@
-import type { EasingName } from "./transition";
+import type { EasingName } from "./easing";
 
 export type BrandColors = {
   background: string;
@@ -13,7 +13,12 @@ export type BrandTypography = {
 };
 
 export type BrandMotion = {
-  easing: EasingName;
+  /** @deprecated Use defaultEasingId — kept for backward compatibility */
+  easing?: EasingName;
+  defaultEasingId?: string;
+  entranceEasingId?: string;
+  exitEasingId?: string;
+  transitionEasingId?: string;
   speed: number;
   intensity: number;
   stagger: number;

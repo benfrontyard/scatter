@@ -8,9 +8,7 @@ import {
   getOutroOpacity,
   getScale,
   getTranslate,
-  parseMotionDirection,
-  parseMotionIntensity,
-  parseMotionSpeed,
+  resolveBlockMotionParams,
 } from "./feature-announcement-motion";
 
 type FeatureAnnouncementBlockProps = {
@@ -29,10 +27,8 @@ export function FeatureAnnouncementBlock({
   const frame = useCurrentFrame();
   const duration = block.duration;
 
-  const direction = parseMotionDirection(block.motion.controls.direction);
-  const intensity = parseMotionIntensity(block.motion.controls.intensity);
-  const speed = parseMotionSpeed(block.motion.controls.speed);
-  const stagger = Math.round(Number(block.motion.controls.stagger ?? 8));
+  const { direction, intensity, speed, stagger, entranceEasing, exitEasing } =
+    resolveBlockMotionParams(brand, block);
 
   const headline = block.content.headline ?? "Ship faster";
   const subhead = block.content.subhead ?? block.content.body ?? "";
@@ -41,32 +37,42 @@ export function FeatureAnnouncementBlock({
   const accentColor = block.content.accentColor || brand.colors.accent;
 
   const timing = getFeatureAnnouncementTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration);
+  const outroOpacity = getOutroOpacity(frame, duration, 0.12, exitEasing);
 
   const bgProgress = getEnterProgress(
     frame,
     timing.backgroundStart,
     Math.round(timing.enterFrames * 0.35),
     speed,
+    entranceEasing,
   );
   const headlineProgress = getEnterProgress(
     frame,
     timing.headlineStart,
     timing.enterFrames,
     speed,
+    entranceEasing,
   );
   const subheadProgress = getEnterProgress(
     frame,
     timing.subheadStart,
     timing.enterFrames,
     speed,
+    entranceEasing,
   );
-  const imageProgress = getEnterProgress(frame, timing.imageStart, timing.enterFrames, speed);
+  const imageProgress = getEnterProgress(
+    frame,
+    timing.imageStart,
+    timing.enterFrames,
+    speed,
+    entranceEasing,
+  );
   const logoProgress = getEnterProgress(
     frame,
     timing.logoStart,
     Math.round(timing.enterFrames * 0.85),
     speed,
+    entranceEasing,
   );
 
   const headlineOpacity = getFadeOpacity(headlineProgress) * outroOpacity;

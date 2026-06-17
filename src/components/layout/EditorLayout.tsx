@@ -5,11 +5,11 @@ import { PreviewPanel } from "@/components/editor/PreviewPanel";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BlockTimeline } from "@/components/timeline/BlockTimeline";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { brandPresets } from "@/config/brands";
 import { motionFormats } from "@/config/formats";
 import { useEditor } from "@/context/editor-context";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { mediaQueries } from "@/lib/breakpoints";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -18,27 +18,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Palette } from "lucide-react";
 import { useEffect, useState } from "react";
 
 function MobileControlsBar() {
-  const { brand, format, setBrand, setFormat } = useEditor();
+  const { brand, allBrands, format, setBrand, setFormat, setShowBrandSettings } = useEditor();
 
   return (
     <div className="grid shrink-0 grid-cols-2 gap-2 border-b border-border bg-card px-3 py-2">
       <div className="min-w-0 space-y-1">
         <Label className="text-[10px] text-muted-foreground">Brand</Label>
-        <Select value={brand.id} onValueChange={setBrand}>
-          <SelectTrigger className="h-8 w-full text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {brandPresets.map((preset) => (
-              <SelectItem key={preset.id} value={preset.id}>
-                {preset.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex gap-1">
+          <Select value={brand.id} onValueChange={setBrand}>
+            <SelectTrigger className="h-8 w-full text-xs" aria-label="Brand preset">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {allBrands.map((preset) => (
+                <SelectItem key={preset.id} value={preset.id}>
+                  {preset.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={() => setShowBrandSettings(true)}
+            aria-label="Customize brand"
+          >
+            <Palette className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
       <div className="min-w-0 space-y-1">
         <Label className="text-[10px] text-muted-foreground">Aspect</Label>

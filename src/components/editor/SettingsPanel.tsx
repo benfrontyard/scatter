@@ -1,6 +1,6 @@
 import { ExportPanel } from "@/components/editor/ExportPanel";
+import { EasingPicker } from "@/components/editor/EasingPicker";
 import { motionBlockMap } from "@/config/blocks";
-import { brandPresets } from "@/config/brands";
 import { motionFormats } from "@/config/formats";
 import { transitionDefinitions } from "@/config/transitions";
 import { useEditor, useSelectedBlock, useSelectedTransition } from "@/context/editor-context";
@@ -10,8 +10,9 @@ import {
   getMotionControls,
 } from "@/lib/block-motion-utils";
 import { framesToSeconds, getSequenceDurationInFrames } from "@/lib/sequence-utils";
+import { normalizeBrandMotion } from "@/lib/easing";
 import { cn } from "@/lib/utils";
-import type { EasingName, MotionBlockInstance, TransitionDirection } from "@/types";
+import type { MotionBlockInstance, TransitionDirection } from "@/types";
 import {
   Accordion,
   AccordionContent,
@@ -29,8 +30,68 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Film, Layers, SlidersHorizontal } from "lucide-react";
+import { Film, Layers, Palette, SlidersHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+
+function AssetsSection() {
+  const { assets, addAsset, removeAsset } = useEditor();
+
+  return (
+    <div className="space-y-2 rounded-md border border-border bg-background/50 p-2.5">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-muted-foreground">Assets</p>
+        <label className="cursor-pointer">
+          <span className="sr-only">Upload image asset</span>
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void addAsset(file);
+              event.target.value = "";
+            }}
+          />
+          <Button type="button" size="sm" variant="outline" className="h-7 text-xs" asChild>
+            <span>Upload</span>
+          </Button>
+        </label>
+      </div>
+      {assets.length === 0 ? (
+        <p className="py-3 text-center text-xs text-muted-foreground">
+          No assets uploaded. Add images to use in blocks.
+        </p>
+      ) : (
+        <ul className="space-y-1.5">
+          {assets.map((asset) => (
+            <li
+              key={asset.id}
+              className="flex items-center gap-2 rounded-sm border border-border px-2 py-1.5"
+            >
+              <img
+                src={asset.dataUrl}
+                alt={asset.name}
+                className="h-8 w-8 shrink-0 rounded object-cover"
+              />
+              <span className="min-w-0 flex-1 truncate text-xs">{asset.name}</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 shrink-0 text-xs text-muted-foreground hover:text-destructive"
+                onClick={() => removeAsset(asset.id)}
+                aria-label={`Remove ${asset.name}`}
+              >
+                Remove
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 const MOTION_SELECT_OPTIONS: Record<string, string[]> = {
   direction: ["up", "down", "left", "right"],
@@ -40,14 +101,6 @@ const MOTION_SELECT_OPTIONS: Record<string, string[]> = {
 
 const STYLE_CONTENT_KEYS = new Set(["backgroundColor", "accentColor"]);
 const MULTILINE_CONTENT_KEYS = new Set(["subhead", "body", "supportingText"]);
-
-const EASING_OPTIONS: EasingName[] = [
-  "linear",
-  "ease-in",
-  "ease-out",
-  "ease-in-out",
-  "spring",
-];
 
 const DIRECTION_OPTIONS: TransitionDirection[] = ["left", "right", "up", "down"];
 
@@ -288,12 +341,15 @@ function MotionControlField({
 }
 
 function BlockSettings({ className }: { className?: string }) {
-  const { brand, fps, updateBlockContent, updateBlockMotion, updateBlockDuration } = useEditor();
+  const { brand, fps, updateBlockContent, updateBlockMotion, updateBlockEasing, updateBlockDuration } =
+    useEditor();
   const selectedBlock = useSelectedBlock();
   if (!selectedBlock) return null;
 
   const definition = motionBlockMap[selectedBlock.blockId];
   if (!definition) return null;
+
+  const motion = normalizeBrandMotion(brand.motion);
 
   const motionControls = getMotionControls(selectedBlock.motion);
   const contentKeys = Object.keys(definition.defaultContent).filter(
@@ -347,6 +403,15 @@ function BlockSettings({ className }: { className?: string }) {
           <AccordionItem value="motion" className="border-border">
             <AccordionTrigger className="text-muted-foreground">Motion</AccordionTrigger>
             <AccordionContent className="space-y-3">
+              <EasingPicker
+                label="Easing"
+                value={selectedBlock.motion.easingId}
+                onChange={(easingId) => updateBlockEasing(selectedBlock.id, easingId)}
+                allowInherit
+                inheritLabel="Inherit from brand"
+                inheritEasingId={motion.entranceEasingId}
+                compact
+              />
               {Object.entries(motionControls).map(([key, defaultValue]) => (
                 <MotionControlField
                   key={key}
@@ -389,9 +454,11 @@ function BlockSettings({ className }: { className?: string }) {
 }
 
 function TransitionSettings({ className }: { className?: string }) {
-  const { fps, updateTransition, updateTransitionDuration } = useEditor();
+  const { brand, fps, updateTransition, updateTransitionDuration } = useEditor();
   const selectedTransition = useSelectedTransition();
   if (!selectedTransition) return null;
+
+  const motion = normalizeBrandMotion(brand.motion);
 
   const transitionDef = transitionDefinitions.find(
     (definition) => definition.type === selectedTransition.type,
@@ -463,29 +530,21 @@ function TransitionSettings({ className }: { className?: string }) {
           </Select>
         </div>
 
-        <div className="space-y-1.5">
-          <Label>Easing</Label>
-          <Select
-            value={selectedTransition.easing}
-            onValueChange={(easing) =>
-              updateTransition(selectedTransition.id, (transition) => ({
-                ...transition,
-                easing: easing as EasingName,
-              }))
-            }
-          >
-            <SelectTrigger className="h-8 w-full text-sm capitalize">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {EASING_OPTIONS.map((easing) => (
-                <SelectItem key={easing} value={easing} className="capitalize">
-                  {easing}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <EasingPicker
+          label="Easing"
+          value={selectedTransition.easingId}
+          onChange={(easingId) =>
+            updateTransition(selectedTransition.id, (transition) => ({
+              ...transition,
+              easingId,
+              easing: undefined,
+            }))
+          }
+          allowInherit
+          inheritLabel="Inherit from brand"
+          inheritEasingId={motion.transitionEasingId}
+          compact
+        />
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
@@ -513,7 +572,18 @@ function TransitionSettings({ className }: { className?: string }) {
 }
 
 function ProjectSettings({ className }: { className?: string }) {
-  const { brand, format, fps, sequence, setBrand, setFormat, setCanvasBackground } = useEditor();
+  const {
+    brand,
+    allBrands,
+    format,
+    fps,
+    sequence,
+    setBrand,
+    setFormat,
+    setFps,
+    setCanvasBackground,
+    setShowBrandSettings,
+  } = useEditor();
   const sequenceDuration = getSequenceDurationInFrames(sequence);
   const canvasBackground = sequence.canvasBackground ?? "";
 
@@ -538,24 +608,37 @@ function ProjectSettings({ className }: { className?: string }) {
 
         <div className="space-y-1.5">
           <Label>Brand preset</Label>
-          <Select value={brand.id} onValueChange={setBrand}>
-            <SelectTrigger className="h-8 w-full text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {brandPresets.map((preset) => (
-                <SelectItem key={preset.id} value={preset.id}>
-                  {preset.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Select value={brand.id} onValueChange={setBrand}>
+              <SelectTrigger className="h-8 flex-1 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {allBrands.map((preset) => (
+                  <SelectItem key={preset.id} value={preset.id}>
+                    {preset.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={() => setShowBrandSettings(true)}
+              aria-label="Customize brand"
+              title="Customize brand"
+            >
+              <Palette className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label>FPS</Label>
-          <Select value={String(fps)} disabled>
-            <SelectTrigger className="h-8 w-full text-sm">
+          <Label htmlFor="project-fps">FPS</Label>
+          <Select value={String(fps)} onValueChange={(v) => setFps(Number(v))}>
+            <SelectTrigger id="project-fps" className="h-8 w-full text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -566,7 +649,6 @@ function ProjectSettings({ className }: { className?: string }) {
               ))}
             </SelectContent>
           </Select>
-          <p className="text-[10px] text-muted-foreground">Fixed at {fps} fps for this preview.</p>
         </div>
 
         <ColorField
@@ -576,6 +658,8 @@ function ProjectSettings({ className }: { className?: string }) {
           fallback={brand.colors.background}
           onChange={setCanvasBackground}
         />
+
+        <AssetsSection />
 
         <div className="rounded-md border border-border bg-background/50 p-2.5">
           <div className="flex items-center justify-between">

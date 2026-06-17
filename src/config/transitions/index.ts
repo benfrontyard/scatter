@@ -8,7 +8,7 @@ export const transitionDefinitions: TransitionDefinition[] = [
     defaultDuration: 1,
     defaultDirection: "left",
     defaultOverlap: 0,
-    defaultEasing: "linear",
+    defaultEasingId: "linear",
   },
   {
     id: "crossfade",
@@ -17,7 +17,7 @@ export const transitionDefinitions: TransitionDefinition[] = [
     defaultDuration: 15,
     defaultDirection: "left",
     defaultOverlap: 0.5,
-    defaultEasing: "ease-in-out",
+    defaultEasingId: "ease-in-out",
   },
   {
     id: "push",
@@ -26,7 +26,7 @@ export const transitionDefinitions: TransitionDefinition[] = [
     defaultDuration: 20,
     defaultDirection: "left",
     defaultOverlap: 0.3,
-    defaultEasing: "ease-out",
+    defaultEasingId: "ease-out",
   },
   {
     id: "wipe",
@@ -35,7 +35,7 @@ export const transitionDefinitions: TransitionDefinition[] = [
     defaultDuration: 18,
     defaultDirection: "right",
     defaultOverlap: 0,
-    defaultEasing: "ease-in-out",
+    defaultEasingId: "sharp-in-out",
   },
   {
     id: "mask-reveal",
@@ -44,7 +44,7 @@ export const transitionDefinitions: TransitionDefinition[] = [
     defaultDuration: 22,
     defaultDirection: "up",
     defaultOverlap: 0.2,
-    defaultEasing: "ease-out",
+    defaultEasingId: "soft-reveal",
   },
   {
     id: "scale-through",
@@ -53,7 +53,7 @@ export const transitionDefinitions: TransitionDefinition[] = [
     defaultDuration: 20,
     defaultDirection: "left",
     defaultOverlap: 0.4,
-    defaultEasing: "ease-in-out",
+    defaultEasingId: "ease-in-out",
   },
   {
     id: "frame-split",
@@ -62,7 +62,7 @@ export const transitionDefinitions: TransitionDefinition[] = [
     defaultDuration: 24,
     defaultDirection: "left",
     defaultOverlap: 0.15,
-    defaultEasing: "ease-out",
+    defaultEasingId: "ease-out",
   },
 ];
 

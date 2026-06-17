@@ -7,6 +7,8 @@ export type MotionSequence = {
   format: string;
   brandPresetId: string;
   canvasBackground?: string;
+  fps?: number;
+  logoText?: string;
   blocks: MotionBlockInstance[];
   transitions: BlockTransition[];
 };

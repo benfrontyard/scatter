@@ -1,7 +1,8 @@
 import { getTransitionBetweenBlocks } from "@/lib/sequence-utils";
+import { getEasingFunction, resolveTransitionEasing } from "@/lib/easing";
+import { resolveBrand } from "@/lib/brand-utils";
 import type { MotionSequence, TransitionDirection, TransitionType } from "@/types";
 import { interpolate } from "remotion";
-import { getEasing } from "./motion-behaviors";
 
 export type TransitionOverlayStyle = {
   opacity: number;
@@ -12,11 +13,11 @@ function getOverlapFrames(transitionDuration: number, overlap: number): number {
   return Math.round(transitionDuration * overlap);
 }
 
-function getEasedProgress(progress: number, easing: Parameters<typeof getEasing>[0]): number {
+function getEasedProgress(progress: number, easingFn: (t: number) => number): number {
   return interpolate(progress, [0, 1], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
-    easing: getEasing(easing),
+    easing: easingFn,
   });
 }
 
@@ -76,9 +77,11 @@ export function getBlockTransitionOverlay(
   sequence: MotionSequence,
   formatWidth: number,
   formatHeight: number,
+  customBrands: Parameters<typeof resolveBrand>[1] = [],
 ): TransitionOverlayStyle {
   let opacity = 1;
   let transform = "none";
+  const brand = resolveBrand(sequence.brandPresetId, customBrands);
 
   const incomingTransition =
     blockIndex > 0 ? getTransitionBetweenBlocks(sequence, blockIndex - 1) : undefined;
@@ -87,7 +90,8 @@ export function getBlockTransitionOverlay(
     const overlap = getOverlapFrames(incomingTransition.duration, incomingTransition.overlap);
     if (overlap > 0 && localFrame < overlap) {
       const rawProgress = localFrame / overlap;
-      const progress = getEasedProgress(rawProgress, incomingTransition.easing);
+      const easingFn = getEasingFunction(resolveTransitionEasing(brand, incomingTransition));
+      const progress = getEasedProgress(rawProgress, easingFn);
       const incoming = applyTransitionType(
         incomingTransition.type,
         progress,
@@ -109,7 +113,8 @@ export function getBlockTransitionOverlay(
 
     if (overlap > 0 && localFrame >= overlapStart) {
       const rawProgress = (localFrame - overlapStart) / overlap;
-      const progress = getEasedProgress(rawProgress, outgoingTransition.easing);
+      const easingFn = getEasingFunction(resolveTransitionEasing(brand, outgoingTransition));
+      const progress = getEasedProgress(rawProgress, easingFn);
       const outgoing = applyTransitionType(
         outgoingTransition.type,
         progress,

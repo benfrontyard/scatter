@@ -1,19 +1,38 @@
+import { resolveBrand } from "@/lib/brand-utils";
 import { motionBlockMap } from "@/config/blocks";
-import { brandPresetMap } from "@/config/brands";
 import { motionFormatMap } from "@/config/formats";
 import { getBlockStartFrame } from "@/lib/sequence-utils";
-import type { MotionSequence } from "@/types";
+import type { BrandPreset, MotionSequence } from "@/types";
 import { AbsoluteFill, Sequence as RemotionSequence, useCurrentFrame } from "remotion";
 import { renderBlockContent } from "./blocks";
 import { getBlockTransitionOverlay } from "./transitions";
 
 export type ScatterCompositionProps = {
   sequence: MotionSequence;
+  customBrands?: BrandPreset[];
 };
 
-export function ScatterComposition({ sequence }: ScatterCompositionProps) {
-  const brand = brandPresetMap[sequence.brandPresetId] ?? Object.values(brandPresetMap)[0];
+export function ScatterComposition({ sequence, customBrands = [] }: ScatterCompositionProps) {
+  const brand = resolveBrand(sequence.brandPresetId, customBrands);
   const format = motionFormatMap[sequence.format] ?? Object.values(motionFormatMap)[0];
+
+  if (sequence.blocks.length === 0) {
+    return (
+      <AbsoluteFill
+        style={{
+          backgroundColor: sequence.canvasBackground || brand.colors.background,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: brand.colors.muted,
+          fontFamily: brand.typography.bodyFont,
+          fontSize: 24,
+        }}
+      >
+        Add a motion block to start
+      </AbsoluteFill>
+    );
+  }
 
   return (
     <AbsoluteFill style={{ backgroundColor: sequence.canvasBackground || brand.colors.background }}>
@@ -34,6 +53,7 @@ export function ScatterComposition({ sequence }: ScatterCompositionProps) {
               blockIndex={index}
               blockDuration={block.duration}
               sequence={sequence}
+              customBrands={customBrands}
               formatWidth={format.width}
               formatHeight={format.height}
             >
@@ -56,6 +76,7 @@ type BlockWithTransitionsProps = {
   blockIndex: number;
   blockDuration: number;
   sequence: MotionSequence;
+  customBrands: BrandPreset[];
   formatWidth: number;
   formatHeight: number;
   children: React.ReactNode;
@@ -65,6 +86,7 @@ function BlockWithTransitions({
   blockIndex,
   blockDuration,
   sequence,
+  customBrands,
   formatWidth,
   formatHeight,
   children,
@@ -77,6 +99,7 @@ function BlockWithTransitions({
     sequence,
     formatWidth,
     formatHeight,
+    customBrands,
   );
 
   return (

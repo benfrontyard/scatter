@@ -20,7 +20,9 @@ export type TransitionDefinition = {
   defaultDuration: number;
   defaultDirection: TransitionDirection;
   defaultOverlap: number;
-  defaultEasing: EasingName;
+  /** @deprecated Use defaultEasingId */
+  defaultEasing?: EasingName;
+  defaultEasingId?: string;
 };
 
 export type BlockTransition = {
@@ -30,6 +32,8 @@ export type BlockTransition = {
   type: TransitionType;
   duration: number;
   direction: TransitionDirection;
-  easing: EasingName;
+  /** @deprecated Use easingId */
+  easing?: EasingName;
+  easingId?: string;
   overlap: number;
 };

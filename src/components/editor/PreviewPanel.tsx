@@ -5,7 +5,7 @@ import { ScatterComposition } from "@/remotion/ScatterComposition";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Pause, Play } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PlayerRef } from "@remotion/player";
 
 type PreviewPanelProps = {
@@ -48,14 +48,22 @@ function fitCanvasToContainer(
 }
 
 export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) {
-  const { sequence, format, fps } = useEditor();
+  const {
+    sequence,
+    customBrands,
+    format,
+    fps,
+    isPlaying,
+    currentFrame,
+    togglePlayback,
+    setCurrentFrame,
+    setIsPlaying,
+    registerPlayer,
+  } = useEditor();
+
   const playerRef = useRef<PlayerRef>(null);
   const canvasAreaRef = useRef<HTMLDivElement>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [currentFrame, setCurrentFrame] = useState(0);
-  const [canvasSize, setCanvasSize] = useState<{ width: number; height: number } | null>(
-    null,
-  );
+  const [canvasSize, setCanvasSize] = useState<{ width: number; height: number } | null>(null);
 
   const durationInFrames = useMemo(
     () => getSequenceDurationInFrames(sequence),
@@ -64,21 +72,13 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
 
   const compositionWidth = format.width;
   const compositionHeight = format.height;
-
   const currentTime = currentFrame / fps;
   const totalTime = durationInFrames / fps;
 
-  const togglePlayback = useCallback(() => {
-    const player = playerRef.current;
-    if (!player) return;
-
-    if (isPlaying) {
-      player.pause();
-    } else {
-      player.play();
-    }
-    setIsPlaying((prev) => !prev);
-  }, [isPlaying]);
+  useEffect(() => {
+    registerPlayer(playerRef.current);
+    return () => registerPlayer(null);
+  }, [registerPlayer, durationInFrames]);
 
   useEffect(() => {
     const area = canvasAreaRef.current;
@@ -86,7 +86,9 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
 
     const updateSize = () => {
       const { width, height } = area.getBoundingClientRect();
-      setCanvasSize(fitCanvasToContainer(width, height, compositionWidth, compositionHeight));
+      setCanvasSize(
+        fitCanvasToContainer(width, height, compositionWidth, compositionHeight),
+      );
     };
 
     updateSize();
@@ -114,7 +116,15 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
       player.removeEventListener("pause", onPause);
       player.removeEventListener("frameupdate", onFrameUpdate);
     };
-  }, [durationInFrames]);
+  }, [durationInFrames, setCurrentFrame, setIsPlaying]);
+
+  const canvasStyle = canvasSize
+    ? { width: canvasSize.width, height: canvasSize.height }
+    : {
+        width: "100%",
+        maxWidth: compositionWidth > compositionHeight ? 720 : 360,
+        aspectRatio: `${compositionWidth} / ${compositionHeight}`,
+      };
 
   return (
     <div
@@ -132,7 +142,10 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <span className="font-mono text-[10px] tabular-nums text-muted-foreground sm:text-xs">
+            <span
+              className="font-mono text-[10px] tabular-nums text-muted-foreground sm:text-xs"
+              aria-live="polite"
+            >
               {formatTime(currentTime)} / {formatTime(totalTime)}
             </span>
             <Button
@@ -140,9 +153,13 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
               size="icon"
               className="h-8 w-8"
               onClick={togglePlayback}
-              aria-label={isPlaying ? "Pause" : "Play"}
+              aria-label={isPlaying ? "Pause preview" : "Play preview"}
             >
-              {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+              {isPlaying ? (
+                <Pause className="h-3.5 w-3.5" />
+              ) : (
+                <Play className="h-3.5 w-3.5" />
+              )}
             </Button>
           </div>
         </div>
@@ -154,20 +171,12 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
       >
         <div
           className="relative shrink-0 overflow-hidden rounded border border-border bg-black shadow-lg"
-          style={
-            canvasSize
-              ? { width: canvasSize.width, height: canvasSize.height }
-              : {
-                  width: "100%",
-                  maxWidth: compositionWidth > compositionHeight ? 720 : 360,
-                  aspectRatio: `${compositionWidth} / ${compositionHeight}`,
-                }
-          }
+          style={canvasStyle}
         >
           <Player
             ref={playerRef}
             component={ScatterComposition}
-            inputProps={{ sequence }}
+            inputProps={{ sequence, customBrands }}
             durationInFrames={durationInFrames}
             compositionWidth={compositionWidth}
             compositionHeight={compositionHeight}
@@ -192,7 +201,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
             size="sm"
             className="h-8"
             onClick={togglePlayback}
-            aria-label={isPlaying ? "Pause" : "Play"}
+            aria-label={isPlaying ? "Pause preview" : "Play preview"}
           >
             {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
             {isPlaying ? "Pause" : "Play"}

@@ -8,9 +8,7 @@ import {
   getOutroOpacity,
   getScale,
   getTranslate,
-  parseMotionDirection,
-  parseMotionIntensity,
-  parseMotionSpeed,
+  resolveBlockMotionParams,
 } from "../shared-motion";
 
 type LogoRevealBlockProps = {
@@ -29,23 +27,28 @@ export function LogoRevealBlock({
   const frame = useCurrentFrame();
   const duration = block.duration;
 
-  const direction = parseMotionDirection(block.motion.controls.direction);
-  const intensity = parseMotionIntensity(block.motion.controls.intensity);
-  const speed = parseMotionSpeed(block.motion.controls.speed);
-  const stagger = Math.round(Number(block.motion.controls.stagger ?? 6));
+  const { direction, intensity, speed, stagger, entranceEasing, exitEasing } =
+    resolveBlockMotionParams(brand, block);
 
-  const logoText = block.content.logoText || "SCATTER";
+  const logoText = block.content.logoText || brand.name || "SCATTER";
   const tagline = block.content.tagline ?? "";
 
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration);
+  const outroOpacity = getOutroOpacity(frame, duration, 0.12, exitEasing);
 
-  const logoProgress = getEnterProgress(frame, timing.primaryStart, timing.enterFrames, speed);
+  const logoProgress = getEnterProgress(
+    frame,
+    timing.primaryStart,
+    timing.enterFrames,
+    speed,
+    entranceEasing,
+  );
   const taglineProgress = getEnterProgress(
     frame,
     timing.secondaryStart,
     Math.round(timing.enterFrames * 0.85),
     speed,
+    entranceEasing,
   );
 
   const logoOpacity = getFadeOpacity(logoProgress) * outroOpacity;

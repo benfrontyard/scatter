@@ -2,6 +2,7 @@ import { motionBlockMap } from "@/config/blocks";
 import { defaultBrandPresetId } from "@/config/brands";
 import { defaultFormatId } from "@/config/formats";
 import { transitionDefinitionMap } from "@/config/transitions";
+import { legacyEasingToId } from "@/lib/easing";
 import type { BlockTransition, MotionBlockInstance, MotionSequence } from "@/types";
 
 function createInstanceId(blockId: string): string {
@@ -45,7 +46,9 @@ export function createTransitionBetween(
     type: definition.type,
     duration: definition.defaultDuration,
     direction: definition.defaultDirection,
-    easing: definition.defaultEasing,
+    easingId:
+      definition.defaultEasingId ??
+      (definition.defaultEasing ? legacyEasingToId(definition.defaultEasing) : "ease-in-out"),
     overlap: definition.defaultOverlap,
     ...overrides,
   };

@@ -25,6 +25,8 @@ export type BlockMotionControls = Record<string, number | string>;
 export type BlockMotionDefaults = {
   phases: BlockMotionPhases;
   controls: BlockMotionControls;
+  /** Optional per-block easing override */
+  easingId?: string;
 };
 
 export type MotionBlockDefinition = {

@@ -11,6 +11,7 @@ export {
   parseMotionDirection,
   parseMotionIntensity,
   parseMotionSpeed,
+  resolveBlockMotionParams,
 } from "../shared-motion";
 
 export type { MotionDirection, MotionIntensity, MotionSpeed } from "../shared-motion";

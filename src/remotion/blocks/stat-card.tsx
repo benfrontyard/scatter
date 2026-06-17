@@ -1,14 +1,13 @@
 import type { BrandPreset, MotionBlockInstance } from "@/types";
-import { Easing, interpolate, useCurrentFrame } from "remotion";
+import { interpolate, useCurrentFrame } from "remotion";
+import { getEasingFunction } from "@/lib/easing";
 import {
   getEnterProgress,
   getFadeOpacity,
   getIntroTiming,
   getOutroOpacity,
   getTranslate,
-  parseMotionDirection,
-  parseMotionIntensity,
-  parseMotionSpeed,
+  resolveBlockMotionParams,
 } from "../shared-motion";
 import { formatStatValue, parseStatValue } from "./stat-card-motion";
 
@@ -23,10 +22,8 @@ export function StatCardBlock({ brand, block, formatWidth, formatHeight }: StatC
   const frame = useCurrentFrame();
   const duration = block.duration;
 
-  const direction = parseMotionDirection(block.motion.controls.direction);
-  const intensity = parseMotionIntensity(block.motion.controls.intensity);
-  const speed = parseMotionSpeed(block.motion.controls.speed);
-  const stagger = Math.round(Number(block.motion.controls.stagger ?? 8));
+  const { direction, intensity, speed, stagger, entranceEasing, exitEasing } =
+    resolveBlockMotionParams(brand, block);
 
   const rawValue = block.content.value ?? "10x";
   const label = block.content.label ?? "";
@@ -34,23 +31,25 @@ export function StatCardBlock({ brand, block, formatWidth, formatHeight }: StatC
 
   const parsed = parseStatValue(rawValue);
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.1);
+  const outroOpacity = getOutroOpacity(frame, duration, 0.1, exitEasing);
 
   const countStart = timing.primaryStart;
   const countFrames = Math.round(timing.enterFrames * 1.1);
-  const countProgress = getEnterProgress(frame, countStart, countFrames, speed);
+  const countProgress = getEnterProgress(frame, countStart, countFrames, speed, entranceEasing);
 
   const labelProgress = getEnterProgress(
     frame,
     timing.secondaryStart,
     Math.round(timing.enterFrames * 0.8),
     speed,
+    entranceEasing,
   );
   const supportProgress = getEnterProgress(
     frame,
     timing.tertiaryStart,
     Math.round(timing.enterFrames * 0.75),
     speed,
+    entranceEasing,
   );
 
   const displayValue = parsed.isNumeric
@@ -58,7 +57,7 @@ export function StatCardBlock({ brand, block, formatWidth, formatHeight }: StatC
         parsed,
         interpolate(countProgress, [0, 1], [0, parsed.numericPart], {
           extrapolateRight: "clamp",
-          easing: Easing.out(Easing.cubic),
+          easing: getEasingFunction(entranceEasing),
         }),
       )
     : rawValue;

@@ -1,19 +1,16 @@
+import { getEasingFunction, getEasingPreset, getAllEasingPresets, legacyEasingToId, normalizeBrandMotion } from "@/lib/easing";
 import type { BrandMotion, EasingName, MotionBehaviorName } from "@/types";
-import { Easing, interpolate } from "remotion";
+import { interpolate } from "remotion";
 
-export function getEasing(easing: EasingName) {
-  switch (easing) {
-    case "ease-in":
-      return Easing.in(Easing.quad);
-    case "ease-out":
-      return Easing.out(Easing.quad);
-    case "ease-in-out":
-      return Easing.inOut(Easing.quad);
-    case "spring":
-      return Easing.out(Easing.elastic(1));
-    default:
-      return Easing.linear;
-  }
+export function getEasing(easing: EasingName | string) {
+  const presetIds = new Set(getAllEasingPresets().map((p) => p.id));
+  const id = presetIds.has(easing) ? easing : legacyEasingToId(easing as EasingName);
+  return getEasingFunction(getEasingPreset(id));
+}
+
+export function getBrandEasing(brandMotion: BrandMotion) {
+  const motion = normalizeBrandMotion(brandMotion);
+  return getEasingFunction(getEasingPreset(motion.entranceEasingId));
 }
 
 export function applyBehaviorOpacity(
@@ -27,7 +24,7 @@ export function applyBehaviorOpacity(
   const progress = localFrame / phaseFrames;
   const easedProgress = interpolate(progress, [0, 1], [0, 1], {
     extrapolateRight: "clamp",
-    easing: getEasing(brandMotion.easing),
+    easing: getBrandEasing(brandMotion),
   });
 
   switch (behavior) {

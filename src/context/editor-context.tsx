@@ -1,31 +1,76 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { defaultMotionSequence } from "@/config/sequences/default";
-import { brandPresets } from "@/config/brands";
 import { motionFormats } from "@/config/formats";
 import { addBlockToSequence, removeBlockFromSequence } from "@/lib/sequence-utils";
-import type { BlockTransition, MotionBlockInstance, MotionSequence } from "@/types";
+import {
+  createEmptyCustomBrand,
+  duplicateBrandAsCustom,
+  getAllBrands,
+  resolveBrand,
+  CUSTOM_BRAND_ID,
+} from "@/lib/brand-utils";
+import { createSnapshot, snapshotsEqual, type EditorSnapshot } from "@/lib/editor-snapshot";
+import type { ScatterProject } from "@/types";
+import {
+  createNewProject,
+  loadProject,
+  saveProject,
+  snapshotProject,
+} from "@/lib/project-storage";
+import { useHistory } from "@/hooks/use-history";
+import type {
+  BlockTransition,
+  BrandPreset,
+  MotionBlockInstance,
+  MotionSequence,
+  ProjectAsset,
+} from "@/types";
 import { EDITOR_FPS, type EditorStep } from "@/types/editor";
+import type { PlayerRef } from "@remotion/player";
 
 type EditorActions = {
   setStep: (step: EditorStep) => void;
   setBrand: (brandPresetId: string) => void;
   setFormat: (formatId: string) => void;
   setCanvasBackground: (color: string) => void;
+  setProjectName: (name: string) => void;
+  setFps: (fps: number) => void;
+  setLogoText: (text: string) => void;
   selectBlock: (blockId: string | null) => void;
   selectTransition: (transitionId: string | null) => void;
   clearSelection: () => void;
   addBlock: (blockId: string) => void;
   deleteBlock: (blockId: string) => void;
   deleteSelectedBlock: () => void;
+  deleteSelectedTransition: () => void;
   updateBlock: (blockId: string, updater: (block: MotionBlockInstance) => MotionBlockInstance) => void;
   updateBlockDuration: (blockId: string, duration: number) => void;
   updateBlockContent: (blockId: string, key: string, value: string) => void;
   updateBlockMotion: (blockId: string, key: string, value: number | string) => void;
+  updateBlockEasing: (blockId: string, easingId: string | undefined) => void;
   updateTransition: (
     transitionId: string,
     updater: (transition: BlockTransition) => BlockTransition,
   ) => void;
   updateTransitionDuration: (transitionId: string, duration: number) => void;
+  updateCustomBrand: (updater: (brand: BrandPreset) => BrandPreset) => void;
+  duplicateBrandToCustom: (sourceBrandId: string) => void;
+  saveCustomBrand: () => void;
+  addAsset: (file: File) => Promise<ProjectAsset | null>;
+  removeAsset: (assetId: string) => void;
+  replaceBlockAsset: (blockId: string, contentKey: string, assetId: string) => void;
+  undo: () => void;
+  redo: () => void;
+  saveProject: () => void;
+  newProject: (force?: boolean) => boolean;
+  loadProjectById: (id: string) => void;
+  importProject: (project: ScatterProject) => void;
+  setCurrentFrame: (frame: number) => void;
+  seekToFrame: (frame: number) => void;
+  togglePlayback: () => void;
+  setIsPlaying: (playing: boolean) => void;
+  registerPlayer: (player: PlayerRef | null) => void;
+  nudgePlayhead: (deltaFrames: number) => void;
 };
 
 type EditorContextValue = {
@@ -33,22 +78,126 @@ type EditorContextValue = {
   sequence: MotionSequence;
   selectedBlockId: string | null;
   selectedTransitionId: string | null;
-  brand: (typeof brandPresets)[number];
+  brand: BrandPreset;
+  allBrands: BrandPreset[];
+  customBrands: BrandPreset[];
   format: (typeof motionFormats)[number];
   fps: number;
+  assets: ProjectAsset[];
+  projectId: string;
+  isDirty: boolean;
+  canUndo: boolean;
+  canRedo: boolean;
+  currentFrame: number;
+  isPlaying: boolean;
+  showShortcuts: boolean;
+  setShowShortcuts: (show: boolean) => void;
+  showBrandSettings: boolean;
+  setShowBrandSettings: (show: boolean) => void;
+  showProjectMenu: boolean;
+  setShowProjectMenu: (show: boolean) => void;
 } & EditorActions;
 
 const EditorContext = createContext<EditorContextValue | null>(null);
 
+function readAssetAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
 export function EditorProvider({ children }: { children: ReactNode }) {
+  const initialProject = useMemo(() => createNewProject(defaultMotionSequence.name), []);
+  const savedSnapshotRef = useRef<EditorSnapshot>(
+    createSnapshot(initialProject.sequence, initialProject.customBrands, initialProject.assets),
+  );
+
+  const [projectId, setProjectId] = useState(initialProject.id);
   const [step, setStep] = useState<EditorStep>("motion");
-  const [sequence, setSequence] = useState<MotionSequence>(defaultMotionSequence);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [selectedTransitionId, setSelectedTransitionId] = useState<string | null>(null);
+  const [currentFrame, setCurrentFrameState] = useState(0);
+  const [isPlaying, setIsPlayingState] = useState(true);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showBrandSettings, setShowBrandSettings] = useState(false);
+  const [showProjectMenu, setShowProjectMenu] = useState(false);
 
-  const brand =
-    brandPresets.find((preset) => preset.id === sequence.brandPresetId) ?? brandPresets[0];
+  const playerRef = useRef<PlayerRef | null>(null);
+
+  const history = useHistory<EditorSnapshot>(
+    createSnapshot(initialProject.sequence, initialProject.customBrands, initialProject.assets),
+  );
+
+  const { sequence, customBrands, assets } = history.present;
+  const brand = resolveBrand(sequence.brandPresetId, customBrands);
+  const allBrands = getAllBrands(customBrands);
   const format = motionFormats.find((item) => item.id === sequence.format) ?? motionFormats[0];
+  const fps = sequence.fps ?? EDITOR_FPS;
+
+  const isDirty = !snapshotsEqual(history.present, savedSnapshotRef.current);
+
+  const updateSnapshot = useCallback(
+    (updater: (snapshot: EditorSnapshot) => EditorSnapshot) => {
+      history.set((prev) => updater(prev));
+    },
+    [history],
+  );
+
+  const loadSnapshot = useCallback(
+    (snapshot: EditorSnapshot, newProjectId?: string) => {
+      history.reset(snapshot);
+      savedSnapshotRef.current = createSnapshot(
+        snapshot.sequence,
+        snapshot.customBrands,
+        snapshot.assets,
+      );
+      if (newProjectId) setProjectId(newProjectId);
+      setSelectedBlockId(null);
+      setSelectedTransitionId(null);
+      setCurrentFrameState(0);
+      playerRef.current?.seekTo(0);
+    },
+    [history],
+  );
+
+  const setCurrentFrame = useCallback((frame: number) => {
+    setCurrentFrameState(frame);
+  }, []);
+
+  const seekToFrame = useCallback((frame: number) => {
+    const clamped = Math.max(0, frame);
+    setCurrentFrameState(clamped);
+    playerRef.current?.seekTo(clamped);
+  }, []);
+
+  const togglePlayback = useCallback(() => {
+    const player = playerRef.current;
+    if (!player) return;
+    if (isPlaying) {
+      player.pause();
+    } else {
+      player.play();
+    }
+    setIsPlayingState((prev) => !prev);
+  }, [isPlaying]);
+
+  const setIsPlaying = useCallback((playing: boolean) => {
+    setIsPlayingState(playing);
+  }, []);
+
+  const registerPlayer = useCallback((player: PlayerRef | null) => {
+    playerRef.current = player;
+  }, []);
+
+  const nudgePlayhead = useCallback(
+    (deltaFrames: number) => {
+      seekToFrame(currentFrame + deltaFrames);
+    },
+    [currentFrame, seekToFrame],
+  );
 
   const value = useMemo<EditorContextValue>(
     () => ({
@@ -57,17 +206,59 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       selectedBlockId,
       selectedTransitionId,
       brand,
+      allBrands,
+      customBrands,
       format,
-      fps: EDITOR_FPS,
+      fps,
+      assets,
+      projectId,
+      isDirty,
+      canUndo: history.canUndo,
+      canRedo: history.canRedo,
+      currentFrame,
+      isPlaying,
+      showShortcuts,
+      setShowShortcuts,
+      showBrandSettings,
+      setShowBrandSettings,
+      showProjectMenu,
+      setShowProjectMenu,
       setStep,
       setBrand: (brandPresetId) => {
-        setSequence((prev) => ({ ...prev, brandPresetId }));
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: { ...prev.sequence, brandPresetId },
+        }));
       },
       setFormat: (formatId) => {
-        setSequence((prev) => ({ ...prev, format: formatId }));
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: { ...prev.sequence, format: formatId },
+        }));
       },
       setCanvasBackground: (color) => {
-        setSequence((prev) => ({ ...prev, canvasBackground: color }));
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: { ...prev.sequence, canvasBackground: color },
+        }));
+      },
+      setProjectName: (name) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: { ...prev.sequence, name },
+        }));
+      },
+      setFps: (nextFps) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: { ...prev.sequence, fps: nextFps },
+        }));
+      },
+      setLogoText: (text) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: { ...prev.sequence, logoText: text },
+        }));
       },
       selectBlock: (blockId) => {
         setSelectedBlockId(blockId);
@@ -83,25 +274,25 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       },
       addBlock: (blockId) => {
         let newBlockId: string | null = null;
-        setSequence((prev) => {
-          const result = addBlockToSequence(prev, blockId);
+        updateSnapshot((prev) => {
+          const result = addBlockToSequence(prev.sequence, blockId);
           newBlockId = result.newBlockId;
-          return result.sequence;
+          return { ...prev, sequence: result.sequence };
         });
         setSelectedBlockId(newBlockId);
         setSelectedTransitionId(null);
       },
       deleteBlock: (blockId) => {
         let nextSelectedId: string | null = selectedBlockId;
-        setSequence((prev) => {
-          const next = removeBlockFromSequence(prev, blockId);
+        updateSnapshot((prev) => {
+          const next = removeBlockFromSequence(prev.sequence, blockId);
           if (selectedBlockId === blockId) {
-            const deletedIndex = prev.blocks.findIndex((block) => block.id === blockId);
+            const deletedIndex = prev.sequence.blocks.findIndex((block) => block.id === blockId);
             const fallback =
               next.blocks[deletedIndex] ?? next.blocks[deletedIndex - 1] ?? next.blocks[0];
             nextSelectedId = fallback?.id ?? null;
           }
-          return next;
+          return { ...prev, sequence: next };
         });
         if (selectedBlockId === blockId) {
           setSelectedBlockId(nextSelectedId);
@@ -112,77 +303,276 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         if (!selectedBlockId) return;
         const blockId = selectedBlockId;
         let nextSelectedId: string | null = null;
-        setSequence((prev) => {
-          const next = removeBlockFromSequence(prev, blockId);
-          const deletedIndex = prev.blocks.findIndex((block) => block.id === blockId);
+        updateSnapshot((prev) => {
+          const next = removeBlockFromSequence(prev.sequence, blockId);
+          const deletedIndex = prev.sequence.blocks.findIndex((block) => block.id === blockId);
           const fallback =
             next.blocks[deletedIndex] ?? next.blocks[deletedIndex - 1] ?? next.blocks[0];
           nextSelectedId = fallback?.id ?? null;
-          return next;
+          return { ...prev, sequence: next };
         });
         setSelectedBlockId(nextSelectedId);
         setSelectedTransitionId(null);
       },
-      updateBlock: (blockId, updater) => {
-        setSequence((prev) => ({
+      deleteSelectedTransition: () => {
+        if (!selectedTransitionId) return;
+        updateSnapshot((prev) => ({
           ...prev,
-          blocks: prev.blocks.map((block) => (block.id === blockId ? updater(block) : block)),
+          sequence: {
+            ...prev.sequence,
+            transitions: prev.sequence.transitions.filter((t) => t.id !== selectedTransitionId),
+          },
+        }));
+        setSelectedTransitionId(null);
+      },
+      updateBlock: (blockId, updater) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            blocks: prev.sequence.blocks.map((block) =>
+              block.id === blockId ? updater(block) : block,
+            ),
+          },
         }));
       },
       updateBlockDuration: (blockId, duration) => {
-        setSequence((prev) => ({
+        updateSnapshot((prev) => ({
           ...prev,
-          blocks: prev.blocks.map((block) =>
-            block.id === blockId ? { ...block, duration: Math.max(15, duration) } : block,
-          ),
+          sequence: {
+            ...prev.sequence,
+            blocks: prev.sequence.blocks.map((block) =>
+              block.id === blockId ? { ...block, duration: Math.max(15, duration) } : block,
+            ),
+          },
         }));
       },
-      updateBlockContent: (blockId, key, value) => {
-        setSequence((prev) => ({
+      updateBlockContent: (blockId, key, val) => {
+        updateSnapshot((prev) => ({
           ...prev,
-          blocks: prev.blocks.map((block) =>
-            block.id === blockId
-              ? { ...block, content: { ...block.content, [key]: value } }
-              : block,
-          ),
+          sequence: {
+            ...prev.sequence,
+            blocks: prev.sequence.blocks.map((block) =>
+              block.id === blockId
+                ? { ...block, content: { ...block.content, [key]: val } }
+                : block,
+            ),
+          },
         }));
       },
-      updateBlockMotion: (blockId, key, value) => {
-        setSequence((prev) => ({
+      updateBlockMotion: (blockId, key, val) => {
+        updateSnapshot((prev) => ({
           ...prev,
-          blocks: prev.blocks.map((block) =>
-            block.id === blockId
-              ? {
-                  ...block,
-                  motion: {
-                    ...block.motion,
-                    controls: { ...block.motion.controls, [key]: value },
-                  },
-                }
-              : block,
-          ),
+          sequence: {
+            ...prev.sequence,
+            blocks: prev.sequence.blocks.map((block) =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    motion: {
+                      ...block.motion,
+                      controls: { ...block.motion.controls, [key]: val },
+                    },
+                  }
+                : block,
+            ),
+          },
+        }));
+      },
+      updateBlockEasing: (blockId, easingId) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            blocks: prev.sequence.blocks.map((block) =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    motion: {
+                      ...block.motion,
+                      easingId,
+                    },
+                  }
+                : block,
+            ),
+          },
         }));
       },
       updateTransition: (transitionId, updater) => {
-        setSequence((prev) => ({
+        updateSnapshot((prev) => ({
           ...prev,
-          transitions: prev.transitions.map((transition) =>
-            transition.id === transitionId ? updater(transition) : transition,
-          ),
+          sequence: {
+            ...prev.sequence,
+            transitions: prev.sequence.transitions.map((transition) =>
+              transition.id === transitionId ? updater(transition) : transition,
+            ),
+          },
         }));
       },
       updateTransitionDuration: (transitionId, duration) => {
-        setSequence((prev) => ({
+        updateSnapshot((prev) => ({
           ...prev,
-          transitions: prev.transitions.map((transition) =>
-            transition.id === transitionId
-              ? { ...transition, duration: Math.max(1, duration) }
-              : transition,
-          ),
+          sequence: {
+            ...prev.sequence,
+            transitions: prev.sequence.transitions.map((transition) =>
+              transition.id === transitionId
+                ? { ...transition, duration: Math.max(1, duration) }
+                : transition,
+            ),
+          },
         }));
       },
+      updateCustomBrand: (updater) => {
+        updateSnapshot((prev) => {
+          const existing = prev.customBrands.find((b) => b.id === CUSTOM_BRAND_ID);
+          const base = existing ?? createEmptyCustomBrand(resolveBrand(prev.sequence.brandPresetId, prev.customBrands));
+          const updated = updater({ ...base, id: CUSTOM_BRAND_ID });
+          const others = prev.customBrands.filter((b) => b.id !== CUSTOM_BRAND_ID);
+          return {
+            ...prev,
+            customBrands: [...others, updated],
+            sequence: { ...prev.sequence, brandPresetId: CUSTOM_BRAND_ID },
+          };
+        });
+      },
+      duplicateBrandToCustom: (sourceBrandId) => {
+        const source = resolveBrand(sourceBrandId, customBrands);
+        const custom = duplicateBrandAsCustom(source);
+        updateSnapshot((prev) => {
+          const others = prev.customBrands.filter((b) => b.id !== CUSTOM_BRAND_ID);
+          return {
+            ...prev,
+            customBrands: [...others, custom],
+            sequence: { ...prev.sequence, brandPresetId: CUSTOM_BRAND_ID },
+          };
+        });
+        setShowBrandSettings(true);
+      },
+      saveCustomBrand: () => {
+        const custom = customBrands.find((b) => b.id === CUSTOM_BRAND_ID);
+        if (!custom) return;
+        const savedId = `saved-${crypto.randomUUID().slice(0, 8)}`;
+        const saved: BrandPreset = { ...structuredClone(custom), id: savedId };
+        updateSnapshot((prev) => ({
+          ...prev,
+          customBrands: [...prev.customBrands.filter((b) => b.id !== savedId), saved],
+        }));
+      },
+      addAsset: async (file) => {
+        if (!file.type.startsWith("image/")) return null;
+        try {
+          const dataUrl = await readAssetAsDataUrl(file);
+          const asset: ProjectAsset = {
+            id: `asset-${crypto.randomUUID().slice(0, 8)}`,
+            name: file.name,
+            type: "image",
+            dataUrl,
+          };
+          updateSnapshot((prev) => ({
+            ...prev,
+            assets: [...prev.assets, asset],
+          }));
+          return asset;
+        } catch {
+          return null;
+        }
+      },
+      removeAsset: (assetId) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          assets: prev.assets.filter((a) => a.id !== assetId),
+        }));
+      },
+      replaceBlockAsset: (blockId, contentKey, assetId) => {
+        const asset = assets.find((a) => a.id === assetId);
+        if (!asset) return;
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            blocks: prev.sequence.blocks.map((block) =>
+              block.id === blockId
+                ? { ...block, content: { ...block.content, [contentKey]: asset.dataUrl } }
+                : block,
+            ),
+          },
+        }));
+      },
+      undo: history.undo,
+      redo: history.redo,
+      saveProject: () => {
+        const project = snapshotProject(
+          projectId,
+          sequence.name,
+          sequence,
+          customBrands,
+          assets,
+        );
+        const saved = saveProject(project);
+        setProjectId(saved.id);
+        savedSnapshotRef.current = createSnapshot(sequence, customBrands, assets);
+      },
+      newProject: (force = false) => {
+        if (!force && isDirty) return false;
+        const project = createNewProject();
+        loadSnapshot(
+          createSnapshot(project.sequence, project.customBrands, project.assets),
+          project.id,
+        );
+        setStep("motion");
+        return true;
+      },
+      loadProjectById: (id) => {
+        const project = loadProject(id);
+        if (!project) return;
+        loadSnapshot(
+          createSnapshot(project.sequence, project.customBrands, project.assets),
+          project.id,
+        );
+        setStep("motion");
+      },
+      importProject: (project) => {
+        loadSnapshot(
+          createSnapshot(project.sequence, project.customBrands, project.assets),
+          project.id,
+        );
+        setStep("motion");
+      },
+      setCurrentFrame,
+      seekToFrame,
+      togglePlayback,
+      setIsPlaying,
+      registerPlayer,
+      nudgePlayhead,
     }),
-    [step, sequence, selectedBlockId, selectedTransitionId, brand, format],
+    [
+      step,
+      sequence,
+      selectedBlockId,
+      selectedTransitionId,
+      brand,
+      allBrands,
+      customBrands,
+      format,
+      fps,
+      assets,
+      projectId,
+      isDirty,
+      history,
+      currentFrame,
+      isPlaying,
+      showShortcuts,
+      showBrandSettings,
+      showProjectMenu,
+      updateSnapshot,
+      loadSnapshot,
+      setCurrentFrame,
+      seekToFrame,
+      togglePlayback,
+      setIsPlaying,
+      registerPlayer,
+      nudgePlayhead,
+    ],
   );
 
   return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>;

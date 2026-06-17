@@ -1,6 +1,7 @@
 import { brandPresets } from "@/config/brands";
 import { motionFormats } from "@/config/formats";
 import { useEditor } from "@/context/editor-context";
+import { getEasingPreset, normalizeBrandMotion } from "@/lib/easing";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -13,6 +14,8 @@ import { Separator } from "@/components/ui/separator";
 
 export function PresetPanel() {
   const { brand, format, setBrand, setFormat } = useEditor();
+  const motion = normalizeBrandMotion(brand.motion);
+  const entrancePreset = getEasingPreset(motion.entranceEasingId);
 
   return (
     <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-card">
@@ -77,7 +80,7 @@ export function PresetPanel() {
           <div className="mt-2 grid grid-cols-2 gap-2 text-[10px]">
             <div>
               <p className="text-muted-foreground">Easing</p>
-              <p className="font-medium capitalize">{brand.motion.easing}</p>
+              <p className="font-medium">{entrancePreset.name}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Speed</p>

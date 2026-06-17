@@ -1,4 +1,10 @@
 import type { BrandPreset } from "@/types";
+import {
+  DEFAULT_EASING_ID,
+  DEFAULT_ENTRANCE_EASING_ID,
+  DEFAULT_EXIT_EASING_ID,
+  DEFAULT_TRANSITION_EASING_ID,
+} from "@/config/easing-presets";
 
 export const brandPresets: BrandPreset[] = [
   {
@@ -15,7 +21,10 @@ export const brandPresets: BrandPreset[] = [
       bodyFont: "Inter, system-ui, sans-serif",
     },
     motion: {
-      easing: "ease-out",
+      defaultEasingId: DEFAULT_EASING_ID,
+      entranceEasingId: DEFAULT_ENTRANCE_EASING_ID,
+      exitEasingId: DEFAULT_EXIT_EASING_ID,
+      transitionEasingId: DEFAULT_TRANSITION_EASING_ID,
       speed: 1,
       intensity: 1,
       stagger: 8,
@@ -36,7 +45,10 @@ export const brandPresets: BrandPreset[] = [
       bodyFont: "Georgia, serif",
     },
     motion: {
-      easing: "ease-in-out",
+      defaultEasingId: "soft-reveal",
+      entranceEasingId: "soft-reveal",
+      exitEasingId: "calm",
+      transitionEasingId: "ease-in-out",
       speed: 0.85,
       intensity: 0.75,
       stagger: 12,
@@ -57,7 +69,10 @@ export const brandPresets: BrandPreset[] = [
       bodyFont: "Inter, system-ui, sans-serif",
     },
     motion: {
-      easing: "spring",
+      defaultEasingId: "snappy",
+      entranceEasingId: "snappy",
+      exitEasingId: "ease-out",
+      transitionEasingId: "snappy",
       speed: 1.15,
       intensity: 1.2,
       stagger: 6,

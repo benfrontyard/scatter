@@ -1,4 +1,12 @@
-import { Easing, interpolate } from "remotion";
+import {
+  getEasingFunction,
+  normalizeBrandMotion,
+  resolveBlockEntranceEasing,
+  resolveBlockExitEasing,
+} from "@/lib/easing";
+import type { EasingPreset } from "@/types/easing";
+import { interpolate } from "remotion";
+import type { BrandPreset, MotionBlockInstance } from "@/types";
 
 export type MotionDirection = "up" | "down" | "left" | "right";
 export type MotionIntensity = "subtle" | "standard" | "hero";
@@ -15,8 +23,6 @@ const SPEED_MAP: Record<MotionSpeed, number> = {
   standard: 1,
   energetic: 0.7,
 };
-
-export const BRAND_EASING = Easing.out(Easing.cubic);
 
 export function parseMotionDirection(value: unknown): MotionDirection {
   if (value === "down" || value === "left" || value === "right") return value;
@@ -42,6 +48,7 @@ export function getEnterProgress(
   start: number,
   enterFrames: number,
   speed: MotionSpeed,
+  easingPreset?: EasingPreset,
 ): number {
   if (enterFrames <= 0) return 1;
   const speedFactor = SPEED_MAP[speed];
@@ -50,10 +57,12 @@ export function getEnterProgress(
   if (localFrame <= 0) return 0;
   if (localFrame >= adjustedFrames) return 1;
 
+  const easingFn = easingPreset ? getEasingFunction(easingPreset) : undefined;
+
   return interpolate(localFrame, [0, adjustedFrames], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
-    easing: BRAND_EASING,
+    ...(easingFn ? { easing: easingFn } : {}),
   });
 }
 
@@ -97,14 +106,21 @@ export function getMaskReveal(progress: number): string {
   return `inset(0 0 ${inset}% 0 round 0)`;
 }
 
-export function getOutroOpacity(frame: number, duration: number, outroRatio = 0.12): number {
+export function getOutroOpacity(
+  frame: number,
+  duration: number,
+  outroRatio = 0.12,
+  easingPreset?: EasingPreset,
+): number {
   const outroStart = Math.round(duration * (1 - outroRatio));
   if (frame < outroStart) return 1;
+
+  const easingFn = easingPreset ? getEasingFunction(easingPreset) : undefined;
 
   return interpolate(frame, [outroStart, duration - 1], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
-    easing: Easing.in(Easing.quad),
+    ...(easingFn ? { easing: easingFn } : {}),
   });
 }
 
@@ -119,4 +135,20 @@ export function getIntroTiming(duration: number, stagger: number, speed: MotionS
     secondaryStart: Math.round(enterFrames * 0.2) + stagger,
     tertiaryStart: Math.round(enterFrames * 0.2) + stagger * 2,
   };
+}
+
+export function resolveBlockMotionParams(brand: BrandPreset, block: MotionBlockInstance) {
+  const motion = normalizeBrandMotion(brand.motion);
+  const direction = parseMotionDirection(
+    block.motion.controls.direction ?? motion.directionBias,
+  );
+  const intensity = parseMotionIntensity(block.motion.controls.intensity);
+  const speed = parseMotionSpeed(block.motion.controls.speed);
+  const stagger = Math.round(
+    Number(block.motion.controls.stagger ?? motion.stagger) * motion.speed,
+  );
+  const entranceEasing = resolveBlockEntranceEasing(brand, block);
+  const exitEasing = resolveBlockExitEasing(brand, block);
+
+  return { direction, intensity, speed, stagger, brand, entranceEasing, exitEasing };
 }
