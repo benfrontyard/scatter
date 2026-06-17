@@ -8,7 +8,11 @@ export type BrandColors = {
 };
 
 export type BrandTypography = {
+  /** Curated Google Font family name */
+  fontFamily: string;
+  /** CSS font stack for headings — derived from fontFamily */
   headingFont: string;
+  /** CSS font stack for body — derived from fontFamily */
   bodyFont: string;
 };
 

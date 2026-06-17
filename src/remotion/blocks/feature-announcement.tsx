@@ -1,4 +1,9 @@
-import type { BrandPreset, MotionBlockInstance } from "@/types";
+import type { BrandPreset, MotionBlockInstance, ProjectTypography } from "@/types";
+import {
+  headingWeight,
+  scaleFontSize,
+  trackingEm,
+} from "@/lib/typography";
 import { useCurrentFrame } from "remotion";
 import {
   getEnterProgress,
@@ -16,6 +21,7 @@ type FeatureAnnouncementBlockProps = {
   block: MotionBlockInstance;
   formatWidth: number;
   formatHeight: number;
+  projectTypography?: ProjectTypography;
 };
 
 export function FeatureAnnouncementBlock({
@@ -23,6 +29,7 @@ export function FeatureAnnouncementBlock({
   block,
   formatWidth,
   formatHeight,
+  projectTypography,
 }: FeatureAnnouncementBlockProps) {
   const frame = useCurrentFrame();
   const duration = block.duration;
@@ -106,9 +113,12 @@ export function FeatureAnnouncementBlock({
   const isPortrait = formatHeight > formatWidth;
   const paddingX = formatWidth * 0.08;
   const paddingY = formatHeight * 0.07;
-  const headlineSize = Math.round(formatHeight * (isPortrait ? 0.058 : 0.065));
-  const subheadSize = Math.round(formatHeight * 0.028);
-  const logoSize = Math.round(formatHeight * 0.022);
+  const headlineSize = scaleFontSize(
+    Math.round(formatHeight * (isPortrait ? 0.058 : 0.065)),
+    projectTypography,
+  );
+  const subheadSize = scaleFontSize(Math.round(formatHeight * 0.028), projectTypography);
+  const logoSize = scaleFontSize(Math.round(formatHeight * 0.022), projectTypography);
   const imageWidth = formatWidth * (isPortrait ? 0.82 : 0.58);
   const imageHeight = formatHeight * (isPortrait ? 0.32 : 0.38);
 
@@ -165,9 +175,9 @@ export function FeatureAnnouncementBlock({
             transform: `translate(${headlineTranslate.x}px, ${headlineTranslate.y}px)`,
             fontFamily: brand.typography.headingFont,
             fontSize: headlineSize,
-            fontWeight: 700,
+            fontWeight: headingWeight(projectTypography),
             lineHeight: 1.08,
-            letterSpacing: "-0.02em",
+            letterSpacing: trackingEm("-0.02em", projectTypography),
             maxWidth: formatWidth * 0.85,
           }}
         >
@@ -230,9 +240,9 @@ export function FeatureAnnouncementBlock({
           </svg>
           <span
             style={{
-              fontSize: Math.round(formatHeight * 0.018),
+              fontSize: scaleFontSize(Math.round(formatHeight * 0.018), projectTypography),
               color: brand.colors.muted,
-              letterSpacing: "0.06em",
+              letterSpacing: trackingEm("0.06em", projectTypography),
               textTransform: "uppercase",
             }}
           >
@@ -278,8 +288,8 @@ export function FeatureAnnouncementBlock({
             style={{
               fontFamily: brand.typography.headingFont,
               fontSize: logoSize,
-              fontWeight: 700,
-              letterSpacing: "0.14em",
+              fontWeight: headingWeight(projectTypography),
+              letterSpacing: trackingEm("0.14em", projectTypography),
               color: accentColor,
             }}
           >

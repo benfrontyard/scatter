@@ -3,6 +3,7 @@
 interface ImportMetaEnv {
   readonly VITE_APP_TITLE?: string;
   readonly VITE_EXPORT_ENABLED?: string;
+  readonly VITE_GOOGLE_FONTS_API_KEY?: string;
 }
 
 interface ImportMeta {

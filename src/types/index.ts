@@ -17,7 +17,7 @@ export type {
   EasingName,
 } from "./transition";
 export type { EasingPreset, EasingBezier, EasingCategory } from "./easing";
-export type { MotionSequence, SequenceTimelineItem } from "./sequence";
+export type { MotionSequence, SequenceTimelineItem, ProjectTypography } from "./sequence";
 export type { MotionFormat } from "./format";
 export type { EditorStep, EditorState } from "./editor";
 export { EDITOR_FPS } from "./editor";

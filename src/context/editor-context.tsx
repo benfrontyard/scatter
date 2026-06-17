@@ -24,6 +24,7 @@ import type {
   MotionBlockInstance,
   MotionSequence,
   ProjectAsset,
+  ProjectTypography,
 } from "@/types";
 import { EDITOR_FPS, type EditorStep } from "@/types/editor";
 import type { PlayerRef } from "@remotion/player";
@@ -35,6 +36,7 @@ type EditorActions = {
   setCanvasBackground: (color: string) => void;
   setProjectName: (name: string) => void;
   setFps: (fps: number) => void;
+  setProjectTypography: (key: keyof ProjectTypography, value: number) => void;
   setLogoText: (text: string) => void;
   selectBlock: (blockId: string | null) => void;
   selectTransition: (transitionId: string | null) => void;
@@ -252,6 +254,15 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         updateSnapshot((prev) => ({
           ...prev,
           sequence: { ...prev.sequence, fps: nextFps },
+        }));
+      },
+      setProjectTypography: (key, value) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            typography: { ...prev.sequence.typography, [key]: value },
+          },
         }));
       },
       setLogoText: (text) => {

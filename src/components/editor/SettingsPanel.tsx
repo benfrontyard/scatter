@@ -1,4 +1,5 @@
 import { ExportPanel } from "@/components/editor/ExportPanel";
+import { TypographyControls } from "@/components/editor/TypographyControls";
 import { EasingPicker } from "@/components/editor/EasingPicker";
 import { motionBlockMap } from "@/config/blocks";
 import { motionFormats } from "@/config/formats";
@@ -581,6 +582,7 @@ function ProjectSettings({ className }: { className?: string }) {
     setBrand,
     setFormat,
     setFps,
+    setProjectTypography,
     setCanvasBackground,
     setShowBrandSettings,
   } = useEditor();
@@ -634,6 +636,11 @@ function ProjectSettings({ className }: { className?: string }) {
             </Button>
           </div>
         </div>
+
+        <TypographyControls
+          value={sequence.typography}
+          onChange={setProjectTypography}
+        />
 
         <div className="space-y-1.5">
           <Label htmlFor="project-fps">FPS</Label>

@@ -1,7 +1,9 @@
 import { useEditor } from "@/context/editor-context";
+import { FontSelector } from "@/components/editor/FontSelector";
 import { EasingPicker } from "@/components/editor/EasingPicker";
 import { CUSTOM_BRAND_ID } from "@/lib/brand-utils";
 import { normalizeBrandMotion } from "@/lib/easing";
+import { normalizeBrandTypography } from "@/lib/typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,10 +91,10 @@ export function BrandSettingsModal() {
     }));
   };
 
-  const updateTypography = (key: keyof typeof brand.typography, value: string) => {
+  const updateFontFamily = (fontFamily: string) => {
     updateCustomBrand((b) => ({
       ...b,
-      typography: { ...b.typography, [key]: value },
+      typography: normalizeBrandTypography({ ...b.typography, fontFamily }),
     }));
   };
 
@@ -221,24 +223,7 @@ export function BrandSettingsModal() {
 
           <fieldset className="space-y-3">
             <legend className="text-xs font-medium text-muted-foreground">Typography</legend>
-            <div className="space-y-1.5">
-              <Label htmlFor="heading-font">Heading font</Label>
-              <Input
-                id="heading-font"
-                value={brand.typography.headingFont}
-                className="h-8 text-sm"
-                onChange={(event) => updateTypography("headingFont", event.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="body-font">Body font</Label>
-              <Input
-                id="body-font"
-                value={brand.typography.bodyFont}
-                className="h-8 text-sm"
-                onChange={(event) => updateTypography("bodyFont", event.target.value)}
-              />
-            </div>
+            <FontSelector value={brand.typography.fontFamily} onChange={updateFontFamily} />
           </fieldset>
 
           <fieldset className="space-y-3">

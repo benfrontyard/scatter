@@ -1,4 +1,4 @@
-import type { BrandPreset, MotionBlockDefinition, MotionBlockInstance } from "@/types";
+import type { BrandPreset, MotionBlockDefinition, MotionBlockInstance, ProjectTypography } from "@/types";
 import type { FC } from "react";
 import { CtaLockupBlock } from "./cta-lockup";
 import { FeatureAnnouncementBlock } from "./feature-announcement";
@@ -11,6 +11,7 @@ type BlockRendererProps = {
   definition: MotionBlockDefinition;
   formatWidth: number;
   formatHeight: number;
+  projectTypography?: ProjectTypography;
 };
 
 const blockRenderers: Record<string, FC<BlockRendererProps>> = {

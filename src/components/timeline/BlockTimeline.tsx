@@ -17,8 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { ArrowRightLeft, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 const BLOCK_COLORS: Record<string, string> = {
   "logo-reveal": "bg-blue-500/15 border-blue-500/40 text-blue-100",
@@ -49,6 +49,30 @@ function formatTimelineTime(seconds: number): string {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   }
   return `${secs}.${tenths}s`;
+}
+
+function formatDurationLabel(frames: number, fps: number): string {
+  return `${(frames / fps).toFixed(1)}s`;
+}
+
+function TimelineTooltip({
+  label,
+  children,
+}: {
+  label: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div className="group/tip relative h-full w-full">
+      {children}
+      <div
+        role="tooltip"
+        className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-50 w-max max-w-[220px] -translate-x-1/2 rounded-md border border-border bg-popover px-2.5 py-1.5 text-[11px] leading-snug text-popover-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover/tip:opacity-100 group-focus-visible/tip:opacity-100"
+      >
+        {label}
+      </div>
+    </div>
+  );
 }
 
 function DurationControl({
@@ -201,7 +225,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
     <div
       className={cn(
         "flex shrink-0 flex-col border-t border-border bg-card",
-        compact ? "min-h-[128px]" : "h-[188px] min-h-[168px] max-h-[208px]",
+        compact ? "min-h-[112px]" : "h-[168px] min-h-[152px] max-h-[180px]",
         className,
       )}
     >
@@ -332,24 +356,17 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
 
             {/* Playhead on ruler */}
             <div
-              className="pointer-events-none absolute top-0 z-20 h-full w-px bg-red-500"
+              className="pointer-events-none absolute top-0 z-20 h-full w-0.5 -translate-x-1/2 bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.5)]"
               style={{ left: playheadLeft }}
               aria-hidden
             >
-              <div className="absolute -left-1.5 -top-0.5 h-2.5 w-2.5 rotate-45 bg-red-500" />
+              <div className="absolute -top-0.5 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rotate-45 bg-red-500" />
             </div>
           </div>
 
           {/* Tracks */}
           <div
-            className={cn(
-              "relative flex items-stretch py-2",
-              compact ? "gap-1" : "gap-1.5",
-            )}
-            style={{
-              paddingLeft: TIMELINE_PADDING_START,
-              paddingRight: TIMELINE_PADDING_END,
-            }}
+            className={cn("relative", compact ? "h-[56px]" : "h-[64px]")}
             onClick={(event) => {
               if (event.target === event.currentTarget) {
                 clearSelection();
@@ -357,7 +374,10 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
             }}
           >
             {layoutItems.length === 0 ? (
-              <div className="flex h-14 w-full min-w-[200px] items-center justify-center rounded-md border border-dashed border-border px-4 text-xs text-muted-foreground">
+              <div
+                className="flex h-12 items-center justify-center rounded-md border border-dashed border-border px-4 text-xs text-muted-foreground"
+                style={{ marginLeft: TIMELINE_PADDING_START, marginRight: TIMELINE_PADDING_END }}
+              >
                 Add a motion block to start
               </div>
             ) : (
@@ -372,47 +392,76 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                   const categoryLabel = blockCategories.find(
                     (entry) => entry.id === category,
                   )?.label;
+                  const blockName = definition?.name ?? item.block.blockId;
+                  const durationLabel = formatDurationLabel(item.block.duration, fps);
+                  const showLabel = item.widthPx >= 56;
 
                   return (
                     <button
                       key={item.block.id}
                       type="button"
                       onClick={() => selectBlock(isSelected ? null : item.block.id)}
-                      style={{ width: item.widthPx }}
+                      style={{
+                        position: "absolute",
+                        left: item.leftPx,
+                        width: item.widthPx,
+                        top: 6,
+                        bottom: 6,
+                        zIndex: 10 + item.index,
+                      }}
                       className={cn(
-                        "flex shrink-0 flex-col justify-center rounded-md border px-2.5 py-2 text-left transition-all sm:px-3",
+                        "overflow-hidden rounded-md border text-left transition-all",
                         colorClass,
                         isSelected
                           ? "border-foreground/50 ring-2 ring-foreground ring-offset-1 ring-offset-card shadow-sm"
                           : "hover:brightness-110",
                       )}
                       aria-pressed={isSelected}
-                      aria-label={`${definition?.name ?? item.block.blockId}, ${framesToSeconds(item.block.duration, fps)} seconds`}
+                      aria-label={`${blockName}, ${durationLabel}`}
                     >
-                      <div className="flex min-w-0 items-center gap-1.5">
-                        {category && (
-                          <span
-                            className={cn(
-                              "h-1.5 w-1.5 shrink-0 rounded-full",
-                              CATEGORY_COLORS[category],
-                            )}
-                            title={categoryLabel}
-                            aria-hidden
-                          />
-                        )}
-                        <span className="truncate text-[11px] font-medium leading-tight sm:text-xs">
-                          {definition?.name ?? item.block.blockId}
-                        </span>
-                      </div>
-                      <span className="mt-1 truncate text-[10px] opacity-70 tabular-nums">
-                        {framesToSeconds(item.block.duration, fps)}s
-                      </span>
+                      <TimelineTooltip
+                        label={
+                          <div className="space-y-0.5">
+                            <p className="font-medium">{blockName}</p>
+                            <p className="text-muted-foreground">
+                              {durationLabel}
+                              {categoryLabel ? ` · ${categoryLabel}` : ""}
+                            </p>
+                          </div>
+                        }
+                      >
+                        <div className="flex h-full min-w-0 items-center px-2 sm:px-2.5">
+                          {showLabel ? (
+                            <div className="flex min-w-0 items-center gap-1.5">
+                              {category && (
+                                <span
+                                  className={cn(
+                                    "h-1.5 w-1.5 shrink-0 rounded-full",
+                                    CATEGORY_COLORS[category],
+                                  )}
+                                  aria-hidden
+                                />
+                              )}
+                              <span className="truncate text-[11px] font-medium leading-none sm:text-xs">
+                                {blockName}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="sr-only">{blockName}</span>
+                          )}
+                        </div>
+                      </TimelineTooltip>
                     </button>
                   );
                 }
 
                 const transitionDef = transitionDefinitionMap[item.transition.type];
                 const isSelected = selectedTransitionId === item.transition.id;
+                const transitionName = transitionDef?.name ?? item.transition.type;
+                const durationLabel = formatDurationLabel(item.transition.duration, fps);
+                const overlapLabel = `${Math.round(item.transition.overlap * 100)}% overlap`;
+                const centerPx = item.leftPx + item.widthPx / 2;
+                const hitWidth = 14;
 
                 return (
                   <button
@@ -421,23 +470,40 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                     onClick={() =>
                       selectTransition(isSelected ? null : item.transition.id)
                     }
-                    style={{ width: item.widthPx }}
+                    style={{
+                      position: "absolute",
+                      left: centerPx - hitWidth / 2,
+                      width: hitWidth,
+                      top: 4,
+                      bottom: 4,
+                      zIndex: 30,
+                    }}
                     className={cn(
-                      "flex shrink-0 flex-col items-center justify-center self-center rounded border border-dashed px-1 py-1.5 text-center transition-all",
-                      isSelected
-                        ? "border-foreground/60 bg-secondary text-foreground ring-2 ring-foreground ring-offset-1 ring-offset-card"
-                        : "border-border/80 bg-background/50 text-muted-foreground hover:border-border hover:bg-secondary/40 hover:text-foreground",
+                      "group/junction flex items-center justify-center transition-all",
+                      isSelected && "z-40",
                     )}
                     aria-pressed={isSelected}
-                    aria-label={`${transitionDef?.name ?? item.transition.type} transition, ${framesToSeconds(item.transition.duration, fps)} seconds`}
+                    aria-label={`${transitionName} transition, ${durationLabel}`}
                   >
-                    <ArrowRightLeft className="mb-0.5 h-3 w-3 shrink-0 opacity-70" aria-hidden />
-                    <span className="line-clamp-2 text-[9px] font-medium leading-tight sm:text-[10px]">
-                      {transitionDef?.name ?? item.transition.type}
-                    </span>
-                    <span className="mt-0.5 text-[9px] opacity-70 tabular-nums">
-                      {framesToSeconds(item.transition.duration, fps)}s
-                    </span>
+                    <TimelineTooltip
+                      label={
+                        <div className="space-y-0.5">
+                          <p className="font-medium">{transitionName}</p>
+                          <p className="text-muted-foreground">
+                            {durationLabel} · {overlapLabel}
+                          </p>
+                        </div>
+                      }
+                    >
+                      <div
+                        className={cn(
+                          "h-full w-0.5 rounded-full transition-all",
+                          isSelected
+                            ? "bg-foreground shadow-[0_0_0_2px_var(--color-card),0_0_0_3px_var(--color-foreground)]"
+                            : "bg-foreground/25 group-hover/junction:bg-foreground/60 group-hover/junction:w-1",
+                        )}
+                      />
+                    </TimelineTooltip>
                   </button>
                 );
               })
@@ -445,7 +511,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
 
             {/* Playhead line through tracks */}
             <div
-              className="pointer-events-none absolute top-0 z-10 w-px bg-red-500/80"
+              className="pointer-events-none absolute top-0 z-50 w-0.5 -translate-x-1/2 bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.5)]"
               style={{
                 left: playheadLeft,
                 height: "100%",

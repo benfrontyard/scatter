@@ -1,4 +1,9 @@
-import type { BrandPreset, MotionBlockInstance } from "@/types";
+import type { BrandPreset, MotionBlockInstance, ProjectTypography } from "@/types";
+import {
+  headingWeight,
+  scaleFontSize,
+  trackingEm,
+} from "@/lib/typography";
 import { useCurrentFrame } from "remotion";
 import {
   getEnterProgress,
@@ -16,6 +21,7 @@ type LogoRevealBlockProps = {
   block: MotionBlockInstance;
   formatWidth: number;
   formatHeight: number;
+  projectTypography?: ProjectTypography;
 };
 
 export function LogoRevealBlock({
@@ -23,6 +29,7 @@ export function LogoRevealBlock({
   block,
   formatWidth,
   formatHeight,
+  projectTypography,
 }: LogoRevealBlockProps) {
   const frame = useCurrentFrame();
   const duration = block.duration;
@@ -69,8 +76,8 @@ export function LogoRevealBlock({
     intensity === "hero" ? "standard" : intensity,
   );
 
-  const logoSize = Math.round(formatHeight * 0.09);
-  const taglineSize = Math.round(formatHeight * 0.028);
+  const logoSize = scaleFontSize(Math.round(formatHeight * 0.09), projectTypography);
+  const taglineSize = scaleFontSize(Math.round(formatHeight * 0.028), projectTypography);
   const padding = formatHeight * 0.08;
 
   return (
@@ -130,8 +137,8 @@ export function LogoRevealBlock({
             style={{
               fontFamily: brand.typography.headingFont,
               fontSize: logoSize,
-              fontWeight: 700,
-              letterSpacing: "0.14em",
+              fontWeight: headingWeight(projectTypography),
+              letterSpacing: trackingEm("0.14em", projectTypography),
               color: brand.colors.accent,
               lineHeight: 1,
             }}
@@ -147,7 +154,7 @@ export function LogoRevealBlock({
               transform: `translateY(${taglineTranslate.y}px)`,
               fontSize: taglineSize,
               color: brand.colors.muted,
-              letterSpacing: "0.04em",
+              letterSpacing: trackingEm("0.04em", projectTypography),
               maxWidth: formatWidth * 0.7,
             }}
           >

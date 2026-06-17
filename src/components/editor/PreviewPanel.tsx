@@ -4,6 +4,7 @@ import { getSequenceDurationInFrames } from "@/lib/sequence-utils";
 import { ScatterComposition } from "@/remotion/ScatterComposition";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useGoogleFont } from "@/hooks/use-google-font";
 import { Pause, Play } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PlayerRef } from "@remotion/player";
@@ -51,6 +52,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
   const {
     sequence,
     customBrands,
+    brand,
     format,
     fps,
     isPlaying,
@@ -60,6 +62,8 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
     setIsPlaying,
     registerPlayer,
   } = useEditor();
+
+  useGoogleFont(brand.typography.fontFamily);
 
   const playerRef = useRef<PlayerRef>(null);
   const canvasAreaRef = useRef<HTMLDivElement>(null);

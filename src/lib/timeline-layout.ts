@@ -1,12 +1,10 @@
 import type { MotionSequence, SequenceTimelineItem } from "@/types";
-import { buildTimelineItems } from "./sequence-utils";
+import { buildTimelineItems, getBlockStartFrame } from "./sequence-utils";
 
 export const TIMELINE_PX_PER_SECOND = 56;
 export const TIMELINE_PADDING_START = 24;
 export const TIMELINE_PADDING_END = 48;
 export const MIN_BLOCK_WIDTH = 72;
-export const MIN_TRANSITION_WIDTH = 32;
-export const MAX_TRANSITION_WIDTH = 72;
 
 export type TimelineLayoutItem = SequenceTimelineItem & {
   startFrame: number;
@@ -35,43 +33,43 @@ export function buildTimelineLayout(
   compact?: boolean,
 ): TimelineLayoutItem[] {
   const items = buildTimelineItems(sequence);
-  let cursorFrame = 0;
 
-  return items.map((item) => {
+  const layouts = items.map((item) => {
     if (item.kind === "block") {
       const durationFrames = item.block.duration;
+      const startFrame = getBlockStartFrame(sequence, item.index);
       const widthPx = Math.max(
         compact ? 64 : MIN_BLOCK_WIDTH,
         (durationFrames / fps) * TIMELINE_PX_PER_SECOND,
       );
       const layout: TimelineLayoutItem = {
         ...item,
-        startFrame: cursorFrame,
+        startFrame,
         durationFrames,
         widthPx,
-        leftPx: frameToPx(cursorFrame, fps),
+        leftPx: frameToPx(startFrame, fps),
       };
-      cursorFrame += durationFrames;
       return layout;
     }
 
-    const durationFrames = item.transition.duration;
-    const widthPx = Math.min(
-      MAX_TRANSITION_WIDTH,
-      Math.max(
-        compact ? 28 : MIN_TRANSITION_WIDTH,
-        (durationFrames / fps) * TIMELINE_PX_PER_SECOND * 0.6,
-      ),
-    );
+    const block = sequence.blocks[item.afterBlockIndex];
+    const transitionDuration = item.transition.duration;
+    const overlap = Math.round(transitionDuration * item.transition.overlap);
+    const blockStart = getBlockStartFrame(sequence, item.afterBlockIndex);
+    const blockEnd = blockStart + block.duration;
+    const startFrame = overlap > 0 ? blockEnd - overlap : blockEnd;
+    const displayFrames = overlap > 0 ? overlap : transitionDuration;
     const layout: TimelineLayoutItem = {
       ...item,
-      startFrame: cursorFrame,
-      durationFrames,
-      widthPx,
-      leftPx: frameToPx(cursorFrame, fps),
+      startFrame,
+      durationFrames: displayFrames,
+      widthPx: (displayFrames / fps) * TIMELINE_PX_PER_SECOND,
+      leftPx: frameToPx(startFrame, fps),
     };
     return layout;
   });
+
+  return layouts;
 }
 
 export function getRulerMarkers(

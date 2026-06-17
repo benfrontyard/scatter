@@ -1,5 +1,7 @@
 import { defaultMotionSequence } from "@/config/sequences/default";
-import type { BrandPreset, ScatterProject, RecentProjectEntry } from "@/types";
+import { CUSTOM_BRAND_ID, duplicateBrandAsCustom, resolveBrand } from "@/lib/brand-utils";
+import { normalizeBrandTypography } from "@/lib/typography";
+import type { BrandPreset, MotionSequence, ScatterProject, RecentProjectEntry } from "@/types";
 
 const PROJECTS_KEY = "scatter:projects";
 const RECENT_KEY = "scatter:recent";
@@ -35,16 +37,56 @@ export function projectToJson(project: ScatterProject): string {
   return JSON.stringify(project, null, 2);
 }
 
+function migrateProject(project: ScatterProject): ScatterProject {
+  const legacyFont = (project.sequence as MotionSequence & { fontFamily?: string }).fontFamily;
+  if (!legacyFont) return project;
+
+  const { fontFamily: _removed, ...sequence } = project.sequence as MotionSequence & {
+    fontFamily?: string;
+  };
+  const customBrands = [...project.customBrands];
+  const existingCustom = customBrands.find((brand) => brand.id === CUSTOM_BRAND_ID);
+
+  if (existingCustom) {
+    const index = customBrands.findIndex((brand) => brand.id === CUSTOM_BRAND_ID);
+    customBrands[index] = {
+      ...existingCustom,
+      typography: normalizeBrandTypography({
+        ...existingCustom.typography,
+        fontFamily: legacyFont,
+      }),
+    };
+    return {
+      ...project,
+      sequence: { ...sequence, brandPresetId: CUSTOM_BRAND_ID },
+      customBrands,
+    };
+  }
+
+  const baseBrand = resolveBrand(sequence.brandPresetId, customBrands);
+  return {
+    ...project,
+    sequence: { ...sequence, brandPresetId: CUSTOM_BRAND_ID },
+    customBrands: [
+      ...customBrands,
+      {
+        ...duplicateBrandAsCustom(baseBrand),
+        typography: normalizeBrandTypography({ fontFamily: legacyFont }),
+      },
+    ],
+  };
+}
+
 export function parseProjectJson(json: string): ScatterProject {
   const parsed = JSON.parse(json) as ScatterProject;
   if (!parsed.version || !parsed.sequence) {
     throw new Error("Invalid project file.");
   }
-  return {
+  return migrateProject({
     ...parsed,
     customBrands: parsed.customBrands ?? [],
     assets: parsed.assets ?? [],
-  };
+  });
 }
 
 export function saveProject(project: ScatterProject): ScatterProject {
@@ -69,7 +111,8 @@ export function saveProject(project: ScatterProject): ScatterProject {
 
 export function loadProject(id: string): ScatterProject | null {
   const all = readJson<Record<string, ScatterProject>>(PROJECTS_KEY, {});
-  return all[id] ?? null;
+  const project = all[id];
+  return project ? migrateProject(project) : null;
 }
 
 export function listRecentProjects(): RecentProjectEntry[] {

@@ -1,4 +1,10 @@
-import type { BrandPreset, MotionBlockInstance } from "@/types";
+import type { BrandPreset, MotionBlockInstance, ProjectTypography } from "@/types";
+import {
+  bodyWeight,
+  headingWeight,
+  scaleFontSize,
+  trackingEm,
+} from "@/lib/typography";
 import { useCurrentFrame } from "remotion";
 import {
   getEnterProgress,
@@ -15,6 +21,7 @@ type CtaLockupBlockProps = {
   block: MotionBlockInstance;
   formatWidth: number;
   formatHeight: number;
+  projectTypography?: ProjectTypography;
 };
 
 export function CtaLockupBlock({
@@ -22,6 +29,7 @@ export function CtaLockupBlock({
   block,
   formatWidth,
   formatHeight,
+  projectTypography,
 }: CtaLockupBlockProps) {
   const frame = useCurrentFrame();
   const duration = block.duration;
@@ -74,10 +82,10 @@ export function CtaLockupBlock({
   const ctaScale = getScale(ctaProgress, intensity);
 
   const buttonScale = Number(block.motion.controls.buttonScale ?? 1);
-  const messageSize = Math.round(formatHeight * 0.042);
-  const ctaSize = Math.round(formatHeight * 0.03 * buttonScale);
-  const logoSize = Math.round(formatHeight * 0.034);
-  const urlSize = Math.round(formatHeight * 0.02);
+  const messageSize = scaleFontSize(Math.round(formatHeight * 0.042), projectTypography);
+  const ctaSize = scaleFontSize(Math.round(formatHeight * 0.03 * buttonScale), projectTypography);
+  const logoSize = scaleFontSize(Math.round(formatHeight * 0.034), projectTypography);
+  const urlSize = scaleFontSize(Math.round(formatHeight * 0.02), projectTypography);
 
   return (
     <div
@@ -121,10 +129,10 @@ export function CtaLockupBlock({
               transform: `translate(${messageTranslate.x}px, ${messageTranslate.y}px)`,
               fontFamily: brand.typography.headingFont,
               fontSize: messageSize,
-              fontWeight: 600,
+              fontWeight: bodyWeight(projectTypography),
               lineHeight: 1.2,
               maxWidth: formatWidth * 0.75,
-              letterSpacing: "-0.01em",
+              letterSpacing: trackingEm("-0.01em", projectTypography),
             }}
           >
             {message}
@@ -141,7 +149,7 @@ export function CtaLockupBlock({
             color: brand.colors.background,
             fontSize: ctaSize,
             fontFamily: brand.typography.headingFont,
-            fontWeight: 700,
+            fontWeight: headingWeight(projectTypography),
             boxShadow: `0 ${formatHeight * 0.012}px ${formatHeight * 0.03}px ${brand.colors.accent}44`,
           }}
         >
@@ -171,8 +179,8 @@ export function CtaLockupBlock({
               style={{
                 fontFamily: brand.typography.headingFont,
                 fontSize: logoSize,
-                fontWeight: 700,
-                letterSpacing: "0.12em",
+                fontWeight: headingWeight(projectTypography),
+                letterSpacing: trackingEm("0.12em", projectTypography),
                 color: brand.colors.foreground,
               }}
             >

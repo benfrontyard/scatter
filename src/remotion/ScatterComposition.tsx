@@ -2,9 +2,11 @@ import { resolveBrand } from "@/lib/brand-utils";
 import { motionBlockMap } from "@/config/blocks";
 import { motionFormatMap } from "@/config/formats";
 import { getBlockStartFrame } from "@/lib/sequence-utils";
+import { scaleFontSize } from "@/lib/typography";
 import type { BrandPreset, MotionSequence } from "@/types";
 import { AbsoluteFill, Sequence as RemotionSequence, useCurrentFrame } from "remotion";
 import { renderBlockContent } from "./blocks";
+import { LoadProjectFont } from "./LoadProjectFont";
 import { getBlockTransitionOverlay } from "./transitions";
 
 export type ScatterCompositionProps = {
@@ -18,57 +20,64 @@ export function ScatterComposition({ sequence, customBrands = [] }: ScatterCompo
 
   if (sequence.blocks.length === 0) {
     return (
-      <AbsoluteFill
-        style={{
-          backgroundColor: sequence.canvasBackground || brand.colors.background,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: brand.colors.muted,
-          fontFamily: brand.typography.bodyFont,
-          fontSize: 24,
-        }}
-      >
-        Add a motion block to start
-      </AbsoluteFill>
+      <>
+        <LoadProjectFont family={brand.typography.fontFamily} />
+        <AbsoluteFill
+          style={{
+            backgroundColor: sequence.canvasBackground || brand.colors.background,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: brand.colors.muted,
+            fontFamily: brand.typography.bodyFont,
+            fontSize: scaleFontSize(24, sequence.typography),
+          }}
+        >
+          Add a motion block to start
+        </AbsoluteFill>
+      </>
     );
   }
 
   return (
-    <AbsoluteFill style={{ backgroundColor: sequence.canvasBackground || brand.colors.background }}>
-      {sequence.blocks.map((block, index) => {
-        const definition = motionBlockMap[block.blockId];
-        if (!definition) return null;
+    <>
+      <LoadProjectFont family={brand.typography.fontFamily} />
+      <AbsoluteFill style={{ backgroundColor: sequence.canvasBackground || brand.colors.background }}>
+        {sequence.blocks.map((block, index) => {
+          const definition = motionBlockMap[block.blockId];
+          if (!definition) return null;
 
-        const startFrame = getBlockStartFrame(sequence, index);
+          const startFrame = getBlockStartFrame(sequence, index);
 
-        return (
-          <RemotionSequence
-            key={block.id}
-            from={startFrame}
-            durationInFrames={block.duration}
-            layout="none"
-          >
-            <BlockWithTransitions
-              blockIndex={index}
-              blockDuration={block.duration}
-              sequence={sequence}
-              customBrands={customBrands}
-              formatWidth={format.width}
-              formatHeight={format.height}
+          return (
+            <RemotionSequence
+              key={block.id}
+              from={startFrame}
+              durationInFrames={block.duration}
+              layout="none"
             >
-              {renderBlockContent({
-                brand,
-                block,
-                definition,
-                formatWidth: format.width,
-                formatHeight: format.height,
-              })}
-            </BlockWithTransitions>
-          </RemotionSequence>
-        );
-      })}
-    </AbsoluteFill>
+              <BlockWithTransitions
+                blockIndex={index}
+                blockDuration={block.duration}
+                sequence={sequence}
+                customBrands={customBrands}
+                formatWidth={format.width}
+                formatHeight={format.height}
+              >
+                {renderBlockContent({
+                  brand,
+                  block,
+                  definition,
+                  formatWidth: format.width,
+                  formatHeight: format.height,
+                  projectTypography: sequence.typography,
+                })}
+              </BlockWithTransitions>
+            </RemotionSequence>
+          );
+        })}
+      </AbsoluteFill>
+    </>
   );
 }
 

@@ -1,4 +1,5 @@
 import type { BrandPreset } from "@/types";
+import { defaultProjectFont } from "@/config/fonts";
 import {
   DEFAULT_EASING_ID,
   DEFAULT_ENTRANCE_EASING_ID,
@@ -17,6 +18,7 @@ export const brandPresets: BrandPreset[] = [
       muted: "#737373",
     },
     typography: {
+      fontFamily: defaultProjectFont,
       headingFont: "Inter, system-ui, sans-serif",
       bodyFont: "Inter, system-ui, sans-serif",
     },
@@ -41,6 +43,7 @@ export const brandPresets: BrandPreset[] = [
       muted: "#9ca3af",
     },
     typography: {
+      fontFamily: "Georgia",
       headingFont: "Georgia, serif",
       bodyFont: "Georgia, serif",
     },
@@ -65,6 +68,7 @@ export const brandPresets: BrandPreset[] = [
       muted: "#64748b",
     },
     typography: {
+      fontFamily: defaultProjectFont,
       headingFont: "Inter, system-ui, sans-serif",
       bodyFont: "Inter, system-ui, sans-serif",
     },

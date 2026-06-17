@@ -1,4 +1,10 @@
-import type { BrandPreset, MotionBlockInstance } from "@/types";
+import type { BrandPreset, MotionBlockInstance, ProjectTypography } from "@/types";
+import {
+  bodyWeight,
+  headingWeight,
+  scaleFontSize,
+  trackingEm,
+} from "@/lib/typography";
 import { interpolate, useCurrentFrame } from "remotion";
 import { getEasingFunction } from "@/lib/easing";
 import {
@@ -16,9 +22,16 @@ type StatCardBlockProps = {
   block: MotionBlockInstance;
   formatWidth: number;
   formatHeight: number;
+  projectTypography?: ProjectTypography;
 };
 
-export function StatCardBlock({ brand, block, formatWidth, formatHeight }: StatCardBlockProps) {
+export function StatCardBlock({
+  brand,
+  block,
+  formatWidth,
+  formatHeight,
+  projectTypography,
+}: StatCardBlockProps) {
   const frame = useCurrentFrame();
   const duration = block.duration;
 
@@ -82,9 +95,9 @@ export function StatCardBlock({ brand, block, formatWidth, formatHeight }: StatC
   );
 
   const emphasis = Number(block.motion.controls.emphasis ?? 1);
-  const valueSize = Math.round(formatHeight * 0.13 * emphasis);
-  const labelSize = Math.round(formatHeight * 0.032);
-  const supportSize = Math.round(formatHeight * 0.024);
+  const valueSize = scaleFontSize(Math.round(formatHeight * 0.13 * emphasis), projectTypography);
+  const labelSize = scaleFontSize(Math.round(formatHeight * 0.032), projectTypography);
+  const supportSize = scaleFontSize(Math.round(formatHeight * 0.024), projectTypography);
 
   return (
     <div
@@ -127,10 +140,10 @@ export function StatCardBlock({ brand, block, formatWidth, formatHeight }: StatC
             transform: `translate(${valueTranslate.x}px, ${valueTranslate.y}px)`,
             fontFamily: brand.typography.headingFont,
             fontSize: valueSize,
-            fontWeight: 700,
+            fontWeight: headingWeight(projectTypography),
             color: brand.colors.accent,
             lineHeight: 1,
-            letterSpacing: "-0.02em",
+            letterSpacing: trackingEm("-0.02em", projectTypography),
             fontVariantNumeric: "tabular-nums",
           }}
         >
@@ -143,9 +156,9 @@ export function StatCardBlock({ brand, block, formatWidth, formatHeight }: StatC
               opacity: labelOpacity,
               transform: `translateY(${labelTranslate.y}px)`,
               fontSize: labelSize,
-              fontWeight: 600,
+              fontWeight: bodyWeight(projectTypography),
               textTransform: "uppercase",
-              letterSpacing: "0.1em",
+              letterSpacing: trackingEm("0.1em", projectTypography),
               color: brand.colors.foreground,
             }}
           >
