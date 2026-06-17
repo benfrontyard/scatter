@@ -37,6 +37,15 @@ export const brandPresets: BrandPreset[] = [
       intensity: 1,
       stagger: 8,
       directionBias: "up",
+      textAnimation: {
+        defaultPresetId: "word-cascade",
+        durationMultiplier: 1,
+        staggerMultiplier: 1,
+        slotDefaults: {
+          headline: "soft-fade-up",
+          subhead: "quiet-tracking",
+        },
+      },
     },
   },
   {
@@ -59,6 +68,15 @@ export const brandPresets: BrandPreset[] = [
       intensity: 0.75,
       stagger: 12,
       directionBias: "up",
+      textAnimation: {
+        defaultPresetId: "line-reveal",
+        durationMultiplier: 1.1,
+        staggerMultiplier: 1.15,
+        slotDefaults: {
+          headline: "line-reveal",
+          subhead: "quiet-tracking",
+        },
+      },
     },
   },
   {
@@ -81,6 +99,15 @@ export const brandPresets: BrandPreset[] = [
       intensity: 1.2,
       stagger: 6,
       directionBias: "left",
+      textAnimation: {
+        defaultPresetId: "word-cascade",
+        durationMultiplier: 0.9,
+        staggerMultiplier: 0.85,
+        slotDefaults: {
+          headline: "split-impact",
+          subhead: "soft-fade-up",
+        },
+      },
     },
   },
 ];

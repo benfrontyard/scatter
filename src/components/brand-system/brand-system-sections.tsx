@@ -1,4 +1,5 @@
 import { BrandEffectsPanel } from "@/components/editor/BrandEffectsPanel";
+import { BrandTextAnimationDefaultsPanel } from "@/components/editor/BrandTextAnimationDefaultsPanel";
 import { BrandTypographyPanel } from "@/components/editor/BrandTypographyPanel";
 import { EasingPicker } from "@/components/editor/EasingPicker";
 import { Button } from "@/components/ui/button";
@@ -354,6 +355,17 @@ export function BrandMotionSection({ draftBrand, onBrandChange }: SectionProps) 
             </Select>
           </div>
         </div>
+
+        <BrandTextAnimationDefaultsPanel
+          embedded
+          brand={draftBrand}
+          onChange={(textAnimation) =>
+            updateMotion("textAnimation", {
+              ...draftBrand.motion.textAnimation,
+              ...textAnimation,
+            })
+          }
+        />
 
         <div className="space-y-3 rounded-lg border border-border p-4">
           <p className="text-xs font-medium text-muted-foreground">Phase easing</p>

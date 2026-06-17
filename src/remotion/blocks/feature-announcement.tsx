@@ -1,11 +1,11 @@
 import {
-  clampHeadlineText,
   resolveBlockSlotStyle,
   resolveFontStack,
   resolvedTypeStyleToCss,
 } from "@/lib/typography";
 import type { BrandPreset, MotionBlockInstance, MotionFormat } from "@/types";
 import { useCurrentFrame } from "remotion";
+import { AnimatedText } from "../AnimatedText";
 import {
   getEnterProgress,
   getFadeOpacity,
@@ -29,7 +29,7 @@ export function FeatureAnnouncementBlock({ brand, block, format }: FeatureAnnoun
   const duration = block.duration;
   const { width: formatWidth, height: formatHeight } = format;
 
-  const { direction, intensity, speed, stagger, entranceEasing, exitEasing } =
+  const { intensity, speed, stagger, entranceEasing, exitEasing } =
     resolveBlockMotionParams(brand, block);
 
   const headline = block.content.headline ?? "Ship faster";
@@ -48,20 +48,6 @@ export function FeatureAnnouncementBlock({ brand, block, format }: FeatureAnnoun
     speed,
     entranceEasing,
   );
-  const headlineProgress = getEnterProgress(
-    frame,
-    timing.headlineStart,
-    timing.enterFrames,
-    speed,
-    entranceEasing,
-  );
-  const subheadProgress = getEnterProgress(
-    frame,
-    timing.subheadStart,
-    timing.enterFrames,
-    speed,
-    entranceEasing,
-  );
   const imageProgress = getEnterProgress(
     frame,
     timing.imageStart,
@@ -77,25 +63,9 @@ export function FeatureAnnouncementBlock({ brand, block, format }: FeatureAnnoun
     entranceEasing,
   );
 
-  const headlineOpacity = getFadeOpacity(headlineProgress) * outroOpacity;
-  const subheadOpacity = getFadeOpacity(subheadProgress) * outroOpacity;
   const imageOpacity = getFadeOpacity(imageProgress) * outroOpacity;
   const logoOpacity = getFadeOpacity(logoProgress) * outroOpacity;
 
-  const headlineTranslate = getTranslate(
-    headlineProgress,
-    direction,
-    formatWidth,
-    formatHeight,
-    intensity,
-  );
-  const subheadTranslate = getTranslate(
-    subheadProgress,
-    direction,
-    formatWidth,
-    formatHeight,
-    intensity,
-  );
   const imageScale = getScale(imageProgress, intensity);
   const logoTranslate = getTranslate(
     logoProgress,
@@ -113,20 +83,6 @@ export function FeatureAnnouncementBlock({ brand, block, format }: FeatureAnnoun
   const bodyStyle = brand.typography.defaults.bodyStyle;
   const labelStyle = brand.typography.defaults.labelStyle;
 
-  const headlineType = resolveBlockSlotStyle(
-    brand.typography,
-    format,
-    headingStyle,
-    block.typographyOverride,
-    "headline",
-  );
-  const subheadType = resolveBlockSlotStyle(
-    brand.typography,
-    format,
-    bodyStyle,
-    block.typographyOverride,
-    "body",
-  );
   const logoType = resolveBlockSlotStyle(
     brand.typography,
     format,
@@ -146,8 +102,6 @@ export function FeatureAnnouncementBlock({ brand, block, format }: FeatureAnnoun
   const imageHeight = formatHeight * (isPortrait ? 0.32 : 0.38);
 
   const backgroundStyle = getTargetEffectStyle(brand, block, "background");
-  const headlineEffectStyle = getTargetEffectStyle(brand, block, "headline");
-  const subheadEffectStyle = getTargetEffectStyle(brand, block, "subhead");
   const imageEffectStyle = getTargetEffectStyle(brand, block, "image");
   const logoEffectStyle = getTargetEffectStyle(brand, block, "logo");
 
@@ -197,45 +151,35 @@ export function FeatureAnnouncementBlock({ brand, block, format }: FeatureAnnoun
           textAlign: "center",
         }}
       >
-        <div
-          style={mergeMotionAndEffectStyle(
-            {
-              opacity: headlineOpacity,
-              transform: `translate(${headlineTranslate.x}px, ${headlineTranslate.y}px)`,
-            },
-            headlineEffectStyle,
-          )}
-        >
-          <span
-            style={{
-              ...resolvedTypeStyleToCss(headlineType),
-              maxWidth: headlineType.maxWidth ?? formatWidth * 0.85,
-            }}
-          >
-            {clampHeadlineText(headline, 90)}
-          </span>
-        </div>
+        <AnimatedText
+          text={headline}
+          brand={brand}
+          block={block}
+          format={format}
+          slot="headline"
+          frame={frame}
+          startFrame={timing.headlineStart}
+          outroOpacity={outroOpacity}
+          maxLength={90}
+          typographyRole={headingStyle}
+          typographySlot="headline"
+        />
 
         {subhead ? (
-          <div
-            style={mergeMotionAndEffectStyle(
-              {
-                opacity: subheadOpacity,
-                transform: `translate(${subheadTranslate.x}px, ${subheadTranslate.y}px)`,
-              },
-              subheadEffectStyle,
-            )}
-          >
-            <span
-              style={{
-                ...resolvedTypeStyleToCss(subheadType),
-                color: brand.colors.muted,
-                maxWidth: subheadType.maxWidth ?? formatWidth * 0.72,
-              }}
-            >
-              {clampHeadlineText(subhead, 160)}
-            </span>
-          </div>
+          <AnimatedText
+            text={subhead}
+            brand={brand}
+            block={block}
+            format={format}
+            slot="subhead"
+            frame={frame}
+            startFrame={timing.subheadStart}
+            outroOpacity={outroOpacity}
+            maxLength={160}
+            typographyRole={bodyStyle}
+            typographySlot="body"
+            color={brand.colors.muted}
+          />
         ) : null}
 
         <div

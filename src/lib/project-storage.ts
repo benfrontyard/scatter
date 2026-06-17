@@ -1,6 +1,7 @@
 import { defaultMotionSequence } from "@/config/sequences/default";
 import { CUSTOM_BRAND_ID, duplicateBrandAsCustom, resolveBrand } from "@/lib/brand-utils";
 import { normalizeBlockEffects, normalizeBrandEffects } from "@/lib/effects";
+import { normalizeBlockTextAnimations } from "@/lib/text-animation";
 import { normalizeBrandColors } from "@/lib/brand-colors";
 import { normalizeBrandTypography } from "@/lib/typography";
 import type { BrandPreset, MotionBlockInstance, MotionSequence, ScatterProject, RecentProjectEntry } from "@/types";
@@ -52,6 +53,7 @@ function migrateBlockEffects(blocks: MotionBlockInstance[]): MotionBlockInstance
   return blocks.map((block) => ({
     ...block,
     effects: normalizeBlockEffects(block.effects),
+    textAnimations: normalizeBlockTextAnimations(block.textAnimations),
   }));
 }
 

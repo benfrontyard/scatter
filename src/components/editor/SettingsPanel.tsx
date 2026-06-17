@@ -1,5 +1,6 @@
 import { BlockAdvancedTypography } from "@/components/editor/BlockAdvancedTypography";
 import { BlockAdvancedEffects } from "@/components/editor/BlockAdvancedEffects";
+import { TextAnimationPanel } from "@/components/editor/TextAnimationPanel";
 import { ExportPanel } from "@/components/editor/ExportPanel";
 import { EasingPicker } from "@/components/editor/EasingPicker";
 import { motionBlockMap } from "@/config/blocks";
@@ -34,6 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Film, Layers, SlidersHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 function AssetsSection() {
@@ -102,7 +104,9 @@ const MOTION_SELECT_OPTIONS: Record<string, string[]> = {
 };
 
 const STYLE_CONTENT_KEYS = new Set(["backgroundColor", "accentColor"]);
-const MULTILINE_CONTENT_KEYS = new Set(["subhead", "body", "supportingText"]);
+const MULTILINE_CONTENT_KEYS = new Set(["subhead", "body", "supportingText", "message"]);
+const CTA_CONTENT_KEYS = new Set(["cta", "url"]);
+const MEDIA_CONTENT_KEYS = new Set(["imageUrl", "image", "screenshot", "media"]);
 
 const DIRECTION_OPTIONS: TransitionDirection[] = ["left", "right", "up", "down"];
 
@@ -342,6 +346,33 @@ function MotionControlField({
   );
 }
 
+function ContentSubsection({
+  title,
+  fieldKeys,
+  block,
+  onChange,
+}: {
+  title: string;
+  fieldKeys: string[];
+  block: MotionBlockInstance;
+  onChange: (key: string, value: string) => void;
+}) {
+  if (fieldKeys.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+        {title}
+      </p>
+      <div className="space-y-3">
+        {fieldKeys.map((key) => (
+          <ContentField key={key} fieldKey={key} block={block} onChange={onChange} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function BlockSettings({ className }: { className?: string }) {
   const {
     brand,
@@ -352,8 +383,10 @@ function BlockSettings({ className }: { className?: string }) {
     updateBlockDuration,
     updateBlockTypographyOverride,
     updateBlockEffects,
+    updateBlockTextAnimations,
   } = useEditor();
   const selectedBlock = useSelectedBlock();
+  const [accordionValues, setAccordionValues] = useState(["content", "motion"]);
   if (!selectedBlock) return null;
 
   const definition = motionBlockMap[selectedBlock.blockId];
@@ -362,12 +395,18 @@ function BlockSettings({ className }: { className?: string }) {
   const motion = normalizeBrandMotion(brand.motion);
 
   const motionControls = getMotionControls(selectedBlock.motion);
-  const contentKeys = Object.keys(definition.defaultContent).filter(
+  const allContentKeys = Object.keys(definition.defaultContent).filter(
     (key) => !STYLE_CONTENT_KEYS.has(key),
   );
+  const textContentKeys = allContentKeys.filter(
+    (key) => !CTA_CONTENT_KEYS.has(key) && !MEDIA_CONTENT_KEYS.has(key),
+  );
+  const mediaContentKeys = allContentKeys.filter((key) => MEDIA_CONTENT_KEYS.has(key));
+  const ctaContentKeys = allContentKeys.filter((key) => CTA_CONTENT_KEYS.has(key));
   const styleKeys = Object.keys(definition.defaultContent).filter((key) =>
     STYLE_CONTENT_KEYS.has(key),
   );
+  const showAdvancedSection = accordionValues.includes("advanced");
 
   return (
     <PanelShell
@@ -389,95 +428,154 @@ function BlockSettings({ className }: { className?: string }) {
 
         <Accordion
           type="multiple"
-          defaultValue={["content", "motion", "style"]}
+          value={accordionValues}
+          onValueChange={setAccordionValues}
           className="rounded-md border border-border px-3"
         >
-          {contentKeys.length > 0 ? (
+          {allContentKeys.length > 0 ? (
             <AccordionItem value="content" className="border-border">
               <AccordionTrigger className="text-muted-foreground">Content</AccordionTrigger>
-              <AccordionContent className="space-y-3">
-                {contentKeys.map((key) => (
-                  <ContentField
-                    key={key}
-                    fieldKey={key}
-                    block={selectedBlock}
-                    onChange={(fieldKey, value) =>
-                      updateBlockContent(selectedBlock.id, fieldKey, value)
-                    }
-                  />
-                ))}
+              <AccordionContent className="space-y-4">
+                <ContentSubsection
+                  title="Text"
+                  fieldKeys={textContentKeys}
+                  block={selectedBlock}
+                  onChange={(fieldKey, value) =>
+                    updateBlockContent(selectedBlock.id, fieldKey, value)
+                  }
+                />
+                <ContentSubsection
+                  title="Media"
+                  fieldKeys={mediaContentKeys}
+                  block={selectedBlock}
+                  onChange={(fieldKey, value) =>
+                    updateBlockContent(selectedBlock.id, fieldKey, value)
+                  }
+                />
+                <ContentSubsection
+                  title="CTA"
+                  fieldKeys={ctaContentKeys}
+                  block={selectedBlock}
+                  onChange={(fieldKey, value) =>
+                    updateBlockContent(selectedBlock.id, fieldKey, value)
+                  }
+                />
               </AccordionContent>
             </AccordionItem>
           ) : null}
+
+          <AccordionItem value="style" className="border-border">
+            <AccordionTrigger className="text-muted-foreground">Style</AccordionTrigger>
+            <AccordionContent className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Typography
+                </p>
+                <BlockAdvancedTypography
+                  block={selectedBlock}
+                  onChange={(override) =>
+                    updateBlockTypographyOverride(selectedBlock.id, override)
+                  }
+                />
+              </div>
+
+              {styleKeys.includes("accentColor") ? (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Color
+                  </p>
+                  <ColorField
+                    id="accentColor"
+                    label={formatContentLabel("accentColor")}
+                    value={selectedBlock.content.accentColor ?? ""}
+                    fallback={brand.colors.accent}
+                    onChange={(value) => updateBlockContent(selectedBlock.id, "accentColor", value)}
+                  />
+                </div>
+              ) : null}
+
+              {styleKeys.includes("backgroundColor") ? (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Background
+                  </p>
+                  <ColorField
+                    id="backgroundColor"
+                    label={formatContentLabel("backgroundColor")}
+                    value={selectedBlock.content.backgroundColor ?? ""}
+                    fallback={brand.colors.background}
+                    onChange={(value) =>
+                      updateBlockContent(selectedBlock.id, "backgroundColor", value)
+                    }
+                  />
+                </div>
+              ) : null}
+            </AccordionContent>
+          </AccordionItem>
 
           <AccordionItem value="motion" className="border-border">
             <AccordionTrigger className="text-muted-foreground">Motion</AccordionTrigger>
-            <AccordionContent className="space-y-3">
-              <EasingPicker
-                label="Easing"
-                value={selectedBlock.motion.easingId}
-                onChange={(easingId) => updateBlockEasing(selectedBlock.id, easingId)}
-                allowInherit
-                inheritLabel="Inherit from brand"
-                inheritEasingId={motion.entranceEasingId}
-                compact
-              />
-              {Object.entries(motionControls).map(([key, defaultValue]) => (
-                <MotionControlField
-                  key={key}
-                  controlKey={key}
-                  defaultValue={defaultValue}
-                  currentValue={selectedBlock.motion.controls[key]}
-                  onChange={(motionKey, value) =>
-                    updateBlockMotion(selectedBlock.id, motionKey, value)
-                  }
+            <AccordionContent className="space-y-4">
+              <div className="space-y-3">
+                <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Entrance animation
+                </p>
+                <EasingPicker
+                  label="Easing"
+                  value={selectedBlock.motion.easingId}
+                  onChange={(easingId) => updateBlockEasing(selectedBlock.id, easingId)}
+                  allowInherit
+                  inheritLabel="Inherit from brand"
+                  inheritEasingId={motion.entranceEasingId}
+                  compact
                 />
-              ))}
-            </AccordionContent>
-          </AccordionItem>
-
-          {styleKeys.length > 0 ? (
-            <AccordionItem value="style" className="border-border">
-              <AccordionTrigger className="text-muted-foreground">Style</AccordionTrigger>
-              <AccordionContent className="space-y-3">
-                {styleKeys.map((key) => (
-                  <ColorField
+                {Object.entries(motionControls).map(([key, defaultValue]) => (
+                  <MotionControlField
                     key={key}
-                    id={key}
-                    label={formatContentLabel(key)}
-                    value={selectedBlock.content[key] ?? ""}
-                    fallback={
-                      key === "backgroundColor"
-                        ? brand.colors.background
-                        : brand.colors.accent
+                    controlKey={key}
+                    defaultValue={defaultValue}
+                    currentValue={selectedBlock.motion.controls[key]}
+                    onChange={(motionKey, value) =>
+                      updateBlockMotion(selectedBlock.id, motionKey, value)
                     }
-                    onChange={(value) => updateBlockContent(selectedBlock.id, key, value)}
                   />
                 ))}
-              </AccordionContent>
-            </AccordionItem>
-          ) : null}
+              </div>
 
-          <AccordionItem value="typography" className="border-border">
-            <AccordionTrigger className="text-muted-foreground">Advanced typography</AccordionTrigger>
-            <AccordionContent>
-              <BlockAdvancedTypography
-                block={selectedBlock}
-                onChange={(override) =>
-                  updateBlockTypographyOverride(selectedBlock.id, override)
-                }
-              />
+              <div className="space-y-2">
+                <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Text animation
+                </p>
+                <TextAnimationPanel
+                  brand={brand}
+                  block={selectedBlock}
+                  forceAdvanced={showAdvancedSection}
+                  onChange={(textAnimations) =>
+                    updateBlockTextAnimations(selectedBlock.id, textAnimations)
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Effects
+                </p>
+                <BlockAdvancedEffects
+                  brand={brand}
+                  block={selectedBlock}
+                  onChange={(effects) => updateBlockEffects(selectedBlock.id, effects)}
+                />
+              </div>
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="effects" className="border-border">
-            <AccordionTrigger className="text-muted-foreground">Advanced effects</AccordionTrigger>
-            <AccordionContent>
-              <BlockAdvancedEffects
-                brand={brand}
-                block={selectedBlock}
-                onChange={(effects) => updateBlockEffects(selectedBlock.id, effects)}
-              />
+          <AccordionItem value="advanced" className="border-border">
+            <AccordionTrigger className="text-muted-foreground">Advanced</AccordionTrigger>
+            <AccordionContent className="space-y-3">
+              <p className="text-[11px] leading-relaxed text-muted-foreground">
+                Per-block overrides and fine-tuned animation controls. Text animation advanced
+                settings appear here when expanded, or when using custom text animation.
+              </p>
             </AccordionContent>
           </AccordionItem>
         </Accordion>

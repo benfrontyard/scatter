@@ -23,6 +23,7 @@ import type {
   BlockTypographyOverride,
   BrandPreset,
   EffectInstance,
+  TextAnimationInstance,
   MotionBlockInstance,
   MotionSequence,
   ProjectAsset,
@@ -43,6 +44,10 @@ type EditorActions = {
     override: BlockTypographyOverride | undefined,
   ) => void;
   updateBlockEffects: (blockId: string, effects: EffectInstance[] | undefined) => void;
+  updateBlockTextAnimations: (
+    blockId: string,
+    animations: TextAnimationInstance[] | undefined,
+  ) => void;
   selectBlock: (blockId: string | null) => void;
   selectTransition: (transitionId: string | null) => void;
   clearSelection: () => void;
@@ -289,6 +294,22 @@ export function EditorProvider({ children }: { children: ReactNode }) {
                 ? {
                     ...block,
                     effects,
+                  }
+                : block,
+            ),
+          },
+        }));
+      },
+      updateBlockTextAnimations: (blockId, textAnimations) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            blocks: prev.sequence.blocks.map((block) =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    textAnimations,
                   }
                 : block,
             ),

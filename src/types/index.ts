@@ -53,3 +53,26 @@ export type { MotionFormat } from "./format";
 export type { EditorStep, EditorState } from "./editor";
 export { EDITOR_FPS } from "./editor";
 export type { ScatterProject, ProjectAsset, RecentProjectEntry } from "./project";
+export type {
+  AnimatableProperty,
+  BrandTextAnimationDefaults,
+  ColorToken,
+  MotionEnergy,
+  ReducedMotionBehavior,
+  RevealStyle,
+  SelectorDirection,
+  TextAnimationAdvancedControls,
+  TextAnimationBrandBehavior,
+  TextAnimationCategory,
+  TextAnimationInstance,
+  TextAnimationMode,
+  TextAnimationPreset,
+  TextAnimationProperties,
+  TextAnimationRenderer,
+  TextAnimationSelector,
+  TextAnimationSettings,
+  TextAnimationTarget,
+  TextAnimationUserControls,
+  ResolvedTextAnimation,
+  ResolvedUnitTiming,
+} from "./text-animation";

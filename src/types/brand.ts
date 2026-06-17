@@ -1,6 +1,7 @@
 import type { EasingName } from "./easing";
 import type { BrandEffects } from "./effects";
 import type { BodyStyleName, HeadingStyleName, TypeStyle, TypeStyleName } from "./typography";
+import type { BrandTextAnimationDefaults } from "./text-animation";
 
 export type BrandPersonality =
   | "calm"
@@ -43,6 +44,7 @@ export type BrandMotion = {
   intensity: number;
   stagger: number;
   directionBias: "left" | "right" | "up" | "down";
+  textAnimation?: BrandTextAnimationDefaults;
 };
 
 export type BrandPreset = {
