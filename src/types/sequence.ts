@@ -1,3 +1,4 @@
+import type { CameraSettings } from "./camera";
 import type { MotionBlockInstance } from "./motion-block";
 import type { PostFXSettings } from "./post-fx";
 import type { BlockTransition } from "./transition";
@@ -11,6 +12,7 @@ export type MotionSequence = {
   fps?: number;
   logoText?: string;
   postFx?: PostFXSettings;
+  camera?: CameraSettings;
   blocks: MotionBlockInstance[];
   transitions: BlockTransition[];
 };

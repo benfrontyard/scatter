@@ -67,10 +67,7 @@ function PanelShell({
 }) {
   return (
     <aside
-      className={cn(
-        "flex w-full shrink-[2] flex-col border-l border-border bg-card md:w-[320px] md:min-w-[240px] md:max-w-[320px]",
-        className,
-      )}
+      className={cn("flex h-full w-full min-w-0 flex-col border-l border-border bg-card", className)}
     >
       <div className="flex shrink-0 items-start gap-2 border-b border-border px-3 py-2.5">
         <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />

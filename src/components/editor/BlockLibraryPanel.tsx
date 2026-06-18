@@ -27,10 +27,7 @@ export function BlockLibraryPanel({ className }: BlockLibraryPanelProps) {
 
   return (
     <aside
-      className={cn(
-        "flex w-[260px] min-w-[200px] max-w-[260px] shrink-[3] flex-col border-r border-border bg-card",
-        className,
-      )}
+      className={cn("flex h-full w-full min-w-0 flex-col border-r border-border bg-card", className)}
     >
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2.5">
         <Blocks className="h-3.5 w-3.5 text-muted-foreground" />

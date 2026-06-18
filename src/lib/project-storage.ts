@@ -2,6 +2,7 @@ import { defaultMotionSequence } from "@/config/sequences/default";
 import { CUSTOM_BRAND_ID, duplicateBrandAsCustom, resolveBrand } from "@/lib/brand-utils";
 import { normalizeBlockEffects, normalizeBrandEffects } from "@/lib/effects";
 import { normalizePostFXSettings } from "@/lib/post-fx";
+import { normalizeCameraSettings } from "@/lib/camera";
 import { normalizeBlockTextAnimations } from "@/lib/text-animation";
 import { normalizeBrandColors } from "@/lib/brand-colors";
 import { normalizeBrandTypography } from "@/lib/typography";
@@ -113,6 +114,7 @@ function migrateProject(project: ScatterProject): ScatterProject {
       brandPresetId,
       blocks: migrateBlockEffects(sequence.blocks),
       postFx: normalizePostFXSettings(sequence.postFx),
+      camera: normalizeCameraSettings(sequence.camera),
     },
     customBrands,
   };

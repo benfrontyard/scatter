@@ -6,6 +6,7 @@ import { ScatterComposition } from "@/remotion/ScatterComposition";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useGoogleFont } from "@/hooks/use-google-font";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { Pause, Play } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PlayerRef } from "@remotion/player";
@@ -64,7 +65,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
     postFx,
     registerPlayer,
   } = useEditor();
-
+  const reducedMotion = useReducedMotion();
   useGoogleFont(brand.typography.fontFamilies.heading);
   useGoogleFont(brand.typography.fontFamilies.body);
   useGoogleFont(brand.typography.fontFamilies.accent);
@@ -137,7 +138,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
   return (
     <div
       className={cn(
-        "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[#0c0c0c]",
+        "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-preview-surface",
         className,
       )}
     >
@@ -184,7 +185,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
           <Player
             ref={playerRef}
             component={ScatterComposition}
-            inputProps={{ sequence, customBrands, renderMode: "preview" }}
+            inputProps={{ sequence, customBrands, renderMode: "preview", reducedMotion }}
             durationInFrames={durationInFrames}
             compositionWidth={compositionWidth}
             compositionHeight={compositionHeight}

@@ -1,23 +1,71 @@
 @import "tailwindcss";
 
-@theme {
-  --color-background: #0a0a0a;
-  --color-foreground: #fafafa;
-  --color-card: #111111;
-  --color-card-foreground: #fafafa;
-  --color-popover: #171717;
-  --color-popover-foreground: #fafafa;
-  --color-primary: #fafafa;
-  --color-primary-foreground: #0a0a0a;
-  --color-secondary: #262626;
-  --color-secondary-foreground: #fafafa;
-  --color-muted: #262626;
-  --color-muted-foreground: #a3a3a3;
-  --color-accent: #262626;
-  --color-accent-foreground: #fafafa;
-  --color-border: #262626;
-  --color-input: #262626;
-  --color-ring: #d4d4d4;
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #f4f4f5;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --popover: #ffffff;
+  --popover-foreground: #18181b;
+  --primary: #18181b;
+  --primary-foreground: #fafafa;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #3f3f46;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --destructive: #dc2626;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #a1a1aa;
+  --preview-surface: #e4e4e7;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #111111;
+  --card-foreground: #fafafa;
+  --popover: #171717;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --secondary: #262626;
+  --secondary-foreground: #fafafa;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #262626;
+  --accent-foreground: #fafafa;
+  --destructive: #f87171;
+  --border: #262626;
+  --input: #262626;
+  --ring: #d4d4d4;
+  --preview-surface: #0c0c0c;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-preview-surface: var(--preview-surface);
   --radius: 0.5rem;
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -86,4 +134,76 @@ body {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+@keyframes camera-push-in {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes camera-pull-back {
+  0%,
+  100% {
+    transform: scale(1.2);
+  }
+  50% {
+    transform: scale(1);
+  }
+}
+
+@keyframes camera-focus-shift {
+  0%,
+  100% {
+    transform: translateX(-8px) scale(1.05);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateX(8px) scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes camera-orbit {
+  0%,
+  100% {
+    transform: rotate(-3deg) scale(1);
+  }
+  50% {
+    transform: rotate(3deg) scale(1);
+  }
+}
+
+@keyframes camera-parallax {
+  0%,
+  100% {
+    transform: translateX(-12px);
+  }
+  50% {
+    transform: translateX(12px);
+  }
+}
+
+.animate-camera-push-in {
+  animation: camera-push-in 3s ease-in-out infinite;
+}
+
+.animate-camera-pull-back {
+  animation: camera-pull-back 3s ease-in-out infinite;
+}
+
+.animate-camera-focus-shift {
+  animation: camera-focus-shift 3s ease-in-out infinite;
+}
+
+.animate-camera-orbit {
+  animation: camera-orbit 4s ease-in-out infinite;
+}
+
+.animate-camera-parallax {
+  animation: camera-parallax 3.5s ease-in-out infinite;
 }

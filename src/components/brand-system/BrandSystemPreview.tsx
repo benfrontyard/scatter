@@ -114,7 +114,7 @@ export function BrandSystemPreview({
 
           <div
             ref={areaRef}
-            className="flex min-h-0 flex-1 items-center justify-center bg-[#0c0c0c] p-4"
+            className="flex min-h-0 flex-1 items-center justify-center bg-preview-surface p-4"
           >
             <div
               className="overflow-hidden rounded-md border border-border bg-black shadow-lg"

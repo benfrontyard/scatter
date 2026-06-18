@@ -28,12 +28,19 @@ import type {
   MotionSequence,
   PostFXSettings,
   ProjectAsset,
+  CameraSettings,
+  Block3DSettings,
 } from "@/types";
 import { EDITOR_FPS, type EditorStep } from "@/types/editor";
 import { normalizePostFXSettings } from "@/lib/post-fx";
+import {
+  applyCameraPreset as buildCameraPreset,
+  focusCameraOnBlock as setCameraFocus,
+  normalizeCameraSettings,
+} from "@/lib/camera";
 import type { PlayerRef } from "@remotion/player";
 
-type SettingsPanelView = "project" | "postFx";
+type SettingsPanelView = "project" | "postFx" | "camera";
 
 export type EditorToastState = {
   message: string;
@@ -54,6 +61,11 @@ type EditorActions = {
   setSettingsPanelView: (view: SettingsPanelView) => void;
   updatePostFX: (postFx: PostFXSettings) => void;
   applyPostFXPreset: (postFx: PostFXSettings) => void;
+  updateCamera: (camera: CameraSettings) => void;
+  applyCameraPreset: (presetId: string) => void;
+  focusCameraOnBlock: (blockId: string) => void;
+  focusCameraOnSelectedBlock: () => void;
+  updateBlock3D: (blockId: string, block3D: Block3DSettings | undefined) => void;
   updateBlockTypographyOverride: (
     blockId: string,
     override: BlockTypographyOverride | undefined,
@@ -128,6 +140,7 @@ type EditorContextValue = {
   setShowProjectMenu: (show: boolean) => void;
   settingsPanelView: SettingsPanelView;
   postFx: PostFXSettings;
+  camera: CameraSettings;
   toast: EditorToastState | null;
 } & EditorActions;
 
@@ -173,6 +186,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const format = motionFormats.find((item) => item.id === sequence.format) ?? motionFormats[0];
   const fps = sequence.fps ?? EDITOR_FPS;
   const postFx = normalizePostFXSettings(sequence.postFx);
+  const camera = normalizeCameraSettings(sequence.camera);
 
   const isDirty = !snapshotsEqual(history.present, savedSnapshotRef.current);
 
@@ -284,6 +298,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       setShowProjectMenu,
       settingsPanelView,
       postFx,
+      camera,
       toast,
       setSettingsPanelView,
       setStep,
@@ -391,6 +406,64 @@ export function EditorProvider({ children }: { children: ReactNode }) {
                 id: `${effect.type}-${crypto.randomUUID().slice(0, 8)}`,
               })),
             },
+          },
+        }));
+      },
+      updateCamera: (nextCamera) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            camera: normalizeCameraSettings(nextCamera),
+          },
+        }));
+      },
+      applyCameraPreset: (presetId) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            camera: buildCameraPreset(presetId),
+          },
+        }));
+      },
+      focusCameraOnBlock: (blockId) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            camera: setCameraFocus(
+              normalizeCameraSettings(prev.sequence.camera),
+              blockId,
+            ),
+          },
+        }));
+      },
+      focusCameraOnSelectedBlock: () => {
+        if (!selectedBlockId) return;
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            camera: setCameraFocus(
+              normalizeCameraSettings({
+                ...normalizeCameraSettings(prev.sequence.camera),
+                enabled: true,
+              }),
+              selectedBlockId,
+            ),
+          },
+        }));
+        setSettingsPanelView("camera");
+      },
+      updateBlock3D: (blockId, block3D) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            blocks: prev.sequence.blocks.map((block) =>
+              block.id === blockId ? { ...block, block3D } : block,
+            ),
           },
         }));
       },
@@ -727,6 +800,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       showProjectMenu,
       settingsPanelView,
       postFx,
+      camera,
       toast,
       updateSnapshot,
       loadSnapshot,

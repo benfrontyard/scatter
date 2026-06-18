@@ -11,6 +11,7 @@ import {
 import type { BrandPreset, MotionFormat, MotionSequence, PostFXRenderMode } from "@/types";
 import { AbsoluteFill, Sequence as RemotionSequence, useCurrentFrame } from "remotion";
 import { renderBlockContent } from "./blocks";
+import { Block3DWrapper, CameraWrapper } from "./CameraWrapper";
 import { LoadProjectFont } from "./LoadProjectFont";
 import { PostFXWrapper } from "./PostFXWrapper";
 import { getBlockTransitionOverlay } from "./transitions";
@@ -19,12 +20,14 @@ export type ScatterCompositionProps = {
   sequence: MotionSequence;
   customBrands?: BrandPreset[];
   renderMode?: PostFXRenderMode;
+  reducedMotion?: boolean;
 };
 
 export function ScatterComposition({
   sequence,
   customBrands = [],
   renderMode = "export",
+  reducedMotion = false,
 }: ScatterCompositionProps) {
   const brand = resolveBrand(sequence.brandPresetId, customBrands);
   const format = motionFormatMap[sequence.format] ?? Object.values(motionFormatMap)[0];
@@ -58,37 +61,46 @@ export function ScatterComposition({
       <LoadProjectFont families={fontFamilies} />
       <AbsoluteFill style={{ backgroundColor: sequence.canvasBackground || brand.colors.background }}>
         <PostFXWrapper postFx={sequence.postFx} renderMode={renderMode}>
-          {sequence.blocks.map((block, index) => {
-            const definition = motionBlockMap[block.blockId];
-            if (!definition) return null;
+          <CameraWrapper sequence={sequence} renderMode={renderMode} reducedMotion={reducedMotion}>
+            {sequence.blocks.map((block, index) => {
+              const definition = motionBlockMap[block.blockId];
+              if (!definition) return null;
 
-            const startFrame = getBlockStartFrame(sequence, index);
+              const startFrame = getBlockStartFrame(sequence, index);
 
-            return (
-              <RemotionSequence
-                key={block.id}
-                from={startFrame}
-                durationInFrames={block.duration}
-                layout="none"
-              >
-                <BlockWithTransitions
-                  blockIndex={index}
-                  blockDuration={block.duration}
-                  sequence={sequence}
-                  customBrands={customBrands}
-                  formatWidth={format.width}
-                  formatHeight={format.height}
+              return (
+                <RemotionSequence
+                  key={block.id}
+                  from={startFrame}
+                  durationInFrames={block.duration}
+                  layout="none"
                 >
-                  {renderBlockContent({
-                    brand,
-                    block,
-                    definition,
-                    format,
-                  })}
-                </BlockWithTransitions>
-              </RemotionSequence>
-            );
-          })}
+                  <Block3DWrapper
+                    blockIndex={index}
+                    sequence={sequence}
+                    renderMode={renderMode}
+                    reducedMotion={reducedMotion}
+                  >
+                    <BlockWithTransitions
+                      blockIndex={index}
+                      blockDuration={block.duration}
+                      sequence={sequence}
+                      customBrands={customBrands}
+                      formatWidth={format.width}
+                      formatHeight={format.height}
+                    >
+                      {renderBlockContent({
+                        brand,
+                        block,
+                        definition,
+                        format,
+                      })}
+                    </BlockWithTransitions>
+                  </Block3DWrapper>
+                </RemotionSequence>
+              );
+            })}
+          </CameraWrapper>
         </PostFXWrapper>
       </AbsoluteFill>
     </>

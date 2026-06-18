@@ -38,6 +38,19 @@ export type {
 export type { EasingPreset, EasingBezier, EasingCategory } from "./easing";
 export type { MotionSequence, SequenceTimelineItem } from "./sequence";
 export type {
+  Block3DSettings,
+  CameraDepthOfField,
+  CameraKeyframe,
+  CameraMotion,
+  CameraPreset,
+  CameraRenderMode,
+  CameraSettings,
+  CameraState,
+  DepthMode,
+  FocalLength,
+  LensPreset,
+} from "./camera";
+export type {
   ExportFXQuality,
   PostFXBlendMode,
   PostFXEffect,

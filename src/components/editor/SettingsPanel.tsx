@@ -1,8 +1,10 @@
 import { BlockAdvancedTypography } from "@/components/editor/BlockAdvancedTypography";
 import { BlockAdvancedEffects } from "@/components/editor/BlockAdvancedEffects";
+import { Block3DPanel, CameraJumpButton } from "@/components/editor/Block3DPanel";
 import { TextAnimationPanel } from "@/components/editor/TextAnimationPanel";
 import { ExportPanel } from "@/components/editor/ExportPanel";
 import { PostFXPanel } from "@/components/editor/PostFXPanel";
+import { CameraPanel } from "@/components/editor/CameraPanel";
 import { EasingPicker } from "@/components/editor/EasingPicker";
 import { motionBlockMap } from "@/config/blocks";
 import { motionFormats } from "@/config/formats";
@@ -34,7 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Film, Layers, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Camera, Film, Layers, SlidersHorizontal, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -133,10 +135,7 @@ function PanelShell({
 }) {
   return (
     <aside
-      className={cn(
-        "flex w-full shrink-[2] flex-col border-l border-border bg-card md:w-[320px] md:min-w-[240px] md:max-w-[320px]",
-        className,
-      )}
+      className={cn("flex h-full w-full min-w-0 flex-col border-l border-border bg-card", className)}
     >
       <div className="flex shrink-0 items-start gap-2 border-b border-border px-3 py-2.5">
         <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -568,9 +567,12 @@ function BlockSettings({ className }: { className?: string }) {
                   onChange={(effects) => updateBlockEffects(selectedBlock.id, effects)}
                 />
                 <PostFXJumpButton />
+                <CameraJumpButton />
               </div>
             </AccordionContent>
           </AccordionItem>
+
+          <Block3DPanel block={selectedBlock} />
 
           <AccordionItem value="advanced" className="border-border">
             <AccordionTrigger className="text-muted-foreground">Advanced</AccordionTrigger>
@@ -710,19 +712,28 @@ function CompositionSettingsTabs({
   activeView,
 }: {
   className?: string;
-  activeView: "project" | "postFx";
+  activeView: "project" | "postFx" | "camera";
 }) {
-  const { setSettingsPanelView, postFx } = useEditor();
+  const { setSettingsPanelView, postFx, camera } = useEditor();
 
   return (
     <Tabs
       value={activeView}
-      onValueChange={(value) => setSettingsPanelView(value as "project" | "postFx")}
-      className={cn("flex min-h-0 flex-1 flex-col", className)}
+      onValueChange={(value) =>
+        setSettingsPanelView(value as "project" | "postFx" | "camera")
+      }
+      className={cn("flex h-full w-full min-w-0 flex-col", className)}
     >
       <TabsList className="mx-3 mt-2 h-8 w-fit shrink-0 self-start justify-start rounded-md bg-secondary/50 p-0.5">
         <TabsTrigger value="project" className="h-7 shrink-0 px-3 text-xs">
           Project
+        </TabsTrigger>
+        <TabsTrigger value="camera" className="h-7 shrink-0 px-3 text-xs">
+          <Camera className="mr-1 h-3 w-3" />
+          Camera
+          {camera.enabled ? (
+            <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+          ) : null}
         </TabsTrigger>
         <TabsTrigger value="postFx" className="h-7 shrink-0 px-3 text-xs">
           <Sparkles className="mr-1 h-3 w-3" />
@@ -737,6 +748,12 @@ function CompositionSettingsTabs({
         className="mt-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
       >
         <ProjectSettings className="h-full w-full min-w-0 max-w-none border-l-0" />
+      </TabsContent>
+      <TabsContent
+        value="camera"
+        className="mt-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+      >
+        <CameraPanel className="h-full w-full min-w-0 max-w-none border-l-0" />
       </TabsContent>
       <TabsContent
         value="postFx"
@@ -885,16 +902,20 @@ export function SettingsPanel({ className }: SettingsPanelProps) {
     return <TransitionSettings className={className} />;
   }
 
-  if (selectedBlock) {
-    return <BlockSettings className={className} />;
-  }
-
   if (step === "export") {
     return <ExportPanel className={className} />;
   }
 
   if (settingsPanelView === "postFx") {
     return <CompositionSettingsTabs className={className} activeView="postFx" />;
+  }
+
+  if (settingsPanelView === "camera") {
+    return <CompositionSettingsTabs className={className} activeView="camera" />;
+  }
+
+  if (selectedBlock) {
+    return <BlockSettings className={className} />;
   }
 
   return <ProjectSettingsTabs className={className} />;

@@ -21,11 +21,16 @@ import { Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 const BLOCK_COLORS: Record<string, string> = {
-  "logo-reveal": "bg-blue-500/15 border-blue-500/40 text-blue-100",
-  "feature-announcement": "bg-violet-500/15 border-violet-500/40 text-violet-100",
-  "product-carousel": "bg-cyan-500/15 border-cyan-500/40 text-cyan-100",
-  "stat-card": "bg-emerald-500/15 border-emerald-500/40 text-emerald-100",
-  "cta-lockup": "bg-amber-500/15 border-amber-500/40 text-amber-100",
+  "logo-reveal":
+    "border-blue-500/35 bg-blue-500/10 text-blue-800 dark:border-blue-500/40 dark:bg-blue-500/15 dark:text-blue-100",
+  "feature-announcement":
+    "border-violet-500/35 bg-violet-500/10 text-violet-800 dark:border-violet-500/40 dark:bg-violet-500/15 dark:text-violet-100",
+  "product-carousel":
+    "border-cyan-500/35 bg-cyan-500/10 text-cyan-800 dark:border-cyan-500/40 dark:bg-cyan-500/15 dark:text-cyan-100",
+  "stat-card":
+    "border-emerald-500/35 bg-emerald-500/10 text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-100",
+  "cta-lockup":
+    "border-amber-500/35 bg-amber-500/10 text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-100",
 };
 
 const CATEGORY_COLORS: Record<BlockCategory, string> = {
@@ -414,7 +419,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                         colorClass,
                         isSelected
                           ? "border-foreground/50 ring-2 ring-foreground ring-offset-1 ring-offset-card shadow-sm"
-                          : "hover:brightness-110",
+                          : "hover:brightness-[0.97] dark:hover:brightness-110",
                       )}
                       aria-pressed={isSelected}
                       aria-label={`${blockName}, ${durationLabel}`}

@@ -1,4 +1,5 @@
 import { EditorProvider } from "@/context/editor-context";
+import { ThemeProvider } from "@/context/theme-context";
 import { EditorLayout } from "@/components/layout/EditorLayout";
 import { KeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { KeyboardShortcutsModal } from "@/components/editor/KeyboardShortcutsModal";
@@ -8,6 +9,7 @@ import { EditorToast } from "@/components/editor/EditorToast";
 
 export default function App() {
   return (
+    <ThemeProvider>
     <EditorProvider>
       <KeyboardShortcuts />
       <EditorLayout />
@@ -16,5 +18,6 @@ export default function App() {
       <BrandSystemView />
       <EditorToast />
     </EditorProvider>
+    </ThemeProvider>
   );
 }

@@ -1,3 +1,4 @@
+import type { Block3DSettings } from "./camera";
 import type { BlockTypographyOverride } from "./typography";
 import type { EffectInstance } from "./effects";
 import type { TextAnimationInstance } from "./text-animation";
@@ -54,4 +55,5 @@ export type MotionBlockInstance = {
   typographyOverride?: BlockTypographyOverride;
   effects?: EffectInstance[];
   textAnimations?: TextAnimationInstance[];
+  block3D?: Block3DSettings;
 };

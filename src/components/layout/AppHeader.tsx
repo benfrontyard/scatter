@@ -17,6 +17,7 @@ import {
   Undo2,
   X,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { motionFormats } from "@/config/formats";
 
 type AppHeaderProps = {
@@ -181,6 +182,7 @@ export function AppHeader({ compact }: AppHeaderProps) {
             <FolderOpen className="h-3.5 w-3.5" />
           </Button>
         )}
+        <ThemeToggle />
         <Button
           variant="ghost"
           size="icon"

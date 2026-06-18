@@ -5,6 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/scatter.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Scatter</title>
+    <script>
+      (function () {
+        var theme = localStorage.getItem("scatter-theme");
+        if (theme !== "light") {
+          document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = "dark";
+        } else {
+          document.documentElement.style.colorScheme = "light";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
