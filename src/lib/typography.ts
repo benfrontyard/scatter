@@ -5,6 +5,10 @@ import {
   FORMAT_TYPE_PROFILES,
   REFERENCE_FORMAT_HEIGHT,
 } from "@/config/typography/defaults";
+import {
+  createDefaultTypographyRoles,
+  rolesFromLegacyScale,
+} from "@/config/typography/roles";
 import { defaultProjectFont } from "@/config/fonts";
 import { buildFontStack } from "@/lib/google-fonts";
 import type { BrandTypography } from "@/types/brand";
@@ -54,13 +58,18 @@ function isStructuredTypography(value: unknown): value is BrandTypography {
 
 export function normalizeBrandTypography(typography: unknown): BrandTypography {
   if (isStructuredTypography(typography)) {
+    const mergedScale = { ...defaultBrandTypography.scale, ...typography.scale };
     return {
       fontFamilies: {
         heading: typography.fontFamilies.heading,
         body: typography.fontFamilies.body,
         accent: typography.fontFamilies.accent ?? typography.fontFamilies.heading,
       },
-      scale: { ...defaultBrandTypography.scale, ...typography.scale },
+      scale: mergedScale,
+      roles: typography.roles
+        ? { ...createDefaultTypographyRoles(), ...typography.roles }
+        : rolesFromLegacyScale(mergedScale),
+      density: typography.density ?? "balanced",
       defaults: { ...defaultBrandTypography.defaults, ...typography.defaults },
     };
   }

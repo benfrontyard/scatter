@@ -1,5 +1,8 @@
 import { defaultMotionSequence } from "@/config/sequences/default";
 import { CUSTOM_BRAND_ID, duplicateBrandAsCustom, resolveBrand } from "@/lib/brand-utils";
+import { normalizeBlockLayoutOverrides } from "@/lib/block-layout";
+import { normalizeBrandComposition } from "@/lib/brand-composition";
+import { normalizeBrandLogoSystem } from "@/lib/brand-logo";
 import { normalizeBlockEffects, normalizeBrandEffects } from "@/lib/effects";
 import { normalizePostFXSettings } from "@/lib/post-fx";
 import { normalizeCameraSettings } from "@/lib/camera";
@@ -47,16 +50,27 @@ function migrateCustomBrands(customBrands: BrandPreset[]): BrandPreset[] {
     ...brand,
     colors: normalizeBrandColors(brand.colors),
     typography: normalizeBrandTypography(brand.typography),
+    composition: normalizeBrandComposition(brand.composition),
+    logos: normalizeBrandLogoSystem(brand.logos, brand.name),
     effects: normalizeBrandEffects(brand.effects),
   }));
 }
 
-function migrateBlockEffects(blocks: MotionBlockInstance[]): MotionBlockInstance[] {
+function migrateBlockLayout(blocks: MotionBlockInstance[]): MotionBlockInstance[] {
   return blocks.map((block) => ({
     ...block,
-    effects: normalizeBlockEffects(block.effects),
-    textAnimations: normalizeBlockTextAnimations(block.textAnimations),
+    layoutOverrides: normalizeBlockLayoutOverrides(block.layoutOverrides),
   }));
+}
+
+function migrateBlockEffects(blocks: MotionBlockInstance[]): MotionBlockInstance[] {
+  return migrateBlockLayout(
+    blocks.map((block) => ({
+      ...block,
+      effects: normalizeBlockEffects(block.effects),
+      textAnimations: normalizeBlockTextAnimations(block.textAnimations),
+    })),
+  );
 }
 
 function migrateProject(project: ScatterProject): ScatterProject {

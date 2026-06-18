@@ -1,5 +1,45 @@
 export type { BrandPreset, BrandColors, BrandTypography, BrandMotion, BrandPersonality } from "./brand";
 export type {
+  AlignmentMode,
+  BrandComposition,
+  CompositionStyle,
+  GridStrength,
+  LayoutDensity,
+  LayoutZone,
+  MediaPosition,
+  MotionComposition,
+  ResolvedLayoutZone,
+  ResolvedSafeArea,
+  SafeAreaPreset,
+  StackDirection,
+} from "./brand-composition";
+export type {
+  BrandLogoSystem,
+  LogoAsset,
+  LogoAssetType,
+  LogoBackgroundCompatibility,
+  LogoMotionStyle,
+  LogoPlacementRole,
+  LogoPreferredUse,
+  LogoUsageContext,
+  LogoVariantRole,
+  ContrastVariant,
+  ResolveLogoInput,
+  ResolvedLogoPlacement,
+  /** @deprecated */ BrandLogoVariant,
+  /** @deprecated */ LogoType,
+  /** @deprecated */ LogoVariantKind,
+} from "./brand-logo";
+export type {
+  BlockFormatLayoutOverrides,
+  BlockLayoutIntent,
+  BlockLayoutOverride,
+  LayoutSource,
+  ResolvedBlockLayout,
+  ResolvedMediaLayout,
+  ResolveBlockLayoutInput,
+} from "./block-layout";
+export type {
   EffectCategory,
   EffectControlDefinition,
   EffectControlType,
@@ -60,6 +100,15 @@ export type {
   PostFXRenderMode,
   PostFXSettings,
 } from "./post-fx";
+export type {
+  AspectRatioId,
+  BrandTypographyRoles,
+  FormatTypographyScale,
+  ResolvedTypographyRole,
+  TypographyRoleDefinition,
+  TypographyRoleName,
+  TypeDensity,
+} from "./typography-role";
 export type {
   BlockTypographyOverride,
   FontRole,

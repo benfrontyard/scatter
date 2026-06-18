@@ -4,6 +4,7 @@ import {
   BrandAdvancedSection,
   BrandColorsSection,
   BrandEffectsSection,
+  BrandLogosSection,
   BrandMotionSection,
   BrandOverviewSection,
   BrandTypographySection,
@@ -27,6 +28,8 @@ export function BrandSystemView() {
     setShowBrandSystem,
     commitBrandDraft,
     duplicateBrandToCustom,
+    assets,
+    addAsset,
   } = useEditor();
 
   const isMobile = useMediaQuery(mediaQueries.mobile);
@@ -67,8 +70,10 @@ export function BrandSystemView() {
   const sectionProps = {
     draftBrand,
     logoText: draftLogoText,
+    assets,
     onBrandChange: setDraftBrand,
     onLogoTextChange: setDraftLogoText,
+    onUploadAsset: addAsset,
     onDuplicate: () => duplicateBrandToCustom(brand.id),
   };
 
@@ -76,6 +81,8 @@ export function BrandSystemView() {
     switch (section) {
       case "overview":
         return <BrandOverviewSection {...sectionProps} />;
+      case "logos":
+        return <BrandLogosSection {...sectionProps} />;
       case "colors":
         return <BrandColorsSection {...sectionProps} />;
       case "typography":
@@ -134,6 +141,7 @@ export function BrandSystemView() {
           <BrandSystemPreview
             brand={draftBrand}
             logoText={draftLogoText}
+            assets={assets}
             collapsible
             className="shrink-0 border-b border-border"
           />
@@ -177,6 +185,7 @@ export function BrandSystemView() {
             <BrandSystemPreview
               brand={draftBrand}
               logoText={draftLogoText}
+              assets={assets}
               className="hidden border-l border-border xl:flex"
             />
           </div>
@@ -190,6 +199,7 @@ export function BrandSystemView() {
           <BrandSystemPreview
             brand={draftBrand}
             logoText={draftLogoText}
+            assets={assets}
             className="border-l border-border"
           />
         </div>

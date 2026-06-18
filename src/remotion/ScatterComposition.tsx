@@ -8,7 +8,7 @@ import {
   resolveFontStack,
   resolvedTypeStyleToCss,
 } from "@/lib/typography";
-import type { BrandPreset, MotionFormat, MotionSequence, PostFXRenderMode } from "@/types";
+import type { BrandPreset, MotionFormat, MotionSequence, PostFXRenderMode, ProjectAsset } from "@/types";
 import { AbsoluteFill, Sequence as RemotionSequence, useCurrentFrame } from "remotion";
 import { renderBlockContent } from "./blocks";
 import { Block3DWrapper, CameraWrapper } from "./CameraWrapper";
@@ -19,6 +19,7 @@ import { getBlockTransitionOverlay } from "./transitions";
 export type ScatterCompositionProps = {
   sequence: MotionSequence;
   customBrands?: BrandPreset[];
+  assets?: ProjectAsset[];
   renderMode?: PostFXRenderMode;
   reducedMotion?: boolean;
 };
@@ -26,6 +27,7 @@ export type ScatterCompositionProps = {
 export function ScatterComposition({
   sequence,
   customBrands = [],
+  assets = [],
   renderMode = "export",
   reducedMotion = false,
 }: ScatterCompositionProps) {
@@ -94,6 +96,7 @@ export function ScatterComposition({
                         block,
                         definition,
                         format,
+                        assets,
                       })}
                     </BlockWithTransitions>
                   </Block3DWrapper>

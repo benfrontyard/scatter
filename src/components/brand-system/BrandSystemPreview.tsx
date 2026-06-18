@@ -3,7 +3,7 @@ import { motionFormatMap } from "@/config/formats";
 import { defaultFormatId } from "@/config/formats";
 import { useGoogleFont } from "@/hooks/use-google-font";
 import { cn } from "@/lib/utils";
-import type { BrandPreset } from "@/types";
+import type { BrandPreset, ProjectAsset } from "@/types";
 import {
   BrandSampleComposition,
   getBrandSampleDuration,
@@ -29,6 +29,7 @@ const SAMPLE_BLOCKS = [
 type BrandSystemPreviewProps = {
   brand: BrandPreset;
   logoText: string;
+  assets?: ProjectAsset[];
   className?: string;
   collapsible?: boolean;
 };
@@ -36,6 +37,7 @@ type BrandSystemPreviewProps = {
 export function BrandSystemPreview({
   brand,
   logoText,
+  assets = [],
   className,
   collapsible = false,
 }: BrandSystemPreviewProps) {
@@ -127,7 +129,7 @@ export function BrandSystemPreview({
               <Player
                 key={`${blockId}-${brand.name}`}
                 component={BrandSampleComposition}
-                inputProps={{ brand, format, blockId, logoText }}
+                inputProps={{ brand, format, blockId, logoText, assets }}
                 durationInFrames={durationInFrames}
                 compositionWidth={format.width}
                 compositionHeight={format.height}

@@ -54,6 +54,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
   const {
     sequence,
     customBrands,
+    assets,
     brand,
     format,
     fps,
@@ -185,7 +186,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
           <Player
             ref={playerRef}
             component={ScatterComposition}
-            inputProps={{ sequence, customBrands, renderMode: "preview", reducedMotion }}
+            inputProps={{ sequence, customBrands, assets, renderMode: "preview", reducedMotion }}
             durationInFrames={durationInFrames}
             compositionWidth={compositionWidth}
             compositionHeight={compositionHeight}

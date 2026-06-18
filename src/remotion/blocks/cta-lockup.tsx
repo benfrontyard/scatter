@@ -1,11 +1,10 @@
-import {
-  clampHeadlineText,
-  resolveBlockSlotStyle,
-  resolveFontStack,
-  resolvedTypeStyleToCss,
-} from "@/lib/typography";
-import type { BrandPreset, MotionBlockInstance, MotionFormat } from "@/types";
+import { clampHeadlineText, resolveFontStack } from "@/lib/typography";
+import { resolvedRoleToCss } from "@/lib/layout/typography-css";
+import { resolveBlockLayoutFromInstance } from "@/lib/layout";
+import type { BrandPreset, MotionBlockInstance, MotionFormat, ProjectAsset } from "@/types";
 import { useCurrentFrame } from "remotion";
+import { BrandLogoMark } from "../BrandLogoMark";
+import { BlockLayoutZone } from "../BlockLayoutZone";
 import {
   getEnterProgress,
   getFadeOpacity,
@@ -21,12 +20,15 @@ type CtaLockupBlockProps = {
   brand: BrandPreset;
   block: MotionBlockInstance;
   format: MotionFormat;
+  assets?: ProjectAsset[];
 };
 
-export function CtaLockupBlock({ brand, block, format }: CtaLockupBlockProps) {
+export function CtaLockupBlock({ brand, block, format, assets = [] }: CtaLockupBlockProps) {
   const frame = useCurrentFrame();
   const duration = block.duration;
   const { width: formatWidth, height: formatHeight } = format;
+
+  const layout = resolveBlockLayoutFromInstance({ brand, block, format, includeLogo: true });
 
   const { direction, intensity, speed, stagger, entranceEasing, exitEasing } =
     resolveBlockMotionParams(brand, block);
@@ -34,7 +36,7 @@ export function CtaLockupBlock({ brand, block, format }: CtaLockupBlockProps) {
   const message = block.content.message ?? "";
   const cta = block.content.cta ?? "Get started";
   const url = block.content.url ?? "";
-  const logoText = block.content.logoText || "SCATTER";
+  const logoText = block.content.logoText || brand.logos.textFallback || "SCATTER";
 
   const timing = getIntroTiming(duration, stagger, speed);
   const outroOpacity = getOutroOpacity(frame, duration, 0.08, exitEasing);
@@ -77,36 +79,11 @@ export function CtaLockupBlock({ brand, block, format }: CtaLockupBlockProps) {
 
   const buttonScale = Number(block.motion.controls.buttonScale ?? 1);
 
-  const messageType = resolveBlockSlotStyle(
-    brand.typography,
-    format,
-    "title",
-    block.typographyOverride,
-    "headline",
-  );
-  const ctaType = resolveBlockSlotStyle(
-    brand.typography,
-    format,
-    "label",
-    block.typographyOverride,
-    "title",
-  );
-  const logoType = resolveBlockSlotStyle(
-    brand.typography,
-    format,
-    brand.typography.defaults.labelStyle,
-    block.typographyOverride,
-    "label",
-  );
-  const urlType = resolveBlockSlotStyle(
-    brand.typography,
-    format,
-    "caption",
-    block.typographyOverride,
-    "caption",
-  );
-
-  const logoSize = logoType.fontSize;
+  const messageType = layout.slots.message ?? layout.slots.headline;
+  const ctaType = layout.slots.cta ?? layout.slots.title;
+  const logoType = layout.slots.logoText ?? layout.slots.label;
+  const urlType = layout.slots.url ?? layout.slots.caption;
+  const logoPlacement = layout.logo;
 
   const backgroundStyle = getTargetEffectStyle(brand, block, "background");
   const cardStyle = getTargetEffectStyle(brand, block, "card");
@@ -135,111 +112,90 @@ export function CtaLockupBlock({ brand, block, format }: CtaLockupBlockProps) {
       />
       <GrainOverlay grain={brand.effects.defaultGrain} />
 
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: formatHeight * 0.08,
-        }}
-      >
+      <BlockLayoutZone layout={layout}>
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: formatHeight * 0.035,
-            textAlign: "center",
-            padding: `${formatHeight * 0.04}px ${formatWidth * 0.06}px`,
-            maxWidth: formatWidth * 0.82,
+            gap: layout.gap,
+            textAlign: layout.alignment,
+            width: "100%",
+            maxWidth: layout.maxTextWidth,
+            padding: `${formatHeight * layout.padding * 0.5}px ${formatWidth * layout.padding * 0.4}px`,
             backgroundColor: `${brand.colors.foreground}04`,
             ...cardStyle,
           }}
         >
-          {message ? (
+          {message && messageType ? (
             <div
               style={{
                 opacity: messageOpacity,
                 transform: `translate(${messageTranslate.x}px, ${messageTranslate.y}px)`,
               }}
             >
-              <span
-                style={{
-                  ...resolvedTypeStyleToCss(messageType),
-                  maxWidth: messageType.maxWidth ?? formatWidth * 0.75,
-                }}
-              >
+              <span style={resolvedRoleToCss(messageType)}>
                 {clampHeadlineText(message, 100)}
               </span>
             </div>
           ) : null}
 
+          {cta && ctaType ? (
+            <div
+              style={mergeMotionAndEffectStyle(
+                {
+                  opacity: ctaOpacity,
+                  transform: `translateY(${ctaTranslate.y}px) scale(${ctaScale})`,
+                  padding: `${formatHeight * 0.018 * buttonScale}px ${formatWidth * 0.055 * buttonScale}px`,
+                  backgroundColor: brand.colors.accent,
+                  color: brand.colors.background,
+                },
+                ctaEffectStyle,
+              )}
+            >
+              <span
+                style={{
+                  ...resolvedRoleToCss({
+                    ...ctaType,
+                    fontSize: ctaType.fontSize * buttonScale,
+                  }),
+                }}
+              >
+                {cta}
+              </span>
+            </div>
+          ) : null}
+        </div>
+
+        {logoPlacement ? (
           <div
             style={mergeMotionAndEffectStyle(
               {
-                opacity: ctaOpacity,
-                transform: `translateY(${ctaTranslate.y}px) scale(${ctaScale})`,
-                padding: `${formatHeight * 0.018 * buttonScale}px ${formatWidth * 0.055 * buttonScale}px`,
-                backgroundColor: brand.colors.accent,
-                color: brand.colors.background,
+                opacity: logoOpacity,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: formatHeight * 0.008,
+                marginTop: layout.gap,
               },
-              ctaEffectStyle,
+              logoEffectStyle,
             )}
           >
-            <span
-              style={{
-                ...resolvedTypeStyleToCss({
-                  ...ctaType,
-                  fontSize: ctaType.fontSize * buttonScale,
-                }),
-              }}
-            >
-              {cta}
-            </span>
-          </div>
-        </div>
-
-        <div
-          style={mergeMotionAndEffectStyle(
-            {
-              opacity: logoOpacity,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: formatHeight * 0.008,
-              marginTop: formatHeight * 0.04,
-            },
-            logoEffectStyle,
-          )}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: formatWidth * 0.012 }}>
-            <div
-              style={{
-                width: logoSize * 0.5,
-                height: logoSize * 0.5,
-                borderRadius: logoSize * 0.1,
-                backgroundColor: brand.colors.accent,
-              }}
+            <BrandLogoMark
+              brand={brand}
+              placement={logoPlacement}
+              assets={assets}
+              textFallback={logoText}
+              textStyle={logoType}
             />
-            <span
-              style={{
-                ...resolvedTypeStyleToCss(logoType),
-                color: brand.colors.foreground,
-              }}
-            >
-              {logoText}
-            </span>
+            {url && urlType ? (
+              <span style={{ ...resolvedRoleToCss(urlType), color: brand.colors.muted }}>
+                {url}
+              </span>
+            ) : null}
           </div>
-          {url ? (
-            <span style={{ ...resolvedTypeStyleToCss(urlType), color: brand.colors.muted }}>{url}</span>
-          ) : null}
-        </div>
-      </div>
+        ) : null}
+      </BlockLayoutZone>
     </div>
   );
 }

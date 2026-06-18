@@ -1,7 +1,7 @@
 import { motionBlockMap } from "@/config/blocks";
 import { createBlockInstance } from "@/config/sequences/default";
 import { getBrandFontFamilies } from "@/lib/typography";
-import type { BrandPreset, MotionFormat } from "@/types";
+import type { BrandPreset, MotionFormat, ProjectAsset } from "@/types";
 import { AbsoluteFill } from "remotion";
 import { useMemo } from "react";
 import { renderBlockContent } from "./blocks";
@@ -12,6 +12,7 @@ export type BrandSampleCompositionProps = {
   format: MotionFormat;
   blockId: string;
   logoText: string;
+  assets?: ProjectAsset[];
 };
 
 export function BrandSampleComposition({
@@ -19,6 +20,7 @@ export function BrandSampleComposition({
   format,
   blockId,
   logoText,
+  assets = [],
 }: BrandSampleCompositionProps) {
   const block = useMemo(() => {
     const instance = createBlockInstance(blockId);
@@ -40,7 +42,7 @@ export function BrandSampleComposition({
     <AbsoluteFill>
       <LoadProjectFont families={getBrandFontFamilies(brand.typography)} />
       {definition
-        ? renderBlockContent({ brand, block, definition, format })
+        ? renderBlockContent({ brand, block, definition, format, assets })
         : null}
     </AbsoluteFill>
   );

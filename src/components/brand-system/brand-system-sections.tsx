@@ -1,4 +1,5 @@
 import { BrandEffectsPanel } from "@/components/editor/BrandEffectsPanel";
+import { BrandLogosPanel } from "@/components/editor/BrandLogosPanel";
 import { BrandTextAnimationDefaultsPanel } from "@/components/editor/BrandTextAnimationDefaultsPanel";
 import { BrandTypographyPanel } from "@/components/editor/BrandTypographyPanel";
 import { EasingPicker } from "@/components/editor/EasingPicker";
@@ -26,11 +27,12 @@ import { normalizeBrandColors } from "@/lib/brand-colors";
 import { normalizeBrandMotion } from "@/lib/easing";
 import { TYPE_STYLE_LABELS } from "@/config/typography/defaults";
 import { hasPoorContrast } from "@/lib/typography";
-import type { BrandPreset, BrandPersonality } from "@/types";
+import type { BrandPreset, BrandPersonality, ProjectAsset } from "@/types";
 import { useRef } from "react";
 
 export type BrandSystemSection =
   | "overview"
+  | "logos"
   | "colors"
   | "typography"
   | "motion"
@@ -84,8 +86,10 @@ function SectionIntro({ title, description }: { title: string; description: stri
 type SectionProps = {
   draftBrand: BrandPreset;
   logoText: string;
+  assets: ProjectAsset[];
   onBrandChange: (brand: BrandPreset) => void;
   onLogoTextChange: (text: string) => void;
+  onUploadAsset: (file: File) => Promise<ProjectAsset | null>;
   onDuplicate?: () => void;
 };
 
@@ -185,6 +189,31 @@ export function BrandOverviewSection({
             </div>
           </dl>
         </div>
+      </div>
+    </div>
+  );
+}
+
+export function BrandLogosSection({
+  draftBrand,
+  assets,
+  onBrandChange,
+  onUploadAsset,
+}: SectionProps) {
+  return (
+    <div>
+      <SectionIntro
+        title="Logos"
+        description="Build a responsive logo kit. Upload multiple variants and tag each for type, usage, and background compatibility."
+      />
+      <div className="max-w-3xl">
+        <BrandLogosPanel
+          embedded
+          brand={draftBrand}
+          assets={assets}
+          onBrandChange={onBrandChange}
+          onUploadAsset={onUploadAsset}
+        />
       </div>
     </div>
   );
@@ -559,6 +588,7 @@ export function BrandAdvancedSection({
 
 export const BRAND_SYSTEM_NAV: Array<{ id: BrandSystemSection; label: string }> = [
   { id: "overview", label: "Overview" },
+  { id: "logos", label: "Logos" },
   { id: "colors", label: "Colors" },
   { id: "typography", label: "Typography" },
   { id: "motion", label: "Motion" },

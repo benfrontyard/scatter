@@ -1,11 +1,10 @@
-import {
-  clampHeadlineText,
-  resolveBlockSlotStyle,
-  resolveFontStack,
-  resolvedTypeStyleToCss,
-} from "@/lib/typography";
-import type { BrandPreset, MotionBlockInstance, MotionFormat } from "@/types";
+import { clampHeadlineText, resolveFontStack } from "@/lib/typography";
+import { resolvedRoleToCss } from "@/lib/layout/typography-css";
+import { resolveBlockLayoutFromInstance } from "@/lib/layout";
+import type { BrandPreset, MotionBlockInstance, MotionFormat, ProjectAsset } from "@/types";
 import { useCurrentFrame } from "remotion";
+import { BrandLogoMark } from "../BrandLogoMark";
+import { BlockLayoutZone } from "../BlockLayoutZone";
 import {
   getEnterProgress,
   getFadeOpacity,
@@ -22,17 +21,20 @@ type LogoRevealBlockProps = {
   brand: BrandPreset;
   block: MotionBlockInstance;
   format: MotionFormat;
+  assets?: ProjectAsset[];
 };
 
-export function LogoRevealBlock({ brand, block, format }: LogoRevealBlockProps) {
+export function LogoRevealBlock({ brand, block, format, assets = [] }: LogoRevealBlockProps) {
   const frame = useCurrentFrame();
   const duration = block.duration;
   const { width: formatWidth, height: formatHeight } = format;
 
+  const layout = resolveBlockLayoutFromInstance({ brand, block, format, includeLogo: true });
+
   const { direction, intensity, speed, stagger, entranceEasing, exitEasing } =
     resolveBlockMotionParams(brand, block);
 
-  const logoText = block.content.logoText || brand.name || "SCATTER";
+  const logoText = block.content.logoText || brand.logos.textFallback || brand.name || "SCATTER";
   const tagline = block.content.tagline ?? "";
 
   const timing = getIntroTiming(duration, stagger, speed);
@@ -71,26 +73,8 @@ export function LogoRevealBlock({ brand, block, format }: LogoRevealBlockProps) 
     intensity === "hero" ? "standard" : intensity,
   );
 
-  const headingStyle = brand.typography.defaults.headingStyle;
-  const bodyStyle = brand.typography.defaults.bodyStyle;
-
-  const logoType = resolveBlockSlotStyle(
-    brand.typography,
-    format,
-    headingStyle,
-    block.typographyOverride,
-    "headline",
-  );
-  const taglineType = resolveBlockSlotStyle(
-    brand.typography,
-    format,
-    bodyStyle,
-    block.typographyOverride,
-    "body",
-  );
-
-  const logoSize = logoType.fontSize;
-  const padding = formatHeight * 0.08;
+  const taglineType = layout.slots.tagline ?? layout.slots.body;
+  const logoPlacement = layout.logo;
 
   const backgroundStyle = getTargetEffectStyle(brand, block, "background");
   const logoEffectStyle = getTargetEffectStyle(brand, block, "logo");
@@ -117,75 +101,60 @@ export function LogoRevealBlock({ brand, block, format }: LogoRevealBlockProps) 
       />
       <GrainOverlay grain={brand.effects.defaultGrain} />
 
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: `${padding}px`,
-          gap: formatHeight * 0.022,
-          textAlign: "center",
-        }}
-      >
+      <BlockLayoutZone layout={layout}>
         <div
-          style={mergeMotionAndEffectStyle(
-            {
-              opacity: logoOpacity,
-              transform: `translate(${logoTranslate.x}px, ${logoTranslate.y}px) scale(${logoScale})`,
-              clipPath: getMaskReveal(logoProgress),
-            },
-            logoEffectStyle,
-          )}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "100%",
+            maxWidth: layout.maxTextWidth,
+            gap: layout.gap,
+            textAlign: layout.alignment,
+          }}
         >
+        {logoPlacement ? (
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: formatWidth * 0.014,
-            }}
+            style={mergeMotionAndEffectStyle(
+              {
+                opacity: logoOpacity,
+                transform: `translate(${logoTranslate.x}px, ${logoTranslate.y}px) scale(${logoScale})`,
+                clipPath: getMaskReveal(logoProgress),
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              },
+              logoEffectStyle,
+            )}
           >
-            <div
-              style={{
-                width: logoSize * 0.55,
-                height: logoSize * 0.55,
-                borderRadius: logoSize * 0.12,
-                backgroundColor: brand.colors.accent,
+            <BrandLogoMark
+              brand={brand}
+              placement={{
+                ...logoPlacement,
+                width: logoPlacement.width,
+                height: logoPlacement.height,
               }}
+              assets={assets}
+              textFallback={logoText}
+              textStyle={layout.slots.label}
             />
-            <span
-              style={{
-                ...resolvedTypeStyleToCss({
-                  ...logoType,
-                  fontFamily: resolveFontStack(brand.typography, "accent"),
-                }),
-                color: brand.colors.accent,
-                lineHeight: 1,
-              }}
-            >
-              {logoText}
-            </span>
           </div>
-        </div>
+        ) : null}
 
-        {tagline ? (
+        {tagline && taglineType ? (
           <div
             style={{
               opacity: taglineOpacity,
               transform: `translateY(${taglineTranslate.y}px)`,
-              ...resolvedTypeStyleToCss(taglineType),
+              ...resolvedRoleToCss(taglineType),
               color: brand.colors.muted,
-              maxWidth: taglineType.maxWidth ?? formatWidth * 0.7,
             }}
           >
             {clampHeadlineText(tagline, 120)}
           </div>
         ) : null}
-      </div>
+        </div>
+      </BlockLayoutZone>
     </div>
   );
 }

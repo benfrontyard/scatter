@@ -19,9 +19,10 @@ export const RemotionRoot = () => {
       defaultProps={{
         sequence: defaultMotionSequence,
         customBrands: [],
+        assets: [],
       } satisfies ScatterCompositionProps}
       calculateMetadata={async ({ props }) => {
-        const { sequence, customBrands } = props as ScatterCompositionProps;
+        const { sequence, customBrands, assets } = props as ScatterCompositionProps;
         const format =
           motionFormatMap[sequence.format] ?? Object.values(motionFormatMap)[0];
         const fps = sequence.fps ?? EDITOR_FPS;
@@ -31,7 +32,7 @@ export const RemotionRoot = () => {
           fps,
           width: format.width,
           height: format.height,
-          props: { sequence, customBrands: customBrands ?? [] },
+          props: { sequence, customBrands: customBrands ?? [], assets: assets ?? [] },
         };
       }}
     />

@@ -13,6 +13,8 @@ import {
   resolveBlockSlotStyle,
   resolvedTypeStyleToCss,
 } from "@/lib/typography";
+import type { ResolvedTypographyRole } from "@/types/typography-role";
+import { resolvedRoleToCss } from "@/lib/layout/typography-css";
 import type { BrandPreset, MotionBlockInstance, MotionFormat } from "@/types";
 import type { EffectTarget } from "@/types/effects";
 import type { HeadingStyleName, BodyStyleName } from "@/types/typography";
@@ -32,6 +34,8 @@ type AnimatedTextProps = {
   color?: string;
   reducedMotion?: boolean;
   wrapperStyle?: CSSProperties;
+  /** When set, typography comes from the responsive layout resolver instead of legacy scale */
+  layoutSlot?: ResolvedTypographyRole;
 };
 
 export function AnimatedText({
@@ -49,6 +53,7 @@ export function AnimatedText({
   color,
   reducedMotion = false,
   wrapperStyle,
+  layoutSlot,
 }: AnimatedTextProps) {
   const displayText = clampHeadlineText(text, maxLength);
   const resolved = resolveTextAnimation(brand, block, slot, displayText, {
@@ -62,13 +67,20 @@ export function AnimatedText({
     typographyRole ??
     (typographySlot === "body" || typographySlot === "caption" ? bodyStyle : headingStyle);
 
-  const typeStyle = resolveBlockSlotStyle(
+  const legacyStyle = resolveBlockSlotStyle(
     brand.typography,
     format,
     role,
     block.typographyOverride,
     typographySlot,
   );
+
+  const textCss = layoutSlot
+    ? resolvedRoleToCss(layoutSlot)
+    : resolvedTypeStyleToCss(legacyStyle);
+
+  const maxWidth =
+    layoutSlot?.maxWidth ?? legacyStyle.maxWidth ?? format.width * 0.85;
 
   const effectStyle = getTargetEffectStyle(brand, block, slot, { reducedMotion });
 
@@ -77,9 +89,9 @@ export function AnimatedText({
       <div style={mergeMotionAndEffectStyle(wrapperStyle ?? {}, effectStyle)}>
         <span
           style={{
-            ...resolvedTypeStyleToCss(typeStyle),
+            ...textCss,
             color: color ?? brand.colors.foreground,
-            maxWidth: typeStyle.maxWidth ?? format.width * 0.85,
+            maxWidth,
           }}
         >
           {displayText}
@@ -108,9 +120,9 @@ export function AnimatedText({
       <span
         aria-hidden
         style={{
-          ...resolvedTypeStyleToCss(typeStyle),
+          ...textCss,
           color: color ?? brand.colors.foreground,
-          maxWidth: typeStyle.maxWidth ?? format.width * 0.85,
+          maxWidth,
         }}
       >
         {units.map((unit) => (

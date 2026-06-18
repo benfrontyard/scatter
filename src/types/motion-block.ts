@@ -1,3 +1,4 @@
+import type { BlockFormatLayoutOverrides, BlockLayoutIntent } from "./block-layout";
 import type { Block3DSettings } from "./camera";
 import type { BlockTypographyOverride } from "./typography";
 import type { EffectInstance } from "./effects";
@@ -53,6 +54,10 @@ export type MotionBlockInstance = {
   content: BlockContent;
   motion: BlockMotionDefaults;
   typographyOverride?: BlockTypographyOverride;
+  /** Responsive layout intent — drives auto zone, scale, and alignment */
+  layoutIntent?: BlockLayoutIntent;
+  /** Per-format layout overrides scoped to this block */
+  layoutOverrides?: BlockFormatLayoutOverrides;
   effects?: EffectInstance[];
   textAnimations?: TextAnimationInstance[];
   block3D?: Block3DSettings;

@@ -3,6 +3,8 @@ import {
   editorialBrandTypography,
   saasBrandTypography,
 } from "@/config/typography/defaults";
+import { DEFAULT_BRAND_COMPOSITION } from "@/config/composition/defaults";
+import { DEFAULT_BRAND_LOGO_SYSTEM } from "@/config/logo/defaults";
 import {
   defaultBrandEffects,
   editorialBrandEffects,
@@ -27,6 +29,8 @@ export const brandPresets: BrandPreset[] = [
       muted: "#737373",
     },
     typography: defaultBrandTypography,
+    composition: { ...DEFAULT_BRAND_COMPOSITION, style: "product" },
+    logos: { ...DEFAULT_BRAND_LOGO_SYSTEM, textFallback: "SCATTER" },
     effects: defaultBrandEffects,
     motion: {
       defaultEasingId: DEFAULT_EASING_ID,
@@ -58,6 +62,14 @@ export const brandPresets: BrandPreset[] = [
       muted: "#9ca3af",
     },
     typography: editorialBrandTypography,
+    composition: {
+      ...DEFAULT_BRAND_COMPOSITION,
+      style: "editorial",
+      defaultAlignment: "mixed",
+      density: "spacious",
+      motionComposition: "cinematic",
+    },
+    logos: { ...DEFAULT_BRAND_LOGO_SYSTEM, primaryType: "wordmark", textFallback: "Editorial" },
     effects: editorialBrandEffects,
     motion: {
       defaultEasingId: "soft-reveal",
@@ -89,6 +101,14 @@ export const brandPresets: BrandPreset[] = [
       muted: "#64748b",
     },
     typography: saasBrandTypography,
+    composition: {
+      ...DEFAULT_BRAND_COMPOSITION,
+      style: "swiss",
+      gridStrength: "strict",
+      defaultAlignment: "left",
+      density: "compact",
+    },
+    logos: { ...DEFAULT_BRAND_LOGO_SYSTEM, primaryType: "combination", textFallback: "SaaS" },
     effects: saasBrandEffects,
     motion: {
       defaultEasingId: "snappy",

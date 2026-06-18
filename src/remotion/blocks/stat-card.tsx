@@ -1,13 +1,10 @@
-import {
-  clampFontSize,
-  clampHeadlineText,
-  resolveBlockSlotStyle,
-  resolveFontStack,
-  resolvedTypeStyleToCss,
-} from "@/lib/typography";
+import { clampFontSize, clampHeadlineText, resolveFontStack } from "@/lib/typography";
+import { resolvedRoleToCss } from "@/lib/layout/typography-css";
+import { resolveBlockLayoutFromInstance } from "@/lib/layout";
 import type { BrandPreset, MotionBlockInstance, MotionFormat } from "@/types";
 import { interpolate, useCurrentFrame } from "remotion";
 import { getEasingFunction } from "@/lib/easing";
+import { BlockLayoutZone } from "../BlockLayoutZone";
 import {
   getEnterProgress,
   getFadeOpacity,
@@ -29,6 +26,8 @@ export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
   const frame = useCurrentFrame();
   const duration = block.duration;
   const { width: formatWidth, height: formatHeight } = format;
+
+  const layout = resolveBlockLayoutFromInstance({ brand, block, format, includeLogo: false });
 
   const { direction, intensity, speed, stagger, entranceEasing, exitEasing } =
     resolveBlockMotionParams(brand, block);
@@ -90,29 +89,10 @@ export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
   );
 
   const emphasis = Number(block.motion.controls.emphasis ?? 1);
-  const labelStyleName = brand.typography.defaults.labelStyle;
 
-  const valueType = resolveBlockSlotStyle(
-    brand.typography,
-    format,
-    "display",
-    block.typographyOverride,
-    "display",
-  );
-  const labelType = resolveBlockSlotStyle(
-    brand.typography,
-    format,
-    labelStyleName,
-    block.typographyOverride,
-    "label",
-  );
-  const supportType = resolveBlockSlotStyle(
-    brand.typography,
-    format,
-    "caption",
-    block.typographyOverride,
-    "caption",
-  );
+  const valueType = layout.slots.value ?? layout.typography.stat;
+  const labelType = layout.slots.label;
+  const supportType = layout.slots.supportingText ?? layout.slots.caption;
 
   const backgroundStyle = getTargetEffectStyle(brand, block, "background");
   const cardStyle = getTargetEffectStyle(brand, block, "card");
@@ -141,57 +121,49 @@ export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
       />
       <GrainOverlay grain={brand.effects.defaultGrain} />
 
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: formatHeight * 0.08,
-        }}
-      >
+      <BlockLayoutZone layout={layout}>
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: `${formatHeight * 0.05}px ${formatWidth * 0.08}px`,
-            gap: formatHeight * 0.018,
-            textAlign: "center",
+            gap: layout.gap,
+            textAlign: layout.alignment,
+            width: "100%",
+            maxWidth: layout.maxTextWidth,
+            padding: `${formatHeight * layout.padding * 0.6}px ${formatWidth * layout.padding * 0.5}px`,
             backgroundColor: `${brand.colors.foreground}06`,
             ...cardStyle,
           }}
         >
-          <div
-            style={mergeMotionAndEffectStyle(
-              {
-                opacity: valueOpacity,
-                transform: `translate(${valueTranslate.x}px, ${valueTranslate.y}px)`,
-              },
-              numberStyle,
-            )}
-          >
-            <span
-              style={{
-                ...resolvedTypeStyleToCss({
-                  ...valueType,
-                  fontSize: clampFontSize(valueType.fontSize * emphasis),
-                }),
-                color: brand.colors.accent,
-                lineHeight: 1,
-                fontVariantNumeric: "tabular-nums",
-              }}
+          {valueType ? (
+            <div
+              style={mergeMotionAndEffectStyle(
+                {
+                  opacity: valueOpacity,
+                  transform: `translate(${valueTranslate.x}px, ${valueTranslate.y}px)`,
+                },
+                numberStyle,
+              )}
             >
-              {displayValue}
-            </span>
-          </div>
+              <span
+                style={{
+                  ...resolvedRoleToCss({
+                    ...valueType,
+                    fontSize: clampFontSize(valueType.fontSize * emphasis),
+                  }),
+                  color: brand.colors.accent,
+                  lineHeight: 1,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {displayValue}
+              </span>
+            </div>
+          ) : null}
 
-          {label ? (
+          {label && labelType ? (
             <div
               style={mergeMotionAndEffectStyle(
                 {
@@ -203,7 +175,7 @@ export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
             >
               <span
                 style={{
-                  ...resolvedTypeStyleToCss(labelType),
+                  ...resolvedRoleToCss(labelType),
                   color: brand.colors.foreground,
                 }}
               >
@@ -212,20 +184,19 @@ export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
             </div>
           ) : null}
 
-          {supportingText ? (
+          {supportingText && supportType ? (
             <div
               style={{
                 opacity: supportOpacity,
-                ...resolvedTypeStyleToCss(supportType),
+                ...resolvedRoleToCss(supportType),
                 color: brand.colors.muted,
-                maxWidth: supportType.maxWidth ?? formatWidth * 0.65,
               }}
             >
               {clampHeadlineText(supportingText, 140)}
             </div>
           ) : null}
         </div>
-      </div>
+      </BlockLayoutZone>
     </div>
   );
 }

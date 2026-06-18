@@ -1,6 +1,8 @@
 import { defaultProjectFont } from "@/config/fonts";
+import { rolesFromLegacyScale } from "@/config/typography/roles";
 import type { BrandTypography } from "@/types/brand";
 import type { FontRole, TypeStyle, TypeStyleName } from "@/types/typography";
+import type { TypeDensity } from "@/types/typography-role";
 
 const REFERENCE_HEIGHT = 1080;
 
@@ -85,6 +87,8 @@ export function createBrandTypography(options: {
       accent: options.accent ?? options.heading,
     },
     scale,
+    roles: rolesFromLegacyScale(scale),
+    density: "balanced" satisfies TypeDensity,
     defaults: {
       headingStyle: options.headingStyle ?? "headline",
       bodyStyle: options.bodyStyle ?? "body",

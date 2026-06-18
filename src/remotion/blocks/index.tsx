@@ -3,6 +3,7 @@ import type {
   MotionBlockDefinition,
   MotionBlockInstance,
   MotionFormat,
+  ProjectAsset,
 } from "@/types";
 import type { FC } from "react";
 import { CtaLockupBlock } from "./cta-lockup";
@@ -15,6 +16,7 @@ export type BlockRendererProps = {
   block: MotionBlockInstance;
   definition: MotionBlockDefinition;
   format: MotionFormat;
+  assets?: ProjectAsset[];
 };
 
 const blockRenderers: Record<string, FC<BlockRendererProps>> = {
