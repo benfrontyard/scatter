@@ -1,3 +1,4 @@
+import type { SequenceAudio } from "./audio";
 import type { CameraSettings } from "./camera";
 import type { MotionBlockInstance } from "./motion-block";
 import type { PostFXSettings } from "./post-fx";
@@ -15,6 +16,8 @@ export type MotionSequence = {
   camera?: CameraSettings;
   blocks: MotionBlockInstance[];
   transitions: BlockTransition[];
+  /** Audio tracks, mix settings, and timeline markers from Magic Edit */
+  audio?: SequenceAudio;
 };
 
 export type SequenceTimelineItem =

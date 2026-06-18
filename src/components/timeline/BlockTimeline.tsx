@@ -17,7 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Trash2 } from "lucide-react";
+import { Trash2, Wand2 } from "lucide-react";
+import { AudioPanelJumpButton } from "@/components/editor/AudioPanel";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 const BLOCK_COLORS: Record<string, string> = {
@@ -145,6 +146,8 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
     updateBlockDuration,
     updateTransitionDuration,
     seekToFrame,
+    runMagicEdit,
+    isMagicEditRunning,
   } = useEditor();
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -165,6 +168,12 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
     [totalFrames, fps],
   );
   const playheadLeft = frameToPx(currentFrame, fps);
+
+  const phraseMarkers = useMemo(
+    () => (sequence.audio?.markers ?? []).filter((m) => m.type === "phrase"),
+    [sequence.audio?.markers],
+  );
+  const hasVoiceover = Boolean(sequence.audio?.voiceover);
 
   const selectedBlock = sequence.blocks.find((block) => block.id === selectedBlockId);
   const selectedTransition = sequence.transitions.find(
@@ -252,6 +261,18 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
         </div>
 
         <div className="flex min-w-0 items-center gap-2">
+          <AudioPanelJumpButton />
+          <Button
+            type="button"
+            variant="default"
+            size="sm"
+            className="h-7 shrink-0 gap-1 text-xs"
+            disabled={!hasVoiceover || isMagicEditRunning || sequence.blocks.length === 0}
+            onClick={() => void runMagicEdit()}
+          >
+            <Wand2 className="h-3 w-3" />
+            {isMagicEditRunning ? "Editing…" : "Magic Edit"}
+          </Button>
           {selectedBlock && selectedBlockDef ? (
             <>
               <span
@@ -368,6 +389,30 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
               <div className="absolute -top-0.5 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rotate-45 bg-red-500" />
             </div>
           </div>
+
+          {phraseMarkers.length > 0 ? (
+            <div
+              className="relative h-4 border-b border-border/40 bg-violet-500/5"
+              aria-label="Voiceover phrase markers"
+            >
+              {phraseMarkers.map((marker) => {
+                const left = frameToPx(marker.time * fps, fps);
+                const endTime = marker.endTime ?? marker.time;
+                const width = Math.max(
+                  2,
+                  frameToPx(endTime * fps, fps) - left,
+                );
+                return (
+                  <div
+                    key={marker.id}
+                    className="absolute top-1 h-2 rounded-sm bg-violet-500/35"
+                    style={{ left, width }}
+                    title={marker.label}
+                  />
+                );
+              })}
+            </div>
+          ) : null}
 
           {/* Tracks */}
           <div

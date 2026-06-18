@@ -4,8 +4,11 @@ import type { MotionSequence } from "./sequence";
 export type ProjectAsset = {
   id: string;
   name: string;
-  type: "image";
+  type: "image" | "audio";
   dataUrl: string;
+  /** Duration in seconds — set for audio assets */
+  duration?: number;
+  mimeType?: string;
 };
 
 export type ScatterProject = {

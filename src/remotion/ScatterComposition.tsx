@@ -15,6 +15,8 @@ import { Block3DWrapper, CameraWrapper } from "./CameraWrapper";
 import { LoadProjectFont } from "./LoadProjectFont";
 import { PostFXWrapper } from "./PostFXWrapper";
 import { getBlockTransitionOverlay } from "./transitions";
+import { AudioTracks } from "./AudioTracks";
+import { getSequenceDurationInFrames } from "@/lib/sequence-utils";
 
 export type ScatterCompositionProps = {
   sequence: MotionSequence;
@@ -34,6 +36,7 @@ export function ScatterComposition({
   const brand = resolveBrand(sequence.brandPresetId, customBrands);
   const format = motionFormatMap[sequence.format] ?? Object.values(motionFormatMap)[0];
   const fontFamilies = getBrandFontFamilies(brand.typography);
+  const totalDurationFrames = getSequenceDurationInFrames(sequence);
   const emptyBodyStyle = resolvedTypeStyleToCss(
     resolveTypeStyleForEmpty(brand, format),
   );
@@ -61,6 +64,11 @@ export function ScatterComposition({
   return (
     <>
       <LoadProjectFont families={fontFamilies} />
+      <AudioTracks
+        audio={sequence.audio}
+        assets={assets}
+        totalDurationFrames={totalDurationFrames}
+      />
       <AbsoluteFill style={{ backgroundColor: sequence.canvasBackground || brand.colors.background }}>
         <PostFXWrapper postFx={sequence.postFx} renderMode={renderMode}>
           <CameraWrapper sequence={sequence} renderMode={renderMode} reducedMotion={reducedMotion}>

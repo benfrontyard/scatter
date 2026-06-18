@@ -24,13 +24,22 @@ import type {
   BrandPreset,
   EffectInstance,
   TextAnimationInstance,
+  MagicEditSettings,
   MotionBlockInstance,
   MotionSequence,
+  MusicTrack,
   PostFXSettings,
   ProjectAsset,
   CameraSettings,
   Block3DSettings,
+  VoiceoverTrack,
+  WordTimestamp,
 } from "@/types";
+import { DEFAULT_AUDIO_MIX } from "@/types/audio";
+import { DEFAULT_MAGIC_EDIT_SETTINGS } from "@/types/magic-edit";
+import { getAudioDuration } from "@/lib/audio";
+import { runMagicEditPipeline } from "@/lib/magic-edit";
+import { buildAnixaDemoProject } from "@/lib/demo/anixa-demo";
 import { EDITOR_FPS, type EditorStep } from "@/types/editor";
 import { normalizePostFXSettings } from "@/lib/post-fx";
 import {
@@ -40,7 +49,7 @@ import {
 } from "@/lib/camera";
 import type { PlayerRef } from "@remotion/player";
 
-type SettingsPanelView = "project" | "postFx" | "camera";
+type SettingsPanelView = "project" | "postFx" | "camera" | "audio";
 
 export type EditorToastState = {
   message: string;
@@ -97,7 +106,17 @@ type EditorActions = {
   duplicateBrandToCustom: (sourceBrandId: string) => void;
   saveCustomBrand: () => void;
   addAsset: (file: File) => Promise<ProjectAsset | null>;
+  addAudioAsset: (file: File) => Promise<ProjectAsset | null>;
   removeAsset: (assetId: string) => void;
+  setVoiceover: (track: VoiceoverTrack | undefined) => void;
+  setMusicTrack: (track: MusicTrack | undefined) => void;
+  setVoiceoverTranscript: (transcript: string) => void;
+  setVoiceoverWordTimestamps: (timestamps: WordTimestamp[] | undefined) => void;
+  runMagicEdit: (settings?: Partial<MagicEditSettings>) => Promise<boolean>;
+  magicEditSettings: MagicEditSettings;
+  setMagicEditSettings: (settings: Partial<MagicEditSettings>) => void;
+  isMagicEditRunning: boolean;
+  loadAnixaDemo: (runMagicEditAfter?: boolean) => Promise<boolean>;
   replaceBlockAsset: (blockId: string, contentKey: string, assetId: string) => void;
   undo: () => void;
   redo: () => void;
@@ -142,6 +161,8 @@ type EditorContextValue = {
   postFx: PostFXSettings;
   camera: CameraSettings;
   toast: EditorToastState | null;
+  magicEditSettings: MagicEditSettings;
+  isMagicEditRunning: boolean;
 } & EditorActions;
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -171,6 +192,10 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const [showBrandSystem, setShowBrandSystem] = useState(false);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [settingsPanelView, setSettingsPanelView] = useState<SettingsPanelView>("project");
+  const [magicEditSettings, setMagicEditSettingsState] = useState<MagicEditSettings>(
+    DEFAULT_MAGIC_EDIT_SETTINGS,
+  );
+  const [isMagicEditRunning, setIsMagicEditRunning] = useState(false);
   const [toast, setToast] = useState<EditorToastState | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
 
@@ -709,11 +734,186 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           return null;
         }
       },
-      removeAsset: (assetId) => {
+      addAudioAsset: async (file) => {
+        if (!file.type.startsWith("audio/")) return null;
+        try {
+          const dataUrl = await readAssetAsDataUrl(file);
+          const duration = await getAudioDuration(dataUrl);
+          const asset: ProjectAsset = {
+            id: `audio-${crypto.randomUUID().slice(0, 8)}`,
+            name: file.name,
+            type: "audio",
+            dataUrl,
+            duration,
+            mimeType: file.type,
+          };
+          updateSnapshot((prev) => ({
+            ...prev,
+            assets: [...prev.assets, asset],
+          }));
+          return asset;
+        } catch {
+          return null;
+        }
+      },
+      setVoiceover: (track) => {
         updateSnapshot((prev) => ({
           ...prev,
-          assets: prev.assets.filter((a) => a.id !== assetId),
+          sequence: {
+            ...prev.sequence,
+            audio: {
+              mix: prev.sequence.audio?.mix ?? DEFAULT_AUDIO_MIX,
+              markers: prev.sequence.audio?.markers ?? [],
+              music: prev.sequence.audio?.music,
+              voiceover: track,
+            },
+          },
         }));
+      },
+      setMusicTrack: (track) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            audio: {
+              mix: prev.sequence.audio?.mix ?? DEFAULT_AUDIO_MIX,
+              markers: prev.sequence.audio?.markers ?? [],
+              voiceover: prev.sequence.audio?.voiceover,
+              music: track,
+            },
+          },
+        }));
+      },
+      setVoiceoverTranscript: (transcript) => {
+        updateSnapshot((prev) => {
+          const voiceover = prev.sequence.audio?.voiceover;
+          if (!voiceover) return prev;
+          return {
+            ...prev,
+            sequence: {
+              ...prev.sequence,
+              audio: {
+                ...prev.sequence.audio!,
+                voiceover: { ...voiceover, transcript },
+              },
+            },
+          };
+        });
+      },
+      setVoiceoverWordTimestamps: (timestamps) => {
+        updateSnapshot((prev) => {
+          const voiceover = prev.sequence.audio?.voiceover;
+          if (!voiceover) return prev;
+          return {
+            ...prev,
+            sequence: {
+              ...prev.sequence,
+              audio: {
+                ...prev.sequence.audio!,
+                voiceover: { ...voiceover, wordTimestamps: timestamps },
+              },
+            },
+          };
+        });
+      },
+      magicEditSettings,
+      setMagicEditSettings: (partial) => {
+        setMagicEditSettingsState((prev: MagicEditSettings) => ({ ...prev, ...partial }));
+      },
+      isMagicEditRunning,
+      loadAnixaDemo: async (runMagicEditAfter = true) => {
+        if (isMagicEditRunning) return false;
+        setIsMagicEditRunning(true);
+        try {
+          const project = await buildAnixaDemoProject();
+          loadSnapshot(
+            createSnapshot(project.sequence, project.customBrands, project.assets),
+            project.id,
+          );
+          setSettingsPanelView("audio");
+          if (runMagicEditAfter) {
+            const pipeline = await runMagicEditPipeline({
+              sequence: project.sequence,
+              assets: project.assets,
+              brand: resolveBrand(project.sequence.brandPresetId, project.customBrands),
+              settings: magicEditSettings,
+            });
+            updateSnapshot((prev) => ({
+              ...prev,
+              sequence: {
+                ...prev.sequence,
+                blocks: pipeline.result.blocks,
+                audio: pipeline.audio,
+              },
+            }));
+          }
+          showToast({
+            message: runMagicEditAfter
+              ? "Anixa demo loaded — Magic Edit applied. Scrub timeline to review."
+              : "Anixa demo loaded with VO, music, and script.",
+          });
+          return true;
+        } catch (error) {
+          showToast({
+            message:
+              error instanceof Error ? error.message : "Failed to load Anixa demo.",
+          });
+          return false;
+        } finally {
+          setIsMagicEditRunning(false);
+        }
+      },
+      runMagicEdit: async (settingsOverride) => {
+        if (isMagicEditRunning) return false;
+        setIsMagicEditRunning(true);
+        try {
+          const settings = { ...magicEditSettings, ...settingsOverride };
+          const pipeline = await runMagicEditPipeline({
+            sequence,
+            assets,
+            brand,
+            settings,
+          });
+          updateSnapshot((prev) => ({
+            ...prev,
+            sequence: {
+              ...prev.sequence,
+              blocks: pipeline.result.blocks,
+              audio: pipeline.audio,
+            },
+          }));
+          showToast({ message: "Magic Edit applied — review and adjust timing as needed." });
+          return true;
+        } catch (error) {
+          showToast({
+            message:
+              error instanceof Error ? error.message : "Magic Edit failed. Check your audio setup.",
+          });
+          return false;
+        } finally {
+          setIsMagicEditRunning(false);
+        }
+      },
+      removeAsset: (assetId) => {
+        updateSnapshot((prev) => {
+          const audio = prev.sequence.audio;
+          const clearsVoiceover = audio?.voiceover?.assetId === assetId;
+          const clearsMusic = audio?.music?.assetId === assetId;
+          return {
+            ...prev,
+            assets: prev.assets.filter((a) => a.id !== assetId),
+            sequence: {
+              ...prev.sequence,
+              audio: audio
+                ? {
+                    ...audio,
+                    voiceover: clearsVoiceover ? undefined : audio.voiceover,
+                    music: clearsMusic ? undefined : audio.music,
+                  }
+                : undefined,
+            },
+          };
+        });
       },
       replaceBlockAsset: (blockId, contentKey, assetId) => {
         const asset = assets.find((a) => a.id === assetId);
@@ -802,6 +1002,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       postFx,
       camera,
       toast,
+      magicEditSettings,
+      isMagicEditRunning,
       updateSnapshot,
       loadSnapshot,
       setCurrentFrame,

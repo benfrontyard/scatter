@@ -3,6 +3,7 @@ import { BlockAdvancedEffects } from "@/components/editor/BlockAdvancedEffects";
 import { Block3DPanel, CameraJumpButton } from "@/components/editor/Block3DPanel";
 import { TextAnimationPanel } from "@/components/editor/TextAnimationPanel";
 import { ExportPanel } from "@/components/editor/ExportPanel";
+import { AudioPanel } from "@/components/editor/AudioPanel";
 import { PostFXPanel } from "@/components/editor/PostFXPanel";
 import { CameraPanel } from "@/components/editor/CameraPanel";
 import { EasingPicker } from "@/components/editor/EasingPicker";
@@ -36,7 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, Film, Layers, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Camera, Film, Layers, Mic, SlidersHorizontal, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -66,35 +67,37 @@ function AssetsSection() {
           </Button>
         </label>
       </div>
-      {assets.length === 0 ? (
+      {assets.filter((a) => a.type === "image").length === 0 ? (
         <p className="py-3 text-center text-xs text-muted-foreground">
           No assets uploaded. Add images to use in blocks.
         </p>
       ) : (
         <ul className="space-y-1.5">
-          {assets.map((asset) => (
-            <li
-              key={asset.id}
-              className="flex items-center gap-2 rounded-sm border border-border px-2 py-1.5"
-            >
-              <img
-                src={asset.dataUrl}
-                alt={asset.name}
-                className="h-8 w-8 shrink-0 rounded object-cover"
-              />
-              <span className="min-w-0 flex-1 truncate text-xs">{asset.name}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 shrink-0 text-xs text-muted-foreground hover:text-destructive"
-                onClick={() => removeAsset(asset.id)}
-                aria-label={`Remove ${asset.name}`}
+          {assets
+            .filter((asset) => asset.type === "image")
+            .map((asset) => (
+              <li
+                key={asset.id}
+                className="flex items-center gap-2 rounded-sm border border-border px-2 py-1.5"
               >
-                Remove
-              </Button>
-            </li>
-          ))}
+                <img
+                  src={asset.dataUrl}
+                  alt={asset.name}
+                  className="h-8 w-8 shrink-0 rounded object-cover"
+                />
+                <span className="min-w-0 flex-1 truncate text-xs">{asset.name}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 shrink-0 text-xs text-muted-foreground hover:text-destructive"
+                  onClick={() => removeAsset(asset.id)}
+                  aria-label={`Remove ${asset.name}`}
+                >
+                  Remove
+                </Button>
+              </li>
+            ))}
         </ul>
       )}
     </div>
@@ -382,6 +385,7 @@ function BlockSettings({ className }: { className?: string }) {
     updateBlockMotion,
     updateBlockEasing,
     updateBlockDuration,
+    updateBlock,
     updateBlockTypographyOverride,
     updateBlockEffects,
     updateBlockTextAnimations,
@@ -426,6 +430,21 @@ function BlockSettings({ className }: { className?: string }) {
           maxFrames={300}
           onChange={(duration) => updateBlockDuration(selectedBlock.id, duration)}
         />
+
+        <Button
+          type="button"
+          size="sm"
+          variant={selectedBlock.timingLocked ? "default" : "outline"}
+          className="h-7 w-full text-xs"
+          onClick={() =>
+            updateBlock(selectedBlock.id, (block) => ({
+              ...block,
+              timingLocked: !block.timingLocked,
+            }))
+          }
+        >
+          {selectedBlock.timingLocked ? "Timing locked (Magic Edit skips)" : "Lock timing from Magic Edit"}
+        </Button>
 
         <Accordion
           type="multiple"
@@ -712,21 +731,29 @@ function CompositionSettingsTabs({
   activeView,
 }: {
   className?: string;
-  activeView: "project" | "postFx" | "camera";
+  activeView: "project" | "postFx" | "camera" | "audio";
 }) {
-  const { setSettingsPanelView, postFx, camera } = useEditor();
+  const { setSettingsPanelView, postFx, camera, sequence } = useEditor();
+  const hasAudio = Boolean(sequence.audio?.voiceover);
 
   return (
     <Tabs
       value={activeView}
       onValueChange={(value) =>
-        setSettingsPanelView(value as "project" | "postFx" | "camera")
+        setSettingsPanelView(value as "project" | "postFx" | "camera" | "audio")
       }
       className={cn("flex h-full w-full min-w-0 flex-col", className)}
     >
       <TabsList className="mx-3 mt-2 h-8 w-fit shrink-0 self-start justify-start rounded-md bg-secondary/50 p-0.5">
         <TabsTrigger value="project" className="h-7 shrink-0 px-3 text-xs">
           Project
+        </TabsTrigger>
+        <TabsTrigger value="audio" className="h-7 shrink-0 px-3 text-xs">
+          <Mic className="mr-1 h-3 w-3" />
+          Audio
+          {hasAudio ? (
+            <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+          ) : null}
         </TabsTrigger>
         <TabsTrigger value="camera" className="h-7 shrink-0 px-3 text-xs">
           <Camera className="mr-1 h-3 w-3" />
@@ -748,6 +775,12 @@ function CompositionSettingsTabs({
         className="mt-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
       >
         <ProjectSettings className="h-full w-full min-w-0 max-w-none border-l-0" />
+      </TabsContent>
+      <TabsContent
+        value="audio"
+        className="mt-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+      >
+        <AudioPanel className="h-full w-full min-w-0 max-w-none border-l-0" />
       </TabsContent>
       <TabsContent
         value="camera"
@@ -912,6 +945,10 @@ export function SettingsPanel({ className }: SettingsPanelProps) {
 
   if (settingsPanelView === "camera") {
     return <CompositionSettingsTabs className={className} activeView="camera" />;
+  }
+
+  if (settingsPanelView === "audio") {
+    return <CompositionSettingsTabs className={className} activeView="audio" />;
   }
 
   if (selectedBlock) {

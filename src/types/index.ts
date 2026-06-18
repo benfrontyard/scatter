@@ -126,6 +126,30 @@ export type { EditorStep, EditorState } from "./editor";
 export { EDITOR_FPS } from "./editor";
 export type { ScatterProject, ProjectAsset, RecentProjectEntry } from "./project";
 export type {
+  TimelineMarker,
+  TimelineMarkerType,
+  TimelineMarkerSource,
+  WordTimestamp,
+  AudioAnalysis,
+  VoiceoverTrack,
+  VoiceoverProvider,
+  MusicTrack,
+  MusicFitMode,
+  AudioMixSettings,
+  SequenceAudio,
+  DEFAULT_AUDIO_MIX,
+} from "./audio";
+export type {
+  RhythmDensity,
+  SyncPriority,
+  PauseCleanup,
+  MagicEditSettings,
+  MagicEditResult,
+  MagicEditInput,
+  BlockTimingSuggestion,
+  DEFAULT_MAGIC_EDIT_SETTINGS,
+} from "./magic-edit";
+export type {
   AnimatableProperty,
   BrandTextAnimationDefaults,
   ColorToken,

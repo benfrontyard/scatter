@@ -61,4 +61,8 @@ export type MotionBlockInstance = {
   effects?: EffectInstance[];
   textAnimations?: TextAnimationInstance[];
   block3D?: Block3DSettings;
+  /** When true, Magic Edit will not change this block's duration */
+  timingLocked?: boolean;
+  /** Linked phrase marker id from Magic Edit */
+  phraseMarkerId?: string;
 };
