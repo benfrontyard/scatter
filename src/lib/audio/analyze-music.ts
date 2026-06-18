@@ -1,4 +1,6 @@
 import type { AudioAnalysis, MusicFitMode } from "@/types";
+import { markersToTimelineMetadata } from "@/types/timeline-audio";
+import { beatsToMarkers, detectBeats } from "./beat-detection";
 import { decodeAudioFromDataUrl } from "./decode-audio";
 
 export type AnalyzeMusicInput = {
@@ -34,14 +36,23 @@ export async function analyzeMusic(
     loopCount = Math.ceil(targetDuration / duration);
   }
 
+  const beatResult = detectBeats(buffer);
+  const beatMarkers = beatsToMarkers(beatResult);
+
   const analysis: AudioAnalysis = {
     duration,
-    bpm: undefined,
-    beatMarkers: [],
+    bpm: beatResult.bpm,
+    beatMarkers,
     phraseMarkers: [],
     wordMarkers: [],
     pauseMarkers: [],
-    confidence: 0.3,
+    confidence: beatResult.confidence,
+    timelineMetadata: markersToTimelineMetadata(
+      { bpm: beatResult.bpm, confidence: beatResult.confidence },
+      beatResult.beatTimes,
+      beatResult.downbeatTimes,
+      beatResult.energyPeaks,
+    ),
   };
 
   return { analysis, trimEnd, loopCount };

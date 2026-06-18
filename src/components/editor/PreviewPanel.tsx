@@ -3,12 +3,13 @@ import { useEditor } from "@/context/editor-context";
 import { isPreviewQualityReduced } from "@/lib/post-fx";
 import { getSequenceDurationInFrames } from "@/lib/sequence-utils";
 import { ScatterComposition } from "@/remotion/ScatterComposition";
+import { PreviewPerformanceOverlay } from "@/components/editor/PreviewPerformanceOverlay";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useGoogleFont } from "@/hooks/use-google-font";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { Pause, Play } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefCallback } from "react";
 import type { PlayerRef } from "@remotion/player";
 
 type PreviewPanelProps = {
@@ -61,10 +62,8 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
     isPlaying,
     currentFrame,
     togglePlayback,
-    setCurrentFrame,
-    setIsPlaying,
-    postFx,
     registerPlayer,
+    postFx,
   } = useEditor();
   const reducedMotion = useReducedMotion();
   useGoogleFont(brand.typography.fontFamilies.heading);
@@ -85,10 +84,27 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
   const currentTime = currentFrame / fps;
   const totalTime = durationInFrames / fps;
 
-  useEffect(() => {
-    registerPlayer(playerRef.current);
-    return () => registerPlayer(null);
-  }, [registerPlayer, durationInFrames]);
+  const handlePlayerRef: RefCallback<PlayerRef> = useCallback(
+    (player) => {
+      playerRef.current = player;
+      if (player) {
+        registerPlayer(player);
+      }
+    },
+    [registerPlayer],
+  );
+
+  const playerInputProps = useMemo(
+    () => ({
+      sequence,
+      customBrands,
+      assets,
+      renderMode: "preview" as const,
+      reducedMotion,
+      muteRemotionAudio: true,
+    }),
+    [sequence, customBrands, assets, reducedMotion],
+  );
 
   useEffect(() => {
     const area = canvasAreaRef.current;
@@ -106,27 +122,6 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
     observer.observe(area);
     return () => observer.disconnect();
   }, [compositionWidth, compositionHeight]);
-
-  useEffect(() => {
-    const player = playerRef.current;
-    if (!player) return;
-
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
-    const onFrameUpdate = (event: { detail: { frame: number } }) => {
-      setCurrentFrame(event.detail.frame);
-    };
-
-    player.addEventListener("play", onPlay);
-    player.addEventListener("pause", onPause);
-    player.addEventListener("frameupdate", onFrameUpdate);
-
-    return () => {
-      player.removeEventListener("play", onPlay);
-      player.removeEventListener("pause", onPause);
-      player.removeEventListener("frameupdate", onFrameUpdate);
-    };
-  }, [durationInFrames, setCurrentFrame, setIsPlaying]);
 
   const canvasStyle = canvasSize
     ? { width: canvasSize.width, height: canvasSize.height }
@@ -184,24 +179,28 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
           style={canvasStyle}
         >
           <Player
-            ref={playerRef}
+            ref={handlePlayerRef}
             component={ScatterComposition}
-            inputProps={{ sequence, customBrands, assets, renderMode: "preview", reducedMotion }}
+            inputProps={playerInputProps}
             durationInFrames={durationInFrames}
             compositionWidth={compositionWidth}
             compositionHeight={compositionHeight}
             fps={fps}
             style={{ width: "100%", height: "100%" }}
             controls={false}
-            loop
-            autoPlay
+            loop={false}
+            autoPlay={false}
+            clickToPlay={false}
           />
+
+          <PreviewPerformanceOverlay isPlaying={isPlaying} targetFps={fps} />
 
           <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
           {postFx.enabled && isPreviewQualityReduced(postFx) ? (
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center p-2">
               <span className="rounded-full bg-black/70 px-2.5 py-1 text-[10px] text-white/80 backdrop-blur-sm">
-                Previewing Post FX at reduced quality. Full quality will apply on export.
+                Previewing at reduced quality. Full quality applies on export.
+                {postFx.previewQuality === "auto" ? " (Auto)" : ""}
               </span>
             </div>
           ) : null}

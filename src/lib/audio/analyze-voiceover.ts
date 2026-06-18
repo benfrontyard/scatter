@@ -4,6 +4,7 @@ import type {
   VoiceoverTrack,
   WordTimestamp,
 } from "@/types";
+import { markersToTimelineMetadata } from "@/types/timeline-audio";
 import { decodeAudioFromDataUrl } from "./decode-audio";
 import {
   applyPauseCompression,
@@ -110,6 +111,11 @@ export async function analyzeVoiceover(
     pauseMarkers,
     beatMarkers: [],
     confidence: input.wordTimestamps?.length ? 0.95 : input.transcript ? 0.6 : 0.4,
+    timelineMetadata: markersToTimelineMetadata({
+      phraseMarkers,
+      pauseMarkers,
+      confidence: input.wordTimestamps?.length ? 0.95 : input.transcript ? 0.6 : 0.4,
+    }),
   };
 
   return {

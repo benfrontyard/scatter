@@ -627,7 +627,7 @@ export function PostFXPanel({ className }: PostFXPanelProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(["off", "low", "medium", "high"] as PostFXQuality[]).map((quality) => (
+                {(["auto", "off", "low", "medium", "high"] as PostFXQuality[]).map((quality) => (
                   <SelectItem key={quality} value={quality} className="capitalize">
                     {quality}
                   </SelectItem>

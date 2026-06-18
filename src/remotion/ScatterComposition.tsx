@@ -24,6 +24,12 @@ export type ScatterCompositionProps = {
   assets?: ProjectAsset[];
   renderMode?: PostFXRenderMode;
   reducedMotion?: boolean;
+  /** Mute Remotion audio — preview uses Web Audio engine instead */
+  muteRemotionAudio?: boolean;
+  /** Effective preview quality (resolved from auto setting) */
+  effectivePreviewQuality?: import("@/types/post-fx").PostFXQuality;
+  /** Whether preview is actively playing (for effect simplification) */
+  isPreviewPlaying?: boolean;
 };
 
 export function ScatterComposition({
@@ -32,6 +38,9 @@ export function ScatterComposition({
   assets = [],
   renderMode = "export",
   reducedMotion = false,
+  muteRemotionAudio = false,
+  effectivePreviewQuality,
+  isPreviewPlaying = false,
 }: ScatterCompositionProps) {
   const brand = resolveBrand(sequence.brandPresetId, customBrands);
   const format = motionFormatMap[sequence.format] ?? Object.values(motionFormatMap)[0];
@@ -68,9 +77,15 @@ export function ScatterComposition({
         audio={sequence.audio}
         assets={assets}
         totalDurationFrames={totalDurationFrames}
+        muteRemotionAudio={muteRemotionAudio}
       />
       <AbsoluteFill style={{ backgroundColor: sequence.canvasBackground || brand.colors.background }}>
-        <PostFXWrapper postFx={sequence.postFx} renderMode={renderMode}>
+        <PostFXWrapper
+          postFx={sequence.postFx}
+          renderMode={renderMode}
+          effectivePreviewQuality={effectivePreviewQuality}
+          isPreviewPlaying={isPreviewPlaying}
+        >
           <CameraWrapper sequence={sequence} renderMode={renderMode} reducedMotion={reducedMotion}>
             {sequence.blocks.map((block, index) => {
               const definition = motionBlockMap[block.blockId];

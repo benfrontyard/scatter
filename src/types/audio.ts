@@ -38,6 +38,8 @@ export type AudioAnalysis = {
   wordMarkers: TimelineMarker[];
   pauseMarkers: TimelineMarker[];
   confidence: number;
+  /** Extended beat/speech metadata from async analysis pipeline */
+  timelineMetadata?: import("./timeline-audio").TimelineAudioMetadata;
 };
 
 export type VoiceoverProvider = "upload" | "elevenlabs" | "custom";

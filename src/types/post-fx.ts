@@ -1,4 +1,4 @@
-export type PostFXQuality = "off" | "low" | "medium" | "high";
+export type PostFXQuality = "off" | "low" | "medium" | "high" | "auto";
 
 export type ExportFXQuality = "standard" | "high" | "max";
 

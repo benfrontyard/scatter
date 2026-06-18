@@ -1,5 +1,5 @@
 import { analyzeMusic, analyzeVoiceover } from "@/lib/audio";
-import { runMagicEdit } from "@/lib/magic-edit";
+import { runMagicSync } from "@/lib/magic-edit/magic-sync";
 import type {
   BrandPreset,
   MagicEditResult,
@@ -66,7 +66,7 @@ export async function runMagicEditPipeline(
     input.sequence.blocks.filter((b) => b.timingLocked).map((b) => b.id),
   );
 
-  const result = runMagicEdit({
+  const result = runMagicSync({
     blocks: input.sequence.blocks,
     voiceoverAnalysis: voResult.analysis,
     musicAnalysis,
@@ -74,6 +74,7 @@ export async function runMagicEditPipeline(
     fps: input.sequence.fps ?? 30,
     settings,
     lockedBlockIds,
+    preferBeats: true,
   });
 
   const audio: SequenceAudio = {

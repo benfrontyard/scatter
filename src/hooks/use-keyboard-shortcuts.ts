@@ -81,6 +81,9 @@ export function KeyboardShortcuts() {
 
       if (event.key === " " || event.code === "Space") {
         event.preventDefault();
+        // #region agent log
+        fetch('http://127.0.0.1:7333/ingest/b24888df-fe91-4b21-bfa6-9cf313f7d223',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3f7d42'},body:JSON.stringify({sessionId:'3f7d42',location:'use-keyboard-shortcuts.ts:84',message:'spacebar togglePlayback',data:{typing},timestamp:Date.now(),hypothesisId:'B'})}).catch(()=>{});
+        // #endregion
         togglePlayback();
         return;
       }

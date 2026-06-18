@@ -16,7 +16,7 @@ function createEffect(
 
 export const defaultPostFXSettings: PostFXSettings = {
   enabled: false,
-  previewQuality: "medium",
+  previewQuality: "auto",
   exportQuality: "high",
   effects: [],
 };

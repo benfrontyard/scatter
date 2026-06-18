@@ -1,5 +1,15 @@
 export { decodeAudioFromDataUrl, getAudioDuration } from "./decode-audio";
 export {
+  getCachedAudioBuffer,
+  getOrDecodeAudioBuffer,
+  preloadAudioAssets,
+  clearAudioBufferCache,
+} from "./audio-buffer-cache";
+export { WebAudioEngine } from "./audio-engine";
+export type { AudioEngineConfig, AudioEngineTrack } from "./audio-engine";
+export { detectBeats, beatsToMarkers } from "./beat-detection";
+export type { BeatAnalysisResult } from "./beat-detection";
+export {
   detectPausesFromBuffer,
   pausesToMarkers,
   computeTrimBounds,

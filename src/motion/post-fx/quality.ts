@@ -3,6 +3,7 @@ import type { ExportFXQuality, PostFXQuality } from "@/types/post-fx";
 export function getPreviewQualityScale(quality: PostFXQuality): number {
   switch (quality) {
     case "off":
+    case "auto":
       return 0;
     case "low":
       return 0.35;

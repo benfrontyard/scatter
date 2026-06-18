@@ -25,11 +25,11 @@ export function normalizePostFXSettings(
 ): PostFXSettings {
   if (!postFx) return structuredClone(defaultPostFXSettings);
 
-  const previewQuality: PostFXQuality = ["off", "low", "medium", "high"].includes(
+  const previewQuality: PostFXQuality = ["off", "low", "medium", "high", "auto"].includes(
     postFx.previewQuality,
   )
     ? postFx.previewQuality
-    : "medium";
+    : "auto";
 
   const exportQuality: ExportFXQuality = ["standard", "high", "max"].includes(
     postFx.exportQuality,
@@ -147,10 +147,15 @@ export function movePostFXEffectToIndex(
 export function resolveActivePostFXEffects(
   postFx: PostFXSettings,
   renderMode: PostFXRenderMode,
+  options?: { isPlaying?: boolean; effectiveQuality?: PostFXQuality },
 ): PostFXEffect[] {
   if (!postFx.enabled || postFx.effects.length === 0) return [];
 
-  if (renderMode === "preview" && postFx.previewQuality === "off") {
+  const quality =
+    options?.effectiveQuality ??
+    (postFx.previewQuality === "auto" ? "medium" : postFx.previewQuality);
+
+  if (renderMode === "preview" && quality === "off") {
     return [];
   }
 
@@ -159,10 +164,28 @@ export function resolveActivePostFXEffects(
 
   const stack = soloEffect ? [soloEffect] : enabled;
 
+  const heavyTypes = new Set([
+    "blur",
+    "glow",
+    "bloom",
+    "motionBlur",
+    "chromaticAberration",
+    "grain",
+    "noise",
+  ]);
+
   return stack.filter((effect) => {
     if (renderMode === "preview" && effect.exportOnly) return false;
     if (renderMode === "preview" && effect.type === "motionBlur") {
       return Boolean(effect.settings.previewEnabled);
+    }
+    if (
+      renderMode === "preview" &&
+      options?.isPlaying &&
+      heavyTypes.has(effect.type) &&
+      quality !== "high"
+    ) {
+      return false;
     }
     return true;
   });
@@ -209,7 +232,8 @@ export function resetPostFXEffect(effect: PostFXEffect): PostFXEffect {
 
 export function isPreviewQualityReduced(postFx: PostFXSettings): boolean {
   if (!postFx.enabled) return false;
-  if (postFx.previewQuality === "off" || postFx.previewQuality === "high") return false;
+  if (postFx.previewQuality === "off") return false;
+  if (postFx.previewQuality === "high") return false;
 
   const hasHeavyEffects = postFx.effects.some(
     (effect) =>
@@ -218,7 +242,12 @@ export function isPreviewQualityReduced(postFx: PostFXSettings): boolean {
         ["glow", "bloom", "blur", "motionBlur", "chromaticAberration"].includes(effect.type)),
   );
 
-  return hasHeavyEffects || postFx.previewQuality === "low" || postFx.previewQuality === "medium";
+  return (
+    hasHeavyEffects ||
+    postFx.previewQuality === "auto" ||
+    postFx.previewQuality === "low" ||
+    postFx.previewQuality === "medium"
+  );
 }
 
 export function hasExportOnlyEffects(postFx: PostFXSettings): boolean {

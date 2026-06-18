@@ -7,6 +7,8 @@ type AudioTracksProps = {
   audio?: SequenceAudio;
   assets: ProjectAsset[];
   totalDurationFrames: number;
+  /** When true, audio is handled by Web Audio engine — skip Remotion audio */
+  muteRemotionAudio?: boolean;
 };
 
 function DuckingMusic({
@@ -29,8 +31,13 @@ function DuckingMusic({
   return <Audio src={src} volume={volume} />;
 }
 
-export function AudioTracks({ audio, assets, totalDurationFrames }: AudioTracksProps) {
-  if (!audio) return null;
+export function AudioTracks({
+  audio,
+  assets,
+  totalDurationFrames,
+  muteRemotionAudio = false,
+}: AudioTracksProps) {
+  if (!audio || muteRemotionAudio) return null;
 
   const mix = audio.mix ?? DEFAULT_AUDIO_MIX;
   const { fps } = useVideoConfig();

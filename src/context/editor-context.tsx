@@ -38,10 +38,12 @@ import type {
 import { DEFAULT_AUDIO_MIX } from "@/types/audio";
 import { DEFAULT_MAGIC_EDIT_SETTINGS } from "@/types/magic-edit";
 import { getAudioDuration } from "@/lib/audio";
+import { getOrDecodeAudioBuffer } from "@/lib/audio/audio-buffer-cache";
 import { runMagicEditPipeline } from "@/lib/magic-edit";
 import { buildAnixaDemoProject } from "@/lib/demo/anixa-demo";
 import { EDITOR_FPS, type EditorStep } from "@/types/editor";
 import { normalizePostFXSettings } from "@/lib/post-fx";
+import { usePlaybackEngine } from "@/hooks/use-playback-engine";
 import {
   applyCameraPreset as buildCameraPreset,
   focusCameraOnBlock as setCameraFocus,
@@ -151,6 +153,7 @@ type EditorContextValue = {
   canRedo: boolean;
   currentFrame: number;
   isPlaying: boolean;
+  effectivePreviewQuality: import("@/types/post-fx").PostFXQuality;
   showShortcuts: boolean;
   setShowShortcuts: (show: boolean) => void;
   showBrandSystem: boolean;
@@ -186,8 +189,6 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const [step, setStep] = useState<EditorStep>("motion");
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [selectedTransitionId, setSelectedTransitionId] = useState<string | null>(null);
-  const [currentFrame, setCurrentFrameState] = useState(0);
-  const [isPlaying, setIsPlayingState] = useState(true);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showBrandSystem, setShowBrandSystem] = useState(false);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
@@ -198,8 +199,6 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const [isMagicEditRunning, setIsMagicEditRunning] = useState(false);
   const [toast, setToast] = useState<EditorToastState | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
-
-  const playerRef = useRef<PlayerRef | null>(null);
 
   const history = useHistory<EditorSnapshot>(
     createSnapshot(initialProject.sequence, initialProject.customBrands, initialProject.assets),
@@ -212,6 +211,14 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const fps = sequence.fps ?? EDITOR_FPS;
   const postFx = normalizePostFXSettings(sequence.postFx);
   const camera = normalizeCameraSettings(sequence.camera);
+
+  const playback = usePlaybackEngine({
+    sequence,
+    assets,
+    previewQuality: postFx.previewQuality,
+  });
+
+  const { currentFrame, isPlaying, effectiveQuality: effectivePreviewQuality } = playback;
 
   const isDirty = !snapshotsEqual(history.present, savedSnapshotRef.current);
 
@@ -233,40 +240,34 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       if (newProjectId) setProjectId(newProjectId);
       setSelectedBlockId(null);
       setSelectedTransitionId(null);
-      setCurrentFrameState(0);
-      playerRef.current?.seekTo(0);
+      playback.seekToFrame(0);
     },
-    [history],
+    [history, playback],
   );
 
   const setCurrentFrame = useCallback((frame: number) => {
-    setCurrentFrameState(frame);
-  }, []);
+    playback.seekToFrame(frame);
+  }, [playback]);
 
   const seekToFrame = useCallback((frame: number) => {
-    const clamped = Math.max(0, frame);
-    setCurrentFrameState(clamped);
-    playerRef.current?.seekTo(clamped);
-  }, []);
+    playback.seekToFrame(frame);
+  }, [playback]);
 
   const togglePlayback = useCallback(() => {
-    const player = playerRef.current;
-    if (!player) return;
-    if (isPlaying) {
-      player.pause();
-    } else {
-      player.play();
-    }
-    setIsPlayingState((prev) => !prev);
-  }, [isPlaying]);
+    playback.togglePlayback();
+  }, [playback]);
 
   const setIsPlaying = useCallback((playing: boolean) => {
-    setIsPlayingState(playing);
-  }, []);
+    if (playing) {
+      void playback.play();
+    } else {
+      playback.pause();
+    }
+  }, [playback]);
 
   const registerPlayer = useCallback((player: PlayerRef | null) => {
-    playerRef.current = player;
-  }, []);
+    playback.registerPlayer(player);
+  }, [playback]);
 
   const nudgePlayhead = useCallback(
     (deltaFrames: number) => {
@@ -315,6 +316,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       canRedo: history.canRedo,
       currentFrame,
       isPlaying,
+      effectivePreviewQuality,
       showShortcuts,
       setShowShortcuts,
       showBrandSystem,
@@ -751,6 +753,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
             ...prev,
             assets: [...prev.assets, asset],
           }));
+          void getOrDecodeAudioBuffer(asset.id, dataUrl);
           return asset;
         } catch {
           return null;
@@ -995,6 +998,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       history,
       currentFrame,
       isPlaying,
+      effectivePreviewQuality,
       showShortcuts,
       showBrandSystem,
       showProjectMenu,

@@ -1,10 +1,12 @@
 import { motionBlockMap } from "@/config/blocks";
 import { useEditor } from "@/context/editor-context";
 import {
+  ExportCancelledError,
   exportSequenceToMp4,
   isExportAvailable,
   type ExportStatus,
 } from "@/lib/export-video";
+import type { RenderJob } from "@/types/render-job";
 import { framesToSeconds, getSequenceDurationInFrames } from "@/lib/sequence-utils";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AlertTriangle, Download, Film, Loader2, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motionFormats } from "@/config/formats";
 
 type ExportPanelProps = {
@@ -36,12 +38,15 @@ function MetaRow({ label, value }: { label: string; value: string }) {
 }
 
 export function ExportPanel({ className, compact }: ExportPanelProps) {
-  const { sequence, format, fps, customBrands, setFormat, setFps, setStep } = useEditor();
+  const { sequence, format, fps, customBrands, assets, setFormat, setFps, setStep, setIsPlaying } =
+    useEditor();
   const [fileName, setFileName] = useState(() =>
     sequence.name.replace(/[^a-z0-9-_]+/gi, "-").toLowerCase() || "export",
   );
   const [status, setStatus] = useState<ExportStatus>("idle");
+  const [renderJob, setRenderJob] = useState<RenderJob | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const exportAbortRef = useRef<AbortController | null>(null);
 
   const durationInFrames = useMemo(
     () => getSequenceDurationInFrames(sequence),
@@ -66,8 +71,14 @@ export function ExportPanel({ className, compact }: ExportPanelProps) {
 
   const handleExport = async () => {
     if (!exportReady) return;
+    setIsPlaying(false);
     setStatus("rendering");
     setError(null);
+    setRenderJob(null);
+
+    const controller = new AbortController();
+    exportAbortRef.current = controller;
+
     try {
       const blob = await exportSequenceToMp4({
         sequence,
@@ -75,7 +86,10 @@ export function ExportPanel({ className, compact }: ExportPanelProps) {
         fps,
         durationInFrames,
         customBrands,
+        assets,
         fileName,
+        onProgress: setRenderJob,
+        signal: controller.signal,
       });
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
@@ -85,9 +99,20 @@ export function ExportPanel({ className, compact }: ExportPanelProps) {
       URL.revokeObjectURL(url);
       setStatus("done");
     } catch (err) {
-      setStatus("error");
-      setError(err instanceof Error ? err.message : "Export failed.");
+      if (err instanceof ExportCancelledError) {
+        setStatus("cancelled");
+        setError(null);
+      } else {
+        setStatus("error");
+        setError(err instanceof Error ? err.message : "Export failed.");
+      }
+    } finally {
+      exportAbortRef.current = null;
     }
+  };
+
+  const handleCancelExport = () => {
+    exportAbortRef.current?.abort();
   };
 
   const content = (
@@ -176,6 +201,45 @@ export function ExportPanel({ className, compact }: ExportPanelProps) {
       ) : (
         <p className="rounded-md border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
           Add blocks to your sequence before exporting.
+        </p>
+      )}
+
+      {status === "rendering" && renderJob ? (
+        <div
+          className="rounded-md border border-border bg-background/50 px-3 py-2.5"
+          role="status"
+        >
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <span className="capitalize text-muted-foreground">{renderJob.status}</span>
+            <span className="font-mono tabular-nums">{renderJob.progress}%</span>
+          </div>
+          {renderJob.message ? (
+            <p className="mt-1 text-[10px] text-muted-foreground">{renderJob.message}</p>
+          ) : null}
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full bg-primary transition-all duration-300"
+              style={{ width: `${renderJob.progress}%` }}
+            />
+          </div>
+          <p className="mt-2 text-[10px] text-amber-400">
+            Rendering in a background process. Preview is paused to free CPU — keep this tab open.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-2 h-7 w-full text-xs"
+            onClick={handleCancelExport}
+          >
+            Cancel export
+          </Button>
+        </div>
+      ) : null}
+
+      {status === "cancelled" && (
+        <p className="text-xs text-muted-foreground" role="status">
+          Export cancelled.
         </p>
       )}
 
