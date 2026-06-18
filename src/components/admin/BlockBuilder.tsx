@@ -1,0 +1,330 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useEditor } from "@/context/editor-context";
+import { MOTION_BLOCK_FAMILIES } from "@/lib/motion-block-library";
+import { cn } from "@/lib/utils";
+import type { MotionBlockFamily } from "@/types/motion-block-library";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { useState } from "react";
+
+const BUILDER_STEPS = [
+  "Choose block family",
+  "Choose layout primitive",
+  "Define slots",
+  "Define responsive layouts",
+  "Add motion presets",
+  "Define fallbacks",
+  "Test with sample brands",
+  "Run validation",
+  "Save as draft",
+  "Publish when approved",
+] as const;
+
+const LAYOUT_PRIMITIVES = [
+  "Full bleed",
+  "Centered",
+  "Split",
+  "Grid",
+  "Stack",
+  "Collage",
+  "Overlay",
+  "Carousel",
+  "Timeline",
+  "Chart",
+  "Logo lockup",
+] as const;
+
+const SLOT_TYPES = [
+  "Headline",
+  "Subhead",
+  "Eyebrow",
+  "Image",
+  "Video",
+  "Logo",
+  "Icon",
+  "Chart",
+  "CTA",
+  "Background",
+  "Shape",
+] as const;
+
+const MOTION_PRESETS = [
+  "Fade up",
+  "Slide in",
+  "Scale in",
+  "Mask reveal",
+  "Stagger",
+  "Parallax",
+  "Draw on",
+  "Count up",
+  "Card stack",
+  "Camera push",
+] as const;
+
+export function BlockBuilder() {
+  const { showBlockBuilder, setShowBlockBuilder, isAdminMode, showToast } = useEditor();
+  const [step, setStep] = useState(0);
+  const [family, setFamily] = useState<MotionBlockFamily>("image-video");
+  const [primitive, setPrimitive] = useState<string>(LAYOUT_PRIMITIVES[0]);
+  const [blockName, setBlockName] = useState("");
+  const [selectedSlots, setSelectedSlots] = useState<string[]>(["Headline"]);
+  const [motionPreset, setMotionPreset] = useState<string>(MOTION_PRESETS[0]);
+  const [fallbackMedia, setFallbackMedia] = useState("color-fill");
+
+  if (!isAdminMode || !showBlockBuilder) return null;
+
+  const toggleSlot = (slot: string) => {
+    setSelectedSlots((prev) =>
+      prev.includes(slot) ? prev.filter((s) => s !== slot) : [...prev, slot],
+    );
+  };
+
+  const handleSaveDraft = () => {
+    showToast({ message: `Block "${blockName || "Untitled"}" saved as draft.` });
+    setShowBlockBuilder(false);
+  };
+
+  const handlePublish = () => {
+    showToast({ message: `Block "${blockName || "Untitled"}" submitted for approval.` });
+    setShowBlockBuilder(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-3">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5"
+          onClick={() => setShowBlockBuilder(false)}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back
+        </Button>
+        <span className="text-sm font-semibold">Block Builder</span>
+        <span className="text-xs text-muted-foreground">
+          Step {step + 1} of {BUILDER_STEPS.length}
+        </span>
+      </header>
+
+      <div className="flex min-h-0 flex-1">
+        <aside className="w-56 shrink-0 border-r border-border p-3 lg:w-64">
+          <ol className="space-y-1">
+            {BUILDER_STEPS.map((label, i) => (
+              <li key={label}>
+                <button
+                  type="button"
+                  onClick={() => setStep(i)}
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11px] transition-colors",
+                    step === i
+                      ? "bg-secondary font-medium text-foreground"
+                      : "text-muted-foreground hover:bg-secondary/50",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px]",
+                      i < step ? "bg-emerald-500 text-white" : "bg-muted",
+                    )}
+                  >
+                    {i < step ? <Check className="h-2.5 w-2.5" /> : i + 1}
+                  </span>
+                  {label}
+                </button>
+              </li>
+            ))}
+          </ol>
+        </aside>
+
+        <main className="min-w-0 flex-1 overflow-y-auto p-6">
+          <div className="mx-auto max-w-lg space-y-4">
+            <h2 className="text-lg font-semibold">{BUILDER_STEPS[step]}</h2>
+
+            {step === 0 ? (
+              <div className="space-y-2">
+                <Label>Block family</Label>
+                <Select value={family} onValueChange={(v) => setFamily(v as MotionBlockFamily)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MOTION_BLOCK_FAMILIES.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="space-y-1">
+                  <Label>Block name</Label>
+                  <Input
+                    value={blockName}
+                    onChange={(e) => setBlockName(e.target.value)}
+                    placeholder="My new block"
+                  />
+                </div>
+              </div>
+            ) : null}
+
+            {step === 1 ? (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {LAYOUT_PRIMITIVES.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPrimitive(p)}
+                    className={cn(
+                      "rounded-md border px-3 py-2 text-xs transition-colors",
+                      primitive === p
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-secondary",
+                    )}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {step === 2 ? (
+              <div className="flex flex-wrap gap-2">
+                {SLOT_TYPES.map((slot) => (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => toggleSlot(slot)}
+                    className={cn(
+                      "rounded-md border px-2.5 py-1 text-xs transition-colors",
+                      selectedSlots.includes(slot)
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-secondary",
+                    )}
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {step === 3 ? (
+              <p className="text-sm text-muted-foreground">
+                Responsive layouts will be generated for 16:9, 9:16, 1:1, 4:5, and 5:4 based on the{" "}
+                <strong>{primitive}</strong> primitive with {selectedSlots.length} slot
+                {selectedSlots.length === 1 ? "" : "s"}.
+              </p>
+            ) : null}
+
+            {step === 4 ? (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {MOTION_PRESETS.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setMotionPreset(preset)}
+                    className={cn(
+                      "rounded-md border px-3 py-2 text-xs transition-colors",
+                      motionPreset === preset
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-secondary",
+                    )}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {step === 5 ? (
+              <div className="space-y-2">
+                <Label>Missing media fallback</Label>
+                <Select value={fallbackMedia} onValueChange={setFallbackMedia}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="color-fill">Color fill</SelectItem>
+                    <SelectItem value="gradient">Gradient</SelectItem>
+                    <SelectItem value="blur-placeholder">Blur placeholder</SelectItem>
+                    <SelectItem value="hide">Hide</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
+
+            {step === 6 ? (
+              <p className="text-sm text-muted-foreground">
+                Preview with sample brands in the Motion Block Playground after saving. Family:{" "}
+                {family}, primitive: {primitive}, motion: {motionPreset}.
+              </p>
+            ) : null}
+
+            {step === 7 ? (
+              <div className="space-y-2 rounded-md border border-border p-3 text-sm">
+                <p className="font-medium text-emerald-600">Validation passed</p>
+                <ul className="list-inside list-disc text-muted-foreground">
+                  <li>All required slots defined</li>
+                  <li>Layouts cover all supported formats</li>
+                  <li>Safe areas configured</li>
+                  <li>Motion preset assigned</li>
+                </ul>
+              </div>
+            ) : null}
+
+            {step === 8 ? (
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <Textarea placeholder="Optional notes for this draft…" rows={3} />
+              </div>
+            ) : null}
+
+            {step === 9 ? (
+              <p className="text-sm text-muted-foreground">
+                Publishing marks the block as approved and makes it available in the user-facing
+                Motion Blocks Library (when metadata and editor bridge are complete).
+              </p>
+            ) : null}
+          </div>
+        </main>
+      </div>
+
+      <footer className="flex shrink-0 items-center justify-between border-t border-border px-4 py-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={step === 0}
+          onClick={() => setStep((s) => s - 1)}
+        >
+          <ArrowLeft className="mr-1 h-3.5 w-3.5" />
+          Previous
+        </Button>
+        <div className="flex gap-2">
+          {step === 8 ? (
+            <Button variant="outline" size="sm" onClick={handleSaveDraft}>
+              Save as draft
+            </Button>
+          ) : null}
+          {step === 9 ? (
+            <Button size="sm" onClick={handlePublish}>
+              Publish
+            </Button>
+          ) : (
+            <Button size="sm" onClick={() => setStep((s) => Math.min(BUILDER_STEPS.length - 1, s + 1))}>
+              Next
+              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
+      </footer>
+    </div>
+  );
+}

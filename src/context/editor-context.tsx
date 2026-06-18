@@ -41,7 +41,9 @@ import { getAudioDuration } from "@/lib/audio";
 import { getOrDecodeAudioBuffer } from "@/lib/audio/audio-buffer-cache";
 import { runMagicEditPipeline } from "@/lib/magic-edit";
 import { buildAnixaDemoProject } from "@/lib/demo/anixa-demo";
-import { EDITOR_FPS, type EditorStep } from "@/types/editor";
+import { EDITOR_FPS, type EditorStep, type MainNavId, type WorkspaceTab } from "@/types/editor";
+import type { User, UserRole } from "@/types/user";
+import { isAdminRole } from "@/types/user";
 import { normalizePostFXSettings } from "@/lib/post-fx";
 import { usePlaybackEngine } from "@/hooks/use-playback-engine";
 import {
@@ -52,6 +54,19 @@ import {
 import type { PlayerRef } from "@remotion/player";
 
 type SettingsPanelView = "project" | "postFx" | "camera" | "audio";
+
+const USER_ROLE_STORAGE_KEY = "scatter-user-role";
+
+function readStoredUserRole(): UserRole {
+  if (typeof window === "undefined") return "user";
+  const stored = window.localStorage.getItem(USER_ROLE_STORAGE_KEY);
+  if (stored === "admin" || stored === "maker" || stored === "user") return stored;
+  return "user";
+}
+
+function createDefaultUser(role: UserRole = readStoredUserRole()): User {
+  return { id: "local-user", name: "User", role };
+}
 
 export type EditorToastState = {
   message: string;
@@ -134,6 +149,13 @@ type EditorActions = {
   nudgePlayhead: (deltaFrames: number) => void;
   showToast: (toast: EditorToastState) => void;
   dismissToast: () => void;
+  setUserRole: (role: UserRole) => void;
+  setWorkspaceTab: (tab: WorkspaceTab) => void;
+  setMainNav: (nav: MainNavId) => void;
+  setShowBlockBuilder: (show: boolean) => void;
+  setShowBlockLibraryManager: (show: boolean) => void;
+  setShowBrandTestLab: (show: boolean) => void;
+  setShowDebugTools: (show: boolean) => void;
 };
 
 type EditorContextValue = {
@@ -158,6 +180,8 @@ type EditorContextValue = {
   setShowShortcuts: (show: boolean) => void;
   showBrandSystem: boolean;
   setShowBrandSystem: (show: boolean) => void;
+  showMotionPlayground: boolean;
+  setShowMotionPlayground: (show: boolean) => void;
   showProjectMenu: boolean;
   setShowProjectMenu: (show: boolean) => void;
   settingsPanelView: SettingsPanelView;
@@ -166,6 +190,14 @@ type EditorContextValue = {
   toast: EditorToastState | null;
   magicEditSettings: MagicEditSettings;
   isMagicEditRunning: boolean;
+  user: User;
+  isAdminMode: boolean;
+  workspaceTab: WorkspaceTab;
+  mainNav: MainNavId;
+  showBlockBuilder: boolean;
+  showBlockLibraryManager: boolean;
+  showBrandTestLab: boolean;
+  showDebugTools: boolean;
 } & EditorActions;
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -191,7 +223,15 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const [selectedTransitionId, setSelectedTransitionId] = useState<string | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showBrandSystem, setShowBrandSystem] = useState(false);
+  const [showMotionPlayground, setShowMotionPlayground] = useState(false);
+  const [showBlockBuilder, setShowBlockBuilder] = useState(false);
+  const [showBlockLibraryManager, setShowBlockLibraryManager] = useState(false);
+  const [showBrandTestLab, setShowBrandTestLab] = useState(false);
+  const [showDebugTools, setShowDebugTools] = useState(false);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
+  const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTab>("timeline");
+  const [mainNav, setMainNav] = useState<MainNavId>("home");
+  const [user, setUserState] = useState<User>(() => createDefaultUser());
   const [settingsPanelView, setSettingsPanelView] = useState<SettingsPanelView>("project");
   const [magicEditSettings, setMagicEditSettingsState] = useState<MagicEditSettings>(
     DEFAULT_MAGIC_EDIT_SETTINGS,
@@ -298,6 +338,15 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const isAdminMode = isAdminRole(user.role);
+
+  const setUserRole = useCallback((role: UserRole) => {
+    setUserState((prev) => ({ ...prev, role }));
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(USER_ROLE_STORAGE_KEY, role);
+    }
+  }, []);
+
   const value = useMemo<EditorContextValue>(
     () => ({
       step,
@@ -321,8 +370,25 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       setShowShortcuts,
       showBrandSystem,
       setShowBrandSystem,
+      showMotionPlayground,
+      setShowMotionPlayground,
+      showBlockBuilder,
+      setShowBlockBuilder,
+      showBlockLibraryManager,
+      setShowBlockLibraryManager,
+      showBrandTestLab,
+      setShowBrandTestLab,
+      showDebugTools,
+      setShowDebugTools,
       showProjectMenu,
       setShowProjectMenu,
+      workspaceTab,
+      setWorkspaceTab,
+      mainNav,
+      setMainNav,
+      user,
+      isAdminMode,
+      setUserRole,
       settingsPanelView,
       postFx,
       camera,
@@ -1001,7 +1067,17 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       effectivePreviewQuality,
       showShortcuts,
       showBrandSystem,
+      showMotionPlayground,
+      showBlockBuilder,
+      showBlockLibraryManager,
+      showBrandTestLab,
+      showDebugTools,
       showProjectMenu,
+      workspaceTab,
+      mainNav,
+      user,
+      isAdminMode,
+      setUserRole,
       settingsPanelView,
       postFx,
       camera,

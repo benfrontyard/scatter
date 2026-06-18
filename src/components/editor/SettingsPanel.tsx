@@ -2,6 +2,7 @@ import { BlockAdvancedTypography } from "@/components/editor/BlockAdvancedTypogr
 import { BlockAdvancedEffects } from "@/components/editor/BlockAdvancedEffects";
 import { Block3DPanel, CameraJumpButton } from "@/components/editor/Block3DPanel";
 import { TextAnimationPanel } from "@/components/editor/TextAnimationPanel";
+import { UserBlockControls } from "@/components/editor/UserBlockControls";
 import { ExportPanel } from "@/components/editor/ExportPanel";
 import { AudioPanel } from "@/components/editor/AudioPanel";
 import { PostFXPanel } from "@/components/editor/PostFXPanel";
@@ -378,6 +379,20 @@ function ContentSubsection({
 }
 
 function BlockSettings({ className }: { className?: string }) {
+  const { isAdminMode } = useEditor();
+
+  if (!isAdminMode) {
+    return (
+      <PanelShell className={className} icon={SlidersHorizontal} title="Block" subtitle="Edit content">
+        <UserBlockControls />
+      </PanelShell>
+    );
+  }
+
+  return <AdminBlockSettings className={className} />;
+}
+
+function AdminBlockSettings({ className }: { className?: string }) {
   const {
     brand,
     fps,

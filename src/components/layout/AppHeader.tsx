@@ -10,7 +10,6 @@ import {
 import { cn } from "@/lib/utils";
 import {
   Download,
-  FolderOpen,
   HelpCircle,
   Redo2,
   Save,
@@ -18,7 +17,10 @@ import {
   X,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { MainNavigation } from "@/components/layout/MainNavigation";
+import { AdminNavigation } from "@/components/layout/AdminNavigation";
 import { motionFormats } from "@/config/formats";
+import type { UserRole } from "@/types/user";
 
 type AppHeaderProps = {
   compact?: boolean;
@@ -34,6 +36,8 @@ export function AppHeader({ compact }: AppHeaderProps) {
     isDirty,
     canUndo,
     canRedo,
+    user,
+    setUserRole,
     setBrand,
     setFormat,
     setStep,
@@ -124,8 +128,15 @@ export function AppHeader({ compact }: AppHeaderProps) {
         )}
       </div>
 
-      {!compact && (
+      {!compact ? (
         <div className="hidden min-w-0 flex-1 items-center justify-center gap-2 md:flex">
+          <MainNavigation />
+          <AdminNavigation />
+        </div>
+      ) : null}
+
+      {!compact && (
+        <div className="hidden items-center gap-2 lg:flex">
           <Select value={brand.id} onValueChange={setBrand}>
             <SelectTrigger className="h-8 w-[130px] text-xs" aria-label="Brand preset">
               <SelectValue />
@@ -139,20 +150,15 @@ export function AppHeader({ compact }: AppHeaderProps) {
             </SelectContent>
           </Select>
 
-          <div className="flex items-center gap-1 rounded-md border border-border bg-secondary/30 px-2 py-1">
-            <span className="max-w-[120px] truncate text-xs text-muted-foreground">
-              {brand.name}
-            </span>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              onClick={() => setShowBrandSystem(true)}
-            >
-              Edit brand
-            </Button>
-          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={() => setShowBrandSystem(true)}
+          >
+            Edit brand
+          </Button>
 
           <Select value={format.id} onValueChange={setFormat}>
             <SelectTrigger className="h-8 w-[120px] text-xs" aria-label="Aspect ratio">
@@ -170,18 +176,19 @@ export function AppHeader({ compact }: AppHeaderProps) {
       )}
 
       <div className={cn("ml-auto flex shrink-0 items-center gap-1", compact && "gap-0.5")}>
-        {!compact && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setShowProjectMenu(true)}
-            aria-label="Projects"
-            title="Projects"
-          >
-            <FolderOpen className="h-3.5 w-3.5" />
-          </Button>
-        )}
+        <Select
+          value={user.role}
+          onValueChange={(v) => setUserRole(v as UserRole)}
+        >
+          <SelectTrigger className="hidden h-8 w-[90px] text-[10px] xl:flex" aria-label="User role">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="user">User</SelectItem>
+            <SelectItem value="maker">Maker</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+          </SelectContent>
+        </Select>
         <ThemeToggle />
         <Button
           variant="ghost"

@@ -122,6 +122,33 @@ export type {
   TypeStyleName,
 } from "./typography";
 export type { MotionFormat } from "./format";
+export type {
+  MotionBlockFamily,
+  MotionBlockStatus,
+  MotionAspectRatio,
+  MotionSlotType,
+  MotionSlotRole,
+  MotionBlockSlot,
+  MotionAssetKind,
+  MotionAssetRequirement,
+  MotionAnchor,
+  MotionSlotLayout,
+  MotionLayoutRule,
+  MotionSafeAreaRule,
+  MotionResponsiveRule,
+  MotionPhasePreset,
+  MotionPreset,
+  MotionStylePreset,
+  MotionFallbackRule,
+  MotionAdvancedOverride,
+  MotionDebugMetadata,
+  MotionBlockLibraryEntry,
+  MotionBlockWarningCode,
+  MotionBlockWarning,
+  PlaygroundTestScenario,
+  PlaygroundDebugLayer,
+  MotionBlockLibraryBridge,
+} from "./motion-block-library";
 export type { EditorStep, EditorState } from "./editor";
 export { EDITOR_FPS } from "./editor";
 export type { ScatterProject, ProjectAsset, RecentProjectEntry } from "./project";

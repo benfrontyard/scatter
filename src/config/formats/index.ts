@@ -29,6 +29,13 @@ export const motionFormats: MotionFormat[] = [
     height: 1080,
     aspectRatio: "16:9",
   },
+  {
+    id: "format-5-4",
+    label: "Landscape 5:4",
+    width: 1350,
+    height: 1080,
+    aspectRatio: "5:4",
+  },
 ];
 
 export const motionFormatMap = Object.fromEntries(

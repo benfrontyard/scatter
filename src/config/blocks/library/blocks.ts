@@ -1,0 +1,607 @@
+import { block, baseMotion, layout } from "./helpers";
+import type { MotionBlockLibraryEntry } from "@/types/motion-block-library";
+
+export const motionBlockLibrary: MotionBlockLibraryEntry[] = [
+  block({
+    id: "full-bleed-media-headline",
+    name: "Full Bleed Media Headline",
+    description: "Hero media fills the frame with headline anchored in the lower safe zone.",
+    family: "image-video",
+    tags: ["hero", "media", "headline", "intro"],
+    useCases: ["brand intro", "campaign hero", "product launch"],
+    duration: 120,
+    status: "approved",
+    editorBlockId: "feature-announcement",
+    slots: [
+      { id: "media", type: "media", role: "media-primary", label: "Hero media", required: true },
+      { id: "headline", type: "text", role: "headline", label: "Headline", required: true, maxLength: 48 },
+      { id: "subhead", type: "text", role: "subhead", label: "Subhead", required: false, maxLength: 90 },
+    ],
+    requiredAssets: [{ id: "hero-media", kind: "image", label: "Hero image or video", slotId: "media", aspectHint: "16:9" }],
+    optionalAssets: [],
+    layoutRules: layout(
+      {
+        mediaTreatment: "full-bleed",
+        stackDirection: "column",
+        gap: 0.02,
+        slots: [
+          { slotId: "media", zone: "full", anchor: { x: 0, y: 0 }, width: 1, height: 1, zIndex: 0 },
+          { slotId: "headline", zone: "lower-third", anchor: { x: 0.08, y: 0.72 }, width: 0.84, height: 0.12, zIndex: 1 },
+          { slotId: "subhead", zone: "lower-third", anchor: { x: 0.08, y: 0.84 }, width: 0.84, height: 0.08, zIndex: 1 },
+        ],
+      },
+      {
+        mediaTreatment: "full-bleed",
+        slots: [
+          { slotId: "media", zone: "full", anchor: { x: 0, y: 0 }, width: 1, height: 1, zIndex: 0 },
+          { slotId: "headline", zone: "lower-third", anchor: { x: 0.08, y: 0.62 }, width: 0.84, height: 0.14, zIndex: 1 },
+          { slotId: "subhead", zone: "lower-third", anchor: { x: 0.08, y: 0.76 }, width: 0.84, height: 0.1, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, respectVerticalDanger: true },
+    responsiveRules: { autoShrinkText: true, reflowOnVertical: true, maxElements: 3 },
+    motionPreset: baseMotion({
+      phases: { in: "fade", main: "hold", out: "fade-out", inRatio: 0.3, mainRatio: 0.5, outRatio: 0.2 },
+      easingId: "soft-reveal",
+      stagger: 10,
+      controls: { direction: "up", intensity: "hero", kenBurns: 1.05 },
+    }),
+    stylePreset: { textAlign: "left", emphasis: "hero", contrast: "high" },
+    fallbackRules: { missingMedia: "gradient", longText: "shrink", badCrop: "center-crop" },
+    debugMetadata: { version: "1.0", rendererId: "feature-announcement" },
+  }),
+
+  block({
+    id: "editorial-split-media",
+    name: "Editorial Split Media",
+    description: "Editorial split layout with media on one side and copy on the other.",
+    family: "image-video",
+    tags: ["editorial", "split", "story"],
+    useCases: ["case study", "editorial feature", "thought leadership"],
+    duration: 120,
+    status: "needs-review",
+    slots: [
+      { id: "media", type: "media", role: "media-primary", label: "Feature media", required: true },
+      { id: "headline", type: "text", role: "headline", label: "Headline", required: true, maxLength: 56 },
+      { id: "body", type: "text", role: "body", label: "Body copy", required: false, maxLength: 160 },
+    ],
+    requiredAssets: [{ id: "feature-media", kind: "image", label: "Feature image", slotId: "media" }],
+    optionalAssets: [],
+    layoutRules: layout(
+      {
+        mediaTreatment: "split",
+        stackDirection: "row",
+        gap: 0.04,
+        slots: [
+          { slotId: "media", zone: "split-left", anchor: { x: 0.06, y: 0.12 }, width: 0.42, height: 0.76, zIndex: 0 },
+          { slotId: "headline", zone: "split-right", anchor: { x: 0.54, y: 0.28 }, width: 0.4, height: 0.2, zIndex: 1 },
+          { slotId: "body", zone: "split-right", anchor: { x: 0.54, y: 0.5 }, width: 0.38, height: 0.32, zIndex: 1 },
+        ],
+      },
+      {
+        mediaTreatment: "contained",
+        stackDirection: "column",
+        slots: [
+          { slotId: "media", zone: "upper-third", anchor: { x: 0.08, y: 0.16 }, width: 0.84, height: 0.36, zIndex: 0 },
+          { slotId: "headline", zone: "center", anchor: { x: 0.08, y: 0.56 }, width: 0.84, height: 0.16, zIndex: 1 },
+          { slotId: "body", zone: "lower-third", anchor: { x: 0.08, y: 0.72 }, width: 0.84, height: 0.18, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, respectVerticalDanger: true },
+    responsiveRules: { reflowOnVertical: true, hideOptionalOnTight: true, maxElements: 3 },
+    motionPreset: baseMotion({
+      phases: { in: "slide-up", main: "hold", out: "fade-out", inRatio: 0.35, mainRatio: 0.45, outRatio: 0.2 },
+      easingId: "soft-reveal",
+      stagger: 12,
+    }),
+    stylePreset: { textAlign: "left", emphasis: "standard" },
+    fallbackRules: { missingMedia: "color-fill", longText: "wrap", badCrop: "contain" },
+  }),
+
+  block({
+    id: "staggered-image-collage",
+    name: "Staggered Image Collage",
+    description: "Multiple images enter with staggered motion in a collage grid.",
+    family: "image-video",
+    tags: ["collage", "gallery", "stagger"],
+    useCases: ["portfolio", "lifestyle", "multi-product"],
+    duration: 150,
+    status: "draft",
+    slots: [
+      { id: "media-1", type: "media", role: "media-primary", label: "Image 1", required: true },
+      { id: "media-2", type: "media", role: "media-secondary", label: "Image 2", required: false },
+      { id: "media-3", type: "media", role: "media-secondary", label: "Image 3", required: false },
+      { id: "headline", type: "text", role: "headline", label: "Headline", required: false, maxLength: 40 },
+    ],
+    requiredAssets: [{ id: "collage-1", kind: "image", label: "Primary image", slotId: "media-1" }],
+    optionalAssets: [
+      { id: "collage-2", kind: "image", label: "Secondary image", slotId: "media-2" },
+      { id: "collage-3", kind: "image", label: "Tertiary image", slotId: "media-3" },
+    ],
+    layoutRules: layout(
+      {
+        mediaTreatment: "collage",
+        gap: 0.02,
+        slots: [
+          { slotId: "media-1", zone: "collage-a", anchor: { x: 0.08, y: 0.1 }, width: 0.5, height: 0.55, zIndex: 1 },
+          { slotId: "media-2", zone: "collage-b", anchor: { x: 0.58, y: 0.14 }, width: 0.34, height: 0.38, zIndex: 2 },
+          { slotId: "media-3", zone: "collage-c", anchor: { x: 0.42, y: 0.58 }, width: 0.5, height: 0.32, zIndex: 3 },
+          { slotId: "headline", zone: "lower-third", anchor: { x: 0.08, y: 0.78 }, width: 0.84, height: 0.12, zIndex: 4 },
+        ],
+      },
+      {
+        mediaTreatment: "collage",
+        stackDirection: "column",
+        slots: [
+          { slotId: "media-1", zone: "upper", anchor: { x: 0.08, y: 0.16 }, width: 0.84, height: 0.28, zIndex: 1 },
+          { slotId: "media-2", zone: "mid", anchor: { x: 0.08, y: 0.46 }, width: 0.4, height: 0.22, zIndex: 2 },
+          { slotId: "media-3", zone: "mid", anchor: { x: 0.52, y: 0.46 }, width: 0.4, height: 0.22, zIndex: 3 },
+          { slotId: "headline", zone: "lower-third", anchor: { x: 0.08, y: 0.74 }, width: 0.84, height: 0.12, zIndex: 4 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true },
+    responsiveRules: { hideOptionalOnTight: true, maxElements: 4 },
+    motionPreset: baseMotion({
+      phases: { in: "scale-in", main: "hold", out: "fade-out", inRatio: 0.4, mainRatio: 0.45, outRatio: 0.15 },
+      easingId: "snappy",
+      stagger: 6,
+      controls: { direction: "up", collageSpread: 1 },
+    }),
+    stylePreset: { textAlign: "left", emphasis: "standard" },
+    fallbackRules: { missingMedia: "blur-placeholder", badCrop: "center-crop" },
+  }),
+
+  block({
+    id: "ui-card-stack",
+    name: "UI Card Stack",
+    description: "Stacked product UI cards with depth and staggered entrance.",
+    family: "ui-product",
+    tags: ["product", "ui", "cards", "saas"],
+    useCases: ["product demo", "feature tour", "app showcase"],
+    duration: 120,
+    status: "needs-review",
+    slots: [
+      { id: "card-primary", type: "media", role: "media-primary", label: "Primary UI", required: true },
+      { id: "card-secondary", type: "media", role: "media-secondary", label: "Secondary UI", required: false },
+      { id: "headline", type: "text", role: "headline", label: "Headline", required: true, maxLength: 50 },
+      { id: "subhead", type: "text", role: "subhead", label: "Subhead", required: false, maxLength: 80 },
+    ],
+    requiredAssets: [{ id: "ui-screenshot", kind: "image", label: "UI screenshot", slotId: "card-primary" }],
+    optionalAssets: [{ id: "ui-screenshot-2", kind: "image", label: "Secondary screenshot", slotId: "card-secondary" }],
+    layoutRules: layout(
+      {
+        mediaTreatment: "contained",
+        stackDirection: "row",
+        gap: 0.03,
+        slots: [
+          { slotId: "headline", zone: "split-left", anchor: { x: 0.08, y: 0.3 }, width: 0.38, height: 0.14, zIndex: 2 },
+          { slotId: "subhead", zone: "split-left", anchor: { x: 0.08, y: 0.46 }, width: 0.36, height: 0.2, zIndex: 2 },
+          { slotId: "card-primary", zone: "split-right", anchor: { x: 0.52, y: 0.18 }, width: 0.4, height: 0.64, zIndex: 1 },
+          { slotId: "card-secondary", zone: "split-right", anchor: { x: 0.62, y: 0.28 }, width: 0.3, height: 0.48, zIndex: 0 },
+        ],
+      },
+      {
+        stackDirection: "column",
+        slots: [
+          { slotId: "headline", zone: "upper-third", anchor: { x: 0.08, y: 0.14 }, width: 0.84, height: 0.1, zIndex: 2 },
+          { slotId: "subhead", zone: "upper-third", anchor: { x: 0.08, y: 0.26 }, width: 0.84, height: 0.08, zIndex: 2 },
+          { slotId: "card-primary", zone: "center", anchor: { x: 0.1, y: 0.38 }, width: 0.8, height: 0.38, zIndex: 1 },
+          { slotId: "card-secondary", zone: "center", anchor: { x: 0.18, y: 0.44 }, width: 0.64, height: 0.28, zIndex: 0 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, respectVerticalDanger: true },
+    responsiveRules: { reflowOnVertical: true, maxElements: 4 },
+    motionPreset: baseMotion({
+      phases: { in: "slide-up", main: "hold", out: "fade-out", inRatio: 0.3, mainRatio: 0.55, outRatio: 0.15 },
+      easingId: "snappy",
+      stagger: 5,
+      controls: { depth: 1.2, cardTilt: 4 },
+    }),
+    stylePreset: { textAlign: "left", emphasis: "standard" },
+    fallbackRules: { missingMedia: "blur-placeholder", longText: "shrink" },
+  }),
+
+  block({
+    id: "dashboard-callout",
+    name: "Dashboard Callout",
+    description: "Dashboard screenshot with animated callout pins and labels.",
+    family: "ui-product",
+    tags: ["dashboard", "callout", "annotation"],
+    useCases: ["analytics reveal", "feature highlight", "B2B demo"],
+    duration: 120,
+    status: "draft",
+    slots: [
+      { id: "dashboard", type: "media", role: "media-primary", label: "Dashboard", required: true },
+      { id: "callout-1", type: "text", role: "caption", label: "Callout 1", required: false, maxLength: 40 },
+      { id: "callout-2", type: "text", role: "caption", label: "Callout 2", required: false, maxLength: 40 },
+      { id: "headline", type: "text", role: "headline", label: "Headline", required: true, maxLength: 48 },
+    ],
+    requiredAssets: [{ id: "dashboard-img", kind: "image", label: "Dashboard screenshot", slotId: "dashboard" }],
+    optionalAssets: [],
+    layoutRules: layout(
+      {
+        mediaTreatment: "contained",
+        slots: [
+          { slotId: "headline", zone: "top-center", anchor: { x: 0.1, y: 0.08 }, width: 0.8, height: 0.1, zIndex: 3 },
+          { slotId: "dashboard", zone: "center", anchor: { x: 0.1, y: 0.22 }, width: 0.8, height: 0.62, zIndex: 1 },
+          { slotId: "callout-1", zone: "overlay", anchor: { x: 0.58, y: 0.38 }, width: 0.28, height: 0.06, zIndex: 2 },
+          { slotId: "callout-2", zone: "overlay", anchor: { x: 0.22, y: 0.58 }, width: 0.28, height: 0.06, zIndex: 2 },
+        ],
+      },
+      {
+        stackDirection: "column",
+        slots: [
+          { slotId: "headline", zone: "upper-third", anchor: { x: 0.08, y: 0.12 }, width: 0.84, height: 0.1, zIndex: 3 },
+          { slotId: "dashboard", zone: "center", anchor: { x: 0.06, y: 0.26 }, width: 0.88, height: 0.48, zIndex: 1 },
+          { slotId: "callout-1", zone: "overlay", anchor: { x: 0.1, y: 0.62 }, width: 0.36, height: 0.06, zIndex: 2 },
+          { slotId: "callout-2", zone: "overlay", anchor: { x: 0.54, y: 0.7 }, width: 0.36, height: 0.06, zIndex: 2 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, respectVerticalDanger: true },
+    responsiveRules: { hideOptionalOnTight: true, maxElements: 4 },
+    motionPreset: baseMotion({
+      phases: { in: "fade", main: "hold", out: "fade-out", inRatio: 0.25, mainRatio: 0.6, outRatio: 0.15 },
+      easingId: "ease-out",
+      stagger: 8,
+      controls: { pinPulse: 1 },
+    }),
+    stylePreset: { textAlign: "center", emphasis: "standard" },
+    fallbackRules: { missingMedia: "color-fill", missingText: "hide-slot" },
+  }),
+
+  block({
+    id: "big-stat-reveal",
+    name: "Big Stat Reveal",
+    description: "Large metric animates in with supporting label and context.",
+    family: "data-graph",
+    tags: ["stat", "metric", "proof"],
+    useCases: ["KPI reveal", "social proof", "results"],
+    duration: 90,
+    status: "approved",
+    editorBlockId: "stat-card",
+    slots: [
+      { id: "value", type: "stat", role: "stat-value", label: "Stat value", required: true, maxLength: 12 },
+      { id: "label", type: "text", role: "stat-label", label: "Stat label", required: true, maxLength: 48 },
+      { id: "supporting", type: "text", role: "body", label: "Supporting text", required: false, maxLength: 100 },
+    ],
+    requiredAssets: [],
+    optionalAssets: [],
+    layoutRules: layout(
+      {
+        stackDirection: "column",
+        gap: 0.02,
+        slots: [
+          { slotId: "value", zone: "center", anchor: { x: 0.15, y: 0.32 }, width: 0.7, height: 0.22, zIndex: 1 },
+          { slotId: "label", zone: "center", anchor: { x: 0.15, y: 0.56 }, width: 0.7, height: 0.1, zIndex: 1 },
+          { slotId: "supporting", zone: "center", anchor: { x: 0.2, y: 0.68 }, width: 0.6, height: 0.1, zIndex: 1 },
+        ],
+      },
+      {
+        slots: [
+          { slotId: "value", zone: "upper-third", anchor: { x: 0.1, y: 0.28 }, width: 0.8, height: 0.2, zIndex: 1 },
+          { slotId: "label", zone: "center", anchor: { x: 0.1, y: 0.5 }, width: 0.8, height: 0.1, zIndex: 1 },
+          { slotId: "supporting", zone: "lower-third", anchor: { x: 0.12, y: 0.64 }, width: 0.76, height: 0.1, zIndex: 1 },
+        ],
+      },
+      {
+        gap: 0.018,
+        slots: [
+          { slotId: "value", zone: "center", anchor: { x: 0.12, y: 0.3 }, width: 0.76, height: 0.24, zIndex: 1 },
+          { slotId: "label", zone: "center", anchor: { x: 0.12, y: 0.56 }, width: 0.76, height: 0.1, zIndex: 1 },
+          { slotId: "supporting", zone: "center", anchor: { x: 0.16, y: 0.68 }, width: 0.68, height: 0.1, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, readableCenter: true },
+    responsiveRules: { autoShrinkText: true, maxElements: 3 },
+    motionPreset: baseMotion({
+      phases: { in: "scale-in", main: "hold", out: "fade-out", inRatio: 0.3, mainRatio: 0.55, outRatio: 0.15 },
+      easingId: "confident",
+      stagger: 6,
+      controls: { emphasis: 1.15, countUp: 1 },
+    }),
+    stylePreset: { textAlign: "center", emphasis: "hero" },
+    fallbackRules: { missingText: "placeholder", longText: "shrink" },
+    debugMetadata: { version: "1.0", rendererId: "stat-card" },
+  }),
+
+  block({
+    id: "chart-draw-on",
+    name: "Chart Draw-On",
+    description: "Chart or graph draws on with headline and data callout.",
+    family: "data-graph",
+    tags: ["chart", "data", "graph"],
+    useCases: ["growth story", "quarterly results", "analytics"],
+    duration: 120,
+    status: "needs-review",
+    slots: [
+      { id: "chart", type: "chart", role: "chart", label: "Chart", required: true },
+      { id: "headline", type: "text", role: "headline", label: "Headline", required: true, maxLength: 48 },
+      { id: "caption", type: "text", role: "caption", label: "Caption", required: false, maxLength: 60 },
+    ],
+    requiredAssets: [{ id: "chart-data", kind: "chart-data", label: "Chart data", slotId: "chart" }],
+    optionalAssets: [],
+    layoutRules: layout(
+      {
+        stackDirection: "column",
+        gap: 0.03,
+        slots: [
+          { slotId: "headline", zone: "top-center", anchor: { x: 0.1, y: 0.08 }, width: 0.8, height: 0.1, zIndex: 2 },
+          { slotId: "chart", zone: "center", anchor: { x: 0.1, y: 0.24 }, width: 0.8, height: 0.56, zIndex: 1 },
+          { slotId: "caption", zone: "lower-third", anchor: { x: 0.15, y: 0.84 }, width: 0.7, height: 0.06, zIndex: 2 },
+        ],
+      },
+      {
+        slots: [
+          { slotId: "headline", zone: "upper-third", anchor: { x: 0.08, y: 0.12 }, width: 0.84, height: 0.1, zIndex: 2 },
+          { slotId: "chart", zone: "center", anchor: { x: 0.06, y: 0.26 }, width: 0.88, height: 0.44, zIndex: 1 },
+          { slotId: "caption", zone: "lower-third", anchor: { x: 0.1, y: 0.76 }, width: 0.8, height: 0.06, zIndex: 2 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true },
+    responsiveRules: { maxElements: 3 },
+    motionPreset: baseMotion({
+      phases: { in: "fade", main: "hold", out: "fade-out", inRatio: 0.35, mainRatio: 0.5, outRatio: 0.15 },
+      easingId: "ease-in-out",
+      stagger: 12,
+      controls: { drawDuration: 0.6 },
+    }),
+    stylePreset: { textAlign: "center", emphasis: "standard" },
+    fallbackRules: { missingMedia: "color-fill" },
+  }),
+
+  block({
+    id: "kinetic-headline",
+    name: "Kinetic Headline",
+    description: "Typography-forward block with kinetic text animation.",
+    family: "typography",
+    tags: ["type", "kinetic", "statement"],
+    useCases: ["manifesto", "tagline", "campaign line"],
+    duration: 90,
+    status: "approved",
+    slots: [
+      { id: "headline", type: "text", role: "headline", label: "Headline", required: true, maxLength: 64 },
+      { id: "subhead", type: "text", role: "subhead", label: "Subhead", required: false, maxLength: 100 },
+    ],
+    requiredAssets: [],
+    optionalAssets: [],
+    layoutRules: layout(
+      {
+        stackDirection: "column",
+        gap: 0.03,
+        slots: [
+          { slotId: "headline", zone: "center", anchor: { x: 0.1, y: 0.36 }, width: 0.8, height: 0.2, zIndex: 1 },
+          { slotId: "subhead", zone: "center", anchor: { x: 0.15, y: 0.58 }, width: 0.7, height: 0.12, zIndex: 1 },
+        ],
+      },
+      {
+        slots: [
+          { slotId: "headline", zone: "center-safe", anchor: { x: 0.08, y: 0.38 }, width: 0.84, height: 0.22, zIndex: 1 },
+          { slotId: "subhead", zone: "center-safe", anchor: { x: 0.1, y: 0.62 }, width: 0.8, height: 0.12, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, readableCenter: true, respectVerticalDanger: true },
+    responsiveRules: { autoShrinkText: true, maxElements: 2 },
+    motionPreset: baseMotion({
+      phases: { in: "slide-up", main: "hold", out: "fade-out", inRatio: 0.35, mainRatio: 0.5, outRatio: 0.15 },
+      easingId: "sharp-in-out",
+      stagger: 4,
+      controls: { kinetic: 1, wordStagger: 3 },
+    }),
+    stylePreset: { textAlign: "center", emphasis: "hero" },
+    fallbackRules: { longText: "shrink" },
+  }),
+
+  block({
+    id: "quote-card",
+    name: "Quote Card",
+    description: "Testimonial quote with attribution in a contained card.",
+    family: "typography",
+    tags: ["quote", "testimonial", "social-proof"],
+    useCases: ["customer quote", "review highlight", "endorsement"],
+    duration: 90,
+    status: "needs-review",
+    slots: [
+      { id: "quote", type: "text", role: "quote", label: "Quote", required: true, maxLength: 180 },
+      { id: "attribution", type: "text", role: "attribution", label: "Attribution", required: true, maxLength: 48 },
+      { id: "avatar", type: "media", role: "media-primary", label: "Avatar", required: false },
+    ],
+    requiredAssets: [],
+    optionalAssets: [{ id: "avatar-img", kind: "image", label: "Avatar image", slotId: "avatar" }],
+    layoutRules: layout(
+      {
+        mediaTreatment: "contained",
+        stackDirection: "column",
+        gap: 0.03,
+        slots: [
+          { slotId: "quote", zone: "center", anchor: { x: 0.12, y: 0.3 }, width: 0.76, height: 0.28, zIndex: 1 },
+          { slotId: "attribution", zone: "center", anchor: { x: 0.12, y: 0.62 }, width: 0.5, height: 0.08, zIndex: 1 },
+          { slotId: "avatar", zone: "center", anchor: { x: 0.68, y: 0.6 }, width: 0.1, height: 0.1, zIndex: 1 },
+        ],
+      },
+      {
+        slots: [
+          { slotId: "quote", zone: "center-safe", anchor: { x: 0.1, y: 0.34 }, width: 0.8, height: 0.3, zIndex: 1 },
+          { slotId: "avatar", zone: "center", anchor: { x: 0.42, y: 0.68 }, width: 0.16, height: 0.08, zIndex: 1 },
+          { slotId: "attribution", zone: "center", anchor: { x: 0.1, y: 0.78 }, width: 0.8, height: 0.06, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, readableCenter: true },
+    responsiveRules: { autoShrinkText: true, hideOptionalOnTight: true },
+    motionPreset: baseMotion({
+      phases: { in: "fade", main: "hold", out: "fade-out", inRatio: 0.3, mainRatio: 0.55, outRatio: 0.15 },
+      easingId: "calm",
+      stagger: 10,
+    }),
+    stylePreset: { textAlign: "center", emphasis: "subtle" },
+    fallbackRules: { missingMedia: "hide", longText: "wrap" },
+  }),
+
+  block({
+    id: "icon-grid",
+    name: "Icon Grid",
+    description: "Grid of icons with labels for feature highlights.",
+    family: "illustration-icon",
+    tags: ["icons", "features", "grid"],
+    useCases: ["feature list", "benefits", "capabilities"],
+    duration: 120,
+    status: "draft",
+    slots: [
+      { id: "headline", type: "text", role: "headline", label: "Headline", required: true, maxLength: 40 },
+      { id: "icon-1", type: "icon", role: "icon", label: "Icon 1", required: true },
+      { id: "icon-2", type: "icon", role: "icon", label: "Icon 2", required: false },
+      { id: "icon-3", type: "icon", role: "icon", label: "Icon 3", required: false },
+      { id: "icon-4", type: "icon", role: "icon", label: "Icon 4", required: false },
+    ],
+    requiredAssets: [{ id: "icon-set", kind: "icon", label: "Icon set", slotId: "icon-1" }],
+    optionalAssets: [],
+    layoutRules: layout(
+      {
+        gap: 0.04,
+        slots: [
+          { slotId: "headline", zone: "top-center", anchor: { x: 0.1, y: 0.1 }, width: 0.8, height: 0.1, zIndex: 2 },
+          { slotId: "icon-1", zone: "grid", anchor: { x: 0.14, y: 0.32 }, width: 0.16, height: 0.2, zIndex: 1 },
+          { slotId: "icon-2", zone: "grid", anchor: { x: 0.38, y: 0.32 }, width: 0.16, height: 0.2, zIndex: 1 },
+          { slotId: "icon-3", zone: "grid", anchor: { x: 0.62, y: 0.32 }, width: 0.16, height: 0.2, zIndex: 1 },
+          { slotId: "icon-4", zone: "grid", anchor: { x: 0.86, y: 0.32 }, width: 0.16, height: 0.2, zIndex: 1 },
+        ],
+      },
+      {
+        stackDirection: "column",
+        slots: [
+          { slotId: "headline", zone: "upper-third", anchor: { x: 0.08, y: 0.12 }, width: 0.84, height: 0.1, zIndex: 2 },
+          { slotId: "icon-1", zone: "grid", anchor: { x: 0.12, y: 0.3 }, width: 0.34, height: 0.14, zIndex: 1 },
+          { slotId: "icon-2", zone: "grid", anchor: { x: 0.54, y: 0.3 }, width: 0.34, height: 0.14, zIndex: 1 },
+          { slotId: "icon-3", zone: "grid", anchor: { x: 0.12, y: 0.5 }, width: 0.34, height: 0.14, zIndex: 1 },
+          { slotId: "icon-4", zone: "grid", anchor: { x: 0.54, y: 0.5 }, width: 0.34, height: 0.14, zIndex: 1 },
+        ],
+      },
+      {
+        gap: 0.03,
+        slots: [
+          { slotId: "headline", zone: "top-center", anchor: { x: 0.1, y: 0.08 }, width: 0.8, height: 0.1, zIndex: 2 },
+          { slotId: "icon-1", zone: "grid", anchor: { x: 0.12, y: 0.28 }, width: 0.34, height: 0.18, zIndex: 1 },
+          { slotId: "icon-2", zone: "grid", anchor: { x: 0.54, y: 0.28 }, width: 0.34, height: 0.18, zIndex: 1 },
+          { slotId: "icon-3", zone: "grid", anchor: { x: 0.12, y: 0.52 }, width: 0.34, height: 0.18, zIndex: 1 },
+          { slotId: "icon-4", zone: "grid", anchor: { x: 0.54, y: 0.52 }, width: 0.34, height: 0.18, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true },
+    responsiveRules: { hideOptionalOnTight: true, maxElements: 5 },
+    motionPreset: baseMotion({
+      phases: { in: "scale-in", main: "hold", out: "fade-out", inRatio: 0.35, mainRatio: 0.5, outRatio: 0.15 },
+      easingId: "snappy",
+      stagger: 4,
+    }),
+    stylePreset: { textAlign: "center", emphasis: "standard" },
+    fallbackRules: { missingMedia: "icon-placeholder" },
+  }),
+
+  block({
+    id: "logo-intro",
+    name: "Logo Intro",
+    description: "Brand logo entrance with optional tagline.",
+    family: "brand-system",
+    tags: ["logo", "intro", "brand"],
+    useCases: ["video open", "brand sting", "bumper"],
+    duration: 90,
+    status: "approved",
+    editorBlockId: "logo-reveal",
+    slots: [
+      { id: "logo", type: "logo", role: "logo", label: "Logo", required: true },
+      { id: "tagline", type: "text", role: "subhead", label: "Tagline", required: false, maxLength: 60 },
+    ],
+    requiredAssets: [{ id: "brand-logo", kind: "logo", label: "Brand logo", slotId: "logo" }],
+    optionalAssets: [],
+    layoutRules: layout(
+      {
+        stackDirection: "column",
+        gap: 0.02,
+        slots: [
+          { slotId: "logo", zone: "center", anchor: { x: 0.35, y: 0.38 }, width: 0.3, height: 0.2, zIndex: 1 },
+          { slotId: "tagline", zone: "center", anchor: { x: 0.2, y: 0.62 }, width: 0.6, height: 0.08, zIndex: 1 },
+        ],
+      },
+      {
+        slots: [
+          { slotId: "logo", zone: "center-safe", anchor: { x: 0.25, y: 0.4 }, width: 0.5, height: 0.14, zIndex: 1 },
+          { slotId: "tagline", zone: "center", anchor: { x: 0.1, y: 0.58 }, width: 0.8, height: 0.08, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, readableCenter: true },
+    responsiveRules: { maxElements: 2 },
+    motionPreset: baseMotion({
+      phases: { in: "scale-in", main: "hold", out: "fade-out", inRatio: 0.35, mainRatio: 0.45, outRatio: 0.2 },
+      easingId: "confident",
+      stagger: 8,
+    }),
+    stylePreset: { textAlign: "center", emphasis: "hero" },
+    fallbackRules: { missingLogo: "text-fallback" },
+    debugMetadata: { version: "1.0", rendererId: "logo-reveal" },
+  }),
+
+  block({
+    id: "cta-end-card",
+    name: "CTA End Card",
+    description: "Closing card with message, CTA button, and logo lockup.",
+    family: "brand-system",
+    tags: ["cta", "outro", "end-card"],
+    useCases: ["video close", "conversion", "next step"],
+    duration: 90,
+    status: "approved",
+    editorBlockId: "cta-lockup",
+    slots: [
+      { id: "message", type: "text", role: "headline", label: "Message", required: true, maxLength: 64 },
+      { id: "cta", type: "cta", role: "cta", label: "CTA", required: true, maxLength: 24 },
+      { id: "logo", type: "logo", role: "logo", label: "Logo", required: false },
+      { id: "url", type: "text", role: "caption", label: "URL", required: false, maxLength: 40 },
+    ],
+    requiredAssets: [],
+    optionalAssets: [{ id: "brand-logo", kind: "logo", label: "Brand logo", slotId: "logo" }],
+    layoutRules: layout(
+      {
+        stackDirection: "column",
+        gap: 0.025,
+        slots: [
+          { slotId: "message", zone: "center", anchor: { x: 0.15, y: 0.28 }, width: 0.7, height: 0.14, zIndex: 1 },
+          { slotId: "cta", zone: "center", anchor: { x: 0.35, y: 0.48 }, width: 0.3, height: 0.1, zIndex: 2 },
+          { slotId: "logo", zone: "bottom-center", anchor: { x: 0.42, y: 0.72 }, width: 0.16, height: 0.1, zIndex: 1 },
+          { slotId: "url", zone: "bottom-center", anchor: { x: 0.35, y: 0.84 }, width: 0.3, height: 0.05, zIndex: 1 },
+        ],
+      },
+      {
+        slots: [
+          { slotId: "message", zone: "center-safe", anchor: { x: 0.1, y: 0.32 }, width: 0.8, height: 0.14, zIndex: 1 },
+          { slotId: "cta", zone: "center", anchor: { x: 0.25, y: 0.5 }, width: 0.5, height: 0.08, zIndex: 2 },
+          { slotId: "logo", zone: "lower-third", anchor: { x: 0.35, y: 0.66 }, width: 0.3, height: 0.1, zIndex: 1 },
+          { slotId: "url", zone: "lower-third", anchor: { x: 0.25, y: 0.78 }, width: 0.5, height: 0.05, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, respectVerticalDanger: true },
+    responsiveRules: { autoShrinkText: true, maxElements: 4 },
+    motionPreset: baseMotion({
+      phases: { in: "slide-up", main: "hold", out: "hold", inRatio: 0.3, mainRatio: 0.7, outRatio: 0 },
+      easingId: "ease-out",
+      stagger: 7,
+      controls: { buttonScale: 1 },
+    }),
+    stylePreset: { textAlign: "center", emphasis: "standard" },
+    fallbackRules: { missingLogo: "text-fallback", longText: "shrink" },
+    debugMetadata: { version: "1.0", rendererId: "cta-lockup" },
+  }),
+];
+
+export const motionBlockLibraryMap = Object.fromEntries(
+  motionBlockLibrary.map((block) => [block.id, block]),
+) as Record<string, MotionBlockLibraryEntry>;

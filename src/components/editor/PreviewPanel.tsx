@@ -64,6 +64,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
     togglePlayback,
     registerPlayer,
     postFx,
+    isAdminMode,
   } = useEditor();
   const reducedMotion = useReducedMotion();
   useGoogleFont(brand.typography.fontFamilies.heading);
@@ -193,7 +194,9 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
             clickToPlay={false}
           />
 
-          <PreviewPerformanceOverlay isPlaying={isPlaying} targetFps={fps} />
+          {isAdminMode ? (
+            <PreviewPerformanceOverlay isPlaying={isPlaying} targetFps={fps} />
+          ) : null}
 
           <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
           {postFx.enabled && isPreviewQualityReduced(postFx) ? (

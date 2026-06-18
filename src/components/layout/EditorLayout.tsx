@@ -2,6 +2,7 @@ import { BlockLibraryPanel } from "@/components/editor/BlockLibraryPanel";
 import { SettingsPanel } from "@/components/editor/SettingsPanel";
 import { PreviewPanel } from "@/components/editor/PreviewPanel";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { WorkspaceTabs } from "@/components/layout/WorkspaceTabs";
 import { PanelResizeHandle } from "@/components/layout/PanelResizeHandle";
 import { BlockTimeline } from "@/components/timeline/BlockTimeline";
 import { motionFormats } from "@/config/formats";
@@ -87,30 +88,73 @@ function MobileControlsBar({ onOpenBlocks }: MobileControlsBarProps) {
   );
 }
 
+function ScriptPanel() {
+  const { sequence } = useEditor();
+  const scriptText =
+    sequence.audio?.voiceover?.transcript ??
+    sequence.blocks
+      .map((block) =>
+        Object.entries(block.content)
+          .filter(([, value]) => typeof value === "string" && value.trim())
+          .map(([, value]) => value)
+          .join(" "),
+      )
+      .filter(Boolean)
+      .join("\n\n");
+
+  return (
+    <div className="flex h-full flex-col bg-card">
+      <div className="border-b border-border px-3 py-2">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Script
+        </h2>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        {scriptText ? (
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{scriptText}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Add voiceover or text blocks to build your script.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function EditorLayout() {
   const isMobile = useMediaQuery(mediaQueries.mobile);
   const [mobileBlocksOpen, setMobileBlocksOpen] = useState(false);
+  const { workspaceTab } = useEditor();
   const { leftWidth, rightWidth, resizing, beginResize } = useResizablePanels({
     left: { defaultWidth: 240, minWidth: 180, maxWidth: 400 },
     right: { defaultWidth: 280, minWidth: 220, maxWidth: 480 },
   });
 
+  const showLeftPanel = workspaceTab === "blocks" || workspaceTab === "timeline";
+  const showRightPanel =
+    workspaceTab !== "preview" && workspaceTab !== "script" && workspaceTab !== "export";
+  const showTimeline = workspaceTab === "timeline" || workspaceTab === "blocks";
+
   return (
     <div className="flex h-dvh max-w-[100vw] flex-col overflow-hidden bg-background text-foreground">
       <AppHeader compact={isMobile} />
+      <WorkspaceTabs />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         {isMobile ? <MobileControlsBar onOpenBlocks={() => setMobileBlocksOpen(true)} /> : null}
 
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-row flex-nowrap overflow-hidden">
-          <div
-            className="hidden h-full min-h-0 shrink-0 flex-col sm:flex"
-            style={{ width: leftWidth }}
-          >
-            <BlockLibraryPanel className="h-full w-full" />
-          </div>
+          {showLeftPanel ? (
+            <div
+              className="hidden h-full min-h-0 shrink-0 flex-col sm:flex"
+              style={{ width: leftWidth }}
+            >
+              <BlockLibraryPanel className="h-full w-full" />
+            </div>
+          ) : null}
 
-          {!isMobile ? (
+          {showLeftPanel && !isMobile ? (
             <PanelResizeHandle
               active={resizing === "left"}
               onPointerDown={(event) => {
@@ -139,9 +183,13 @@ export function EditorLayout() {
             </>
           ) : null}
 
-          <PreviewPanel showMeta={!isMobile} className="min-w-0" />
+          {workspaceTab === "script" ? (
+            <ScriptPanel />
+          ) : (
+            <PreviewPanel showMeta={!isMobile} className="min-w-0 flex-1" />
+          )}
 
-          {!isMobile ? (
+          {showRightPanel && !isMobile ? (
             <PanelResizeHandle
               active={resizing === "right"}
               onPointerDown={(event) => {
@@ -152,18 +200,20 @@ export function EditorLayout() {
             />
           ) : null}
 
-          <div
-            className={cn(
-              "h-full min-h-0 shrink-0",
-              isMobile && "w-[clamp(200px,42vw,280px)]",
-            )}
-            style={isMobile ? undefined : { width: rightWidth }}
-          >
-            <SettingsPanel className="h-full w-full" />
-          </div>
+          {showRightPanel ? (
+            <div
+              className={cn(
+                "h-full min-h-0 shrink-0",
+                isMobile && "w-[clamp(200px,42vw,280px)]",
+              )}
+              style={isMobile ? undefined : { width: rightWidth }}
+            >
+              <SettingsPanel className="h-full w-full" />
+            </div>
+          ) : null}
         </div>
 
-        <BlockTimeline compact={isMobile} />
+        {showTimeline ? <BlockTimeline compact={isMobile} /> : null}
       </div>
     </div>
   );
