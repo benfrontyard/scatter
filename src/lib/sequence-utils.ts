@@ -44,6 +44,32 @@ export function addBlockToSequence(
   };
 }
 
+export function reorderBlockInSequence(
+  sequence: MotionSequence,
+  blockId: string,
+  toIndex: number,
+): MotionSequence {
+  const fromIndex = sequence.blocks.findIndex((block) => block.id === blockId);
+  if (fromIndex === -1) return sequence;
+
+  const clampedIndex = Math.max(0, Math.min(toIndex, sequence.blocks.length - 1));
+  if (fromIndex === clampedIndex) return sequence;
+
+  const blocks = [...sequence.blocks];
+  const [moved] = blocks.splice(fromIndex, 1);
+  blocks.splice(clampedIndex, 0, moved);
+
+  const transitions: BlockTransition[] = [];
+  for (let i = 0; i < blocks.length - 1; i++) {
+    const fromBlock = blocks[i];
+    const toBlock = blocks[i + 1];
+    const transitionId = pickDefaultTransitionId(fromBlock.blockId, toBlock.blockId);
+    transitions.push(createTransitionBetween(fromBlock, toBlock, transitionId));
+  }
+
+  return { ...sequence, blocks, transitions };
+}
+
 export function removeBlockFromSequence(
   sequence: MotionSequence,
   blockId: string,

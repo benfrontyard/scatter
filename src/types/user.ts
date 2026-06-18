@@ -1,4 +1,4 @@
-export type UserRole = "user" | "admin" | "maker";
+export type UserRole = "user" | "internal";
 
 export type User = {
   id: string;
@@ -6,6 +6,11 @@ export type User = {
   role: UserRole;
 };
 
+export function isInternalRole(role: UserRole): boolean {
+  return role === "internal";
+}
+
+/** @deprecated Use isInternalRole */
 export function isAdminRole(role: UserRole): boolean {
-  return role === "admin" || role === "maker";
+  return isInternalRole(role);
 }

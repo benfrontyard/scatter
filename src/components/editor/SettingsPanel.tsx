@@ -3,7 +3,6 @@ import { BlockAdvancedEffects } from "@/components/editor/BlockAdvancedEffects";
 import { Block3DPanel, CameraJumpButton } from "@/components/editor/Block3DPanel";
 import { TextAnimationPanel } from "@/components/editor/TextAnimationPanel";
 import { UserBlockControls } from "@/components/editor/UserBlockControls";
-import { ExportPanel } from "@/components/editor/ExportPanel";
 import { AudioPanel } from "@/components/editor/AudioPanel";
 import { PostFXPanel } from "@/components/editor/PostFXPanel";
 import { CameraPanel } from "@/components/editor/CameraPanel";
@@ -942,16 +941,12 @@ function ProjectSettings({ className }: { className?: string }) {
 }
 
 export function SettingsPanel({ className }: SettingsPanelProps) {
-  const { step, settingsPanelView } = useEditor();
+  const { settingsPanelView } = useEditor();
   const selectedBlock = useSelectedBlock();
   const selectedTransition = useSelectedTransition();
 
   if (selectedTransition) {
     return <TransitionSettings className={className} />;
-  }
-
-  if (step === "export") {
-    return <ExportPanel className={className} />;
   }
 
   if (settingsPanelView === "postFx") {

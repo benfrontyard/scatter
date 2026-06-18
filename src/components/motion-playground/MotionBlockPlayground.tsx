@@ -21,6 +21,8 @@ import { useEditor } from "@/context/editor-context";
 import {
   MOTION_BLOCK_FAMILIES,
   MOTION_BLOCK_STATUS_LABELS,
+  buildPlaygroundPreviewSequence,
+  canUseProductionPlaygroundRenderer,
   duplicateBlock,
   getPlaygroundBlocks,
   isApprovedBlockUserLibraryReady,
@@ -33,6 +35,7 @@ import {
   PlaygroundComposition,
   getPlaygroundDuration,
 } from "@/remotion/playground/PlaygroundComposition";
+import { ScatterComposition } from "@/remotion/ScatterComposition";
 import {
   PlaygroundRightPanel,
   statusBadgeClass,
@@ -67,8 +70,8 @@ const DEFAULT_DEBUG_LAYERS: PlaygroundDebugLayer[] = [
   "media-crops",
 ];
 
-export function MotionBlockPlayground() {
-  const { showMotionPlayground, setShowMotionPlayground, isAdminMode, showToast } = useEditor();
+export function MotionBlockPlayground({ embedded = false }: { embedded?: boolean }) {
+  const { showMotionPlayground, setShowMotionPlayground, isInternal, showToast } = useEditor();
 
   const [blocks, setBlocks] = useState<MotionBlockLibraryEntry[]>(() => getPlaygroundBlocks());
   const [selectedId, setSelectedId] = useState(blocks[0]?.id ?? "");
@@ -112,6 +115,20 @@ export function MotionBlockPlayground() {
     [selectedBlock?.id, scenario],
   );
 
+  const usesProductionRenderer = useMemo(
+    () => (selectedBlock ? canUseProductionPlaygroundRenderer(selectedBlock) : false),
+    [selectedBlock],
+  );
+
+  const productionSequence = useMemo(() => {
+    if (!selectedBlock || !usesProductionRenderer) return null;
+    return buildPlaygroundPreviewSequence(selectedBlock, {
+      brandPresetId: brand.id,
+      aspectRatio,
+      content,
+    });
+  }, [selectedBlock, usesProductionRenderer, brand.id, aspectRatio, content]);
+
   const warnings = useMemo(() => {
     if (!selectedBlock) return [];
     return validateMotionBlock(selectedBlock, aspectRatio, content, assetPresence, brand, scenario);
@@ -132,7 +149,7 @@ export function MotionBlockPlayground() {
   }, [blocks, family, statusFilter, search]);
 
   useEffect(() => {
-    if (!showMotionPlayground) return;
+    if (!embedded && !showMotionPlayground) return;
     const area = previewAreaRef.current;
     if (!area || !format) return;
 
@@ -152,7 +169,7 @@ export function MotionBlockPlayground() {
     const observer = new ResizeObserver(update);
     observer.observe(area);
     return () => observer.disconnect();
-  }, [format, showMotionPlayground, aspectRatio]);
+  }, [embedded, format, showMotionPlayground, aspectRatio]);
 
   useEffect(() => {
     if (selectedBlock) {
@@ -224,16 +241,42 @@ export function MotionBlockPlayground() {
     setBlocks((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
   };
 
-  const handleSaveDraft = () => {
+  const handleMarkDraft = () => {
     if (!selectedBlock) return;
     handleStatusChange("draft");
-    showToast({ message: `Saved "${selectedBlock.name}" as draft.` });
+    showToast({
+      message: `"${selectedBlock.name}" marked as draft (this session only — not persisted).`,
+    });
   };
 
-  const handlePublish = () => {
+  const handleMarkApproved = () => {
     if (!selectedBlock) return;
     handleStatusChange("approved");
-    showToast({ message: `Published "${selectedBlock.name}" as approved.` });
+    showToast({
+      message: `"${selectedBlock.name}" marked approved (this session only — not persisted).`,
+    });
+  };
+
+  const handleExportJson = () => {
+    if (!selectedBlock) return;
+    const blob = new Blob([JSON.stringify(selectedBlock, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${selectedBlock.id}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    showToast({ message: `Exported "${selectedBlock.name}" as JSON.` });
+  };
+
+  const handleCopyConfig = async () => {
+    if (!selectedBlock) return;
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(selectedBlock, null, 2));
+      showToast({ message: "Block config copied to clipboard." });
+    } catch {
+      showToast({ message: "Could not copy to clipboard." });
+    }
   };
 
   const toggleDebugLayer = (layer: PlaygroundDebugLayer) => {
@@ -242,26 +285,33 @@ export function MotionBlockPlayground() {
     );
   };
 
-  if (!isAdminMode || !showMotionPlayground || !selectedBlock || !format) return null;
+  if (!isInternal || !selectedBlock || !format) return null;
+  if (!embedded && !showMotionPlayground) return null;
 
   const activeDebugLayers =
     previewMode === "debug" ? debugLayers : previewMode === "grayscale" ? [] : [];
 
   const timestamp = (currentFrame / 30).toFixed(2);
 
+  const shellClass = embedded
+    ? "flex h-full min-h-0 flex-col"
+    : "fixed inset-0 z-50 flex flex-col bg-background";
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+    <div className={shellClass}>
       {/* Top bar */}
       <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 gap-1.5"
-          onClick={() => setShowMotionPlayground(false)}
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back
-        </Button>
+        {!embedded ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1.5"
+            onClick={() => setShowMotionPlayground(false)}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back
+          </Button>
+        ) : null}
         <span className="truncate text-sm font-semibold">{selectedBlock.name}</span>
         <span
           className={cn(
@@ -312,11 +362,17 @@ export function MotionBlockPlayground() {
         </div>
 
         <div className="ml-auto flex items-center gap-1.5">
-          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleSaveDraft}>
-            Save draft
+          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleMarkDraft}>
+            Mark draft
           </Button>
-          <Button size="sm" className="h-8 text-xs" onClick={handlePublish}>
-            Publish
+          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleMarkApproved}>
+            Mark approved
+          </Button>
+          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleCopyConfig}>
+            Copy config
+          </Button>
+          <Button size="sm" className="h-8 text-xs" onClick={handleExportJson}>
+            Export JSON
           </Button>
         </div>
       </header>
@@ -441,33 +497,59 @@ export function MotionBlockPlayground() {
                   : { width: "100%", aspectRatio: `${format.width} / ${format.height}` }
               }
             >
-              <Player
-                ref={playerRef}
-                key={`${selectedBlock.id}-${aspectRatio}-${brandId}-${scenario}-${activeDebugLayers.join(",")}-${previewQuality}`}
-                component={PlaygroundComposition}
-                inputProps={{
-                  block: selectedBlock,
-                  aspectRatio,
-                  format,
-                  brand,
-                  content,
-                  assets: playgroundSampleAssets,
-                  assetPresence,
-                  debugLayers: activeDebugLayers,
-                }}
-                durationInFrames={duration}
-                compositionWidth={format.width}
-                compositionHeight={format.height}
-                fps={30}
-                playbackRate={playbackSpeed}
-                style={{ width: "100%", height: "100%" }}
-                controls={false}
-                loop={loop}
-                autoPlay={isPlaying}
-                clickToPlay={false}
-                inFrame={inFrame}
-                outFrame={effectiveOutFrame}
-              />
+              {usesProductionRenderer && productionSequence ? (
+                <Player
+                  ref={playerRef}
+                  key={`prod-${selectedBlock.id}-${aspectRatio}-${brandId}-${scenario}-${previewQuality}`}
+                  component={ScatterComposition}
+                  inputProps={{
+                    sequence: productionSequence,
+                    customBrands: [brand],
+                    assets: playgroundSampleAssets,
+                    renderMode: "preview",
+                  }}
+                  durationInFrames={duration}
+                  compositionWidth={format.width}
+                  compositionHeight={format.height}
+                  fps={30}
+                  playbackRate={playbackSpeed}
+                  style={{ width: "100%", height: "100%" }}
+                  controls={false}
+                  loop={loop}
+                  autoPlay={isPlaying}
+                  clickToPlay={false}
+                  inFrame={inFrame}
+                  outFrame={effectiveOutFrame}
+                />
+              ) : (
+                <Player
+                  ref={playerRef}
+                  key={`lib-${selectedBlock.id}-${aspectRatio}-${brandId}-${scenario}-${activeDebugLayers.join(",")}-${previewQuality}`}
+                  component={PlaygroundComposition}
+                  inputProps={{
+                    block: selectedBlock,
+                    aspectRatio,
+                    format,
+                    brand,
+                    content,
+                    assets: playgroundSampleAssets,
+                    assetPresence,
+                    debugLayers: activeDebugLayers,
+                  }}
+                  durationInFrames={duration}
+                  compositionWidth={format.width}
+                  compositionHeight={format.height}
+                  fps={30}
+                  playbackRate={playbackSpeed}
+                  style={{ width: "100%", height: "100%" }}
+                  controls={false}
+                  loop={loop}
+                  autoPlay={isPlaying}
+                  clickToPlay={false}
+                  inFrame={inFrame}
+                  outFrame={effectiveOutFrame}
+                />
+              )}
             </div>
           </div>
 

@@ -5,11 +5,7 @@ import { KeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { KeyboardShortcutsModal } from "@/components/editor/KeyboardShortcutsModal";
 import { ProjectMenu } from "@/components/editor/ProjectMenu";
 import { BrandSystemView } from "@/components/brand-system/BrandSystemView";
-import { MotionBlockPlayground } from "@/components/motion-playground/MotionBlockPlayground";
-import { BlockBuilder } from "@/components/admin/BlockBuilder";
-import { BlockLibraryManager } from "@/components/admin/BlockLibraryManager";
-import { BrandTestLab } from "@/components/admin/BrandTestLab";
-import { DebugTools } from "@/components/admin/DebugTools";
+import { Studio } from "@/components/studio/Studio";
 import { EditorToast } from "@/components/editor/EditorToast";
 
 export default function App() {
@@ -21,11 +17,7 @@ export default function App() {
       <KeyboardShortcutsModal />
       <ProjectMenu />
       <BrandSystemView />
-      <MotionBlockPlayground />
-      <BlockBuilder />
-      <BlockLibraryManager />
-      <BrandTestLab />
-      <DebugTools />
+      <Studio />
       <EditorToast />
     </EditorProvider>
     </ThemeProvider>

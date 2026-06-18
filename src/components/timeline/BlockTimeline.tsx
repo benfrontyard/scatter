@@ -1,46 +1,27 @@
-import { blockCategories, motionBlockMap } from "@/config/blocks";
+import { motionBlockMap } from "@/config/blocks";
 import { transitionDefinitionMap } from "@/config/transitions";
 import { useEditor } from "@/context/editor-context";
 import {
   buildTimelineLayout,
   frameToPx,
+  getBlockDropIndex,
   getRulerMarkers,
   getTimelineWidthPx,
   pxToFrame,
   TIMELINE_PADDING_END,
   TIMELINE_PADDING_START,
+  TIMELINE_PX_PER_SECOND,
 } from "@/lib/timeline-layout";
 import { framesToSeconds, getSequenceDurationInFrames } from "@/lib/sequence-utils";
 import { cn } from "@/lib/utils";
-import type { BlockCategory } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Trash2, Wand2 } from "lucide-react";
 import { AudioPanelJumpButton } from "@/components/editor/AudioPanel";
+import { TimelineBlockClip } from "@/components/timeline/TimelineBlockClip";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-
-const BLOCK_COLORS: Record<string, string> = {
-  "logo-reveal":
-    "border-blue-500/35 bg-blue-500/10 text-blue-800 dark:border-blue-500/40 dark:bg-blue-500/15 dark:text-blue-100",
-  "feature-announcement":
-    "border-violet-500/35 bg-violet-500/10 text-violet-800 dark:border-violet-500/40 dark:bg-violet-500/15 dark:text-violet-100",
-  "product-carousel":
-    "border-cyan-500/35 bg-cyan-500/10 text-cyan-800 dark:border-cyan-500/40 dark:bg-cyan-500/15 dark:text-cyan-100",
-  "stat-card":
-    "border-emerald-500/35 bg-emerald-500/10 text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-100",
-  "cta-lockup":
-    "border-amber-500/35 bg-amber-500/10 text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-100",
-};
-
-const CATEGORY_COLORS: Record<BlockCategory, string> = {
-  intro: "bg-blue-400",
-  logo: "bg-sky-400",
-  product: "bg-violet-400",
-  proof: "bg-emerald-400",
-  cta: "bg-amber-400",
-};
 
 type BlockTimelineProps = {
   className?: string;
@@ -143,8 +124,10 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
     selectTransition,
     clearSelection,
     deleteSelectedBlock,
+    deleteBlock,
     updateBlockDuration,
     updateTransitionDuration,
+    reorderBlock,
     seekToFrame,
     runMagicEdit,
     isMagicEditRunning,
@@ -153,6 +136,12 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [isDraggingPlayhead, setIsDraggingPlayhead] = useState(false);
+  const [draggingBlockId, setDraggingBlockId] = useState<string | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
+  const [resizePreview, setResizePreview] = useState<{
+    blockId: string;
+    duration: number;
+  } | null>(null);
 
   const totalFrames = useMemo(() => getSequenceDurationInFrames(sequence), [sequence]);
   const layoutItems = useMemo(
@@ -234,6 +223,49 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
       container.scrollLeft = playheadX - clientWidth + margin;
     }
   }, [currentFrame, playheadLeft, isFocused]);
+
+  useEffect(() => {
+    if (selectedBlockId && scrollRef.current) {
+      const blockItem = layoutItems.find(
+        (item) => item.kind === "block" && item.block.id === selectedBlockId,
+      );
+      if (blockItem && blockItem.kind === "block") {
+        const blockRight = blockItem.leftPx + blockItem.widthPx;
+        const container = scrollRef.current;
+        const { scrollLeft, clientWidth } = container;
+        const margin = 48;
+        if (blockRight > scrollLeft + clientWidth - margin) {
+          container.scrollLeft = blockRight - clientWidth + margin;
+        } else if (blockItem.leftPx < scrollLeft + margin) {
+          container.scrollLeft = Math.max(0, blockItem.leftPx - margin);
+        }
+      }
+    }
+  }, [selectedBlockId, layoutItems]);
+
+  const handleTrackSeek = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (draggingBlockId || resizePreview) return;
+      if (event.target !== event.currentTarget) return;
+      handleTimelineClick(event.clientX, scrollRef.current ?? event.currentTarget);
+    },
+    [draggingBlockId, handleTimelineClick, resizePreview],
+  );
+
+  const getDropIndicatorLeft = useCallback(
+    (index: number) => {
+      const blockItems = layoutItems.filter((item) => item.kind === "block");
+      if (index <= 0) {
+        return TIMELINE_PADDING_START;
+      }
+      if (index >= blockItems.length) {
+        const last = blockItems[blockItems.length - 1];
+        return last ? last.leftPx + last.widthPx : TIMELINE_PADDING_START;
+      }
+      return blockItems[index]?.leftPx ?? TIMELINE_PADDING_START;
+    },
+    [layoutItems],
+  );
 
   return (
     <div
@@ -330,7 +362,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
             <p className="text-[10px] text-muted-foreground sm:text-xs">
               {sequence.blocks.length === 0
                 ? "Add a motion block to start"
-                : "Click timeline to select · scrub ruler to seek"}
+                : "Drag blocks to reorder · drag handles to trim · Delete to remove"}
             </p>
           )}
         </div>
@@ -416,13 +448,22 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
 
           {/* Tracks */}
           <div
-            className={cn("relative", compact ? "h-[56px]" : "h-[64px]")}
+            className={cn("relative cursor-pointer", compact ? "h-[56px]" : "h-[64px]")}
+            onPointerDown={handleTrackSeek}
             onClick={(event) => {
               if (event.target === event.currentTarget) {
                 clearSelection();
               }
             }}
           >
+            {dropIndex !== null ? (
+              <div
+                className="pointer-events-none absolute top-2 bottom-2 z-50 w-0.5 -translate-x-1/2 rounded-full bg-primary shadow-[0_0_0_2px_var(--color-card)]"
+                style={{ left: getDropIndicatorLeft(dropIndex) }}
+                aria-hidden
+              />
+            ) : null}
+
             {layoutItems.length === 0 ? (
               <div
                 className="flex h-12 items-center justify-center rounded-md border border-dashed border-border px-4 text-xs text-muted-foreground"
@@ -433,75 +474,89 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
             ) : (
               layoutItems.map((item) => {
                 if (item.kind === "block") {
-                  const definition = motionBlockMap[item.block.blockId];
                   const isSelected = selectedBlockId === item.block.id;
-                  const colorClass =
-                    BLOCK_COLORS[item.block.blockId] ??
-                    "bg-secondary border-border text-foreground";
-                  const category = definition?.category;
-                  const categoryLabel = blockCategories.find(
-                    (entry) => entry.id === category,
-                  )?.label;
-                  const blockName = definition?.name ?? item.block.blockId;
-                  const durationLabel = formatDurationLabel(item.block.duration, fps);
-                  const showLabel = item.widthPx >= 56;
+                  const previewDuration =
+                    resizePreview?.blockId === item.block.id
+                      ? resizePreview.duration
+                      : undefined;
+                  const displayItem =
+                    previewDuration !== undefined
+                      ? {
+                          ...item,
+                          widthPx: Math.max(
+                            compact ? 64 : 72,
+                            (previewDuration / fps) * TIMELINE_PX_PER_SECOND,
+                          ),
+                        }
+                      : item;
 
                   return (
-                    <button
+                    <TimelineBlockClip
                       key={item.block.id}
-                      type="button"
-                      onClick={() => selectBlock(isSelected ? null : item.block.id)}
-                      style={{
-                        position: "absolute",
-                        left: item.leftPx,
-                        width: item.widthPx,
-                        top: 6,
-                        bottom: 6,
-                        zIndex: 10 + item.index,
+                      item={displayItem}
+                      fps={fps}
+                      isSelected={isSelected}
+                      canDelete={sequence.blocks.length > 1}
+                      isDragging={draggingBlockId === item.block.id}
+                      previewDuration={previewDuration}
+                      onSelect={() => selectBlock(isSelected ? null : item.block.id)}
+                      onDelete={() => deleteBlock(item.block.id)}
+                      onResizeStart={() => {
+                        selectBlock(item.block.id);
+                        setResizePreview({
+                          blockId: item.block.id,
+                          duration: item.block.duration,
+                        });
                       }}
-                      className={cn(
-                        "overflow-hidden rounded-md border text-left transition-all",
-                        colorClass,
-                        isSelected
-                          ? "border-foreground/50 ring-2 ring-foreground ring-offset-1 ring-offset-card shadow-sm"
-                          : "hover:brightness-[0.97] dark:hover:brightness-110",
-                      )}
-                      aria-pressed={isSelected}
-                      aria-label={`${blockName}, ${durationLabel}`}
-                    >
-                      <TimelineTooltip
-                        label={
-                          <div className="space-y-0.5">
-                            <p className="font-medium">{blockName}</p>
-                            <p className="text-muted-foreground">
-                              {durationLabel}
-                              {categoryLabel ? ` · ${categoryLabel}` : ""}
-                            </p>
-                          </div>
+                      onResize={(duration) => {
+                        setResizePreview({ blockId: item.block.id, duration });
+                      }}
+                      onResizeEnd={(duration) => {
+                        updateBlockDuration(item.block.id, duration);
+                        setResizePreview(null);
+                      }}
+                      onReorderStart={() => {
+                        setDraggingBlockId(item.block.id);
+                        selectBlock(item.block.id);
+                      }}
+                      onReorderMove={(clientX) => {
+                        if (!scrollRef.current) return;
+                        const nextIndex = getBlockDropIndex(
+                          clientX,
+                          scrollRef.current,
+                          layoutItems,
+                          fps,
+                        );
+                        setDropIndex(nextIndex);
+
+                        const container = scrollRef.current;
+                        const rect = container.getBoundingClientRect();
+                        const edge = 48;
+                        if (clientX < rect.left + edge) {
+                          container.scrollLeft = Math.max(0, container.scrollLeft - 8);
+                        } else if (clientX > rect.right - edge) {
+                          container.scrollLeft += 8;
                         }
-                      >
-                        <div className="flex h-full min-w-0 items-center px-2 sm:px-2.5">
-                          {showLabel ? (
-                            <div className="flex min-w-0 items-center gap-1.5">
-                              {category && (
-                                <span
-                                  className={cn(
-                                    "h-1.5 w-1.5 shrink-0 rounded-full",
-                                    CATEGORY_COLORS[category],
-                                  )}
-                                  aria-hidden
-                                />
-                              )}
-                              <span className="truncate text-[11px] font-medium leading-none sm:text-xs">
-                                {blockName}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="sr-only">{blockName}</span>
-                          )}
-                        </div>
-                      </TimelineTooltip>
-                    </button>
+                      }}
+                      onReorderEnd={(clientX) => {
+                        if (scrollRef.current) {
+                          const nextIndex = getBlockDropIndex(
+                            clientX,
+                            scrollRef.current,
+                            layoutItems,
+                            fps,
+                          );
+                          const fromIndex = sequence.blocks.findIndex(
+                            (block) => block.id === item.block.id,
+                          );
+                          if (fromIndex !== -1 && fromIndex !== nextIndex) {
+                            reorderBlock(item.block.id, nextIndex);
+                          }
+                        }
+                        setDraggingBlockId(null);
+                        setDropIndex(null);
+                      }}
+                    />
                   );
                 }
 

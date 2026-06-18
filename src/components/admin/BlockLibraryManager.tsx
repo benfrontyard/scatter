@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { useMemo, useState } from "react";
 
-export function BlockLibraryManager() {
-  const { showBlockLibraryManager, setShowBlockLibraryManager, isAdminMode } = useEditor();
+export function BlockLibraryManager({ embedded = false }: { embedded?: boolean }) {
+  const { showBlockLibraryManager, setShowBlockLibraryManager, isInternal } = useEditor();
   const [familyFilter, setFamilyFilter] = useState<string>("all");
 
   const blocks = useMemo(() => getPlaygroundBlocks(), []);
@@ -21,24 +21,11 @@ export function BlockLibraryManager() {
     return blocks.filter((b) => familyFilter === "all" || b.family === familyFilter);
   }, [blocks, familyFilter]);
 
-  if (!isAdminMode || !showBlockLibraryManager) return null;
+  if (!isInternal) return null;
+  if (!embedded && !showBlockLibraryManager) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 gap-1.5"
-          onClick={() => setShowBlockLibraryManager(false)}
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back
-        </Button>
-        <span className="text-sm font-semibold">Block Library Manager</span>
-      </header>
-
-      <div className="flex min-h-0 flex-1 flex-col p-4">
+  const content = (
+    <div className="flex min-h-0 flex-1 flex-col p-4">
         <div className="mb-3 flex flex-wrap gap-1">
           <button
             type="button"
@@ -103,6 +90,27 @@ export function BlockLibraryManager() {
           })}
         </ul>
       </div>
+  );
+
+  if (embedded) {
+    return <div className="flex h-full min-h-0 flex-col overflow-hidden">{content}</div>;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-3">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5"
+          onClick={() => setShowBlockLibraryManager(false)}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back
+        </Button>
+        <span className="text-sm font-semibold">Block Library Manager</span>
+      </header>
+      {content}
     </div>
   );
 }

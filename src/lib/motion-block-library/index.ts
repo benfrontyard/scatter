@@ -22,3 +22,7 @@ export {
   duplicateBlock,
   updateBlockStatus,
 } from "./utils";
+export {
+  buildPlaygroundPreviewSequence,
+  canUseProductionPlaygroundRenderer,
+} from "./playground-preview";

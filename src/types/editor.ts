@@ -8,6 +8,8 @@ export type WorkspaceTab = "script" | "timeline" | "blocks" | "brand" | "preview
 
 export type MainNavId = "home" | "projects" | "brand-kits" | "templates" | "exports";
 
+export type StudioTab = "playground" | "library" | "builder" | "brand-test" | "debug";
+
 export type EditorState = {
   step: EditorStep;
   sequence: MotionSequence;

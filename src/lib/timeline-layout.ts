@@ -27,6 +27,37 @@ export function pxToFrame(px: number, fps: number): number {
   return Math.round((adjusted / TIMELINE_PX_PER_SECOND) * fps);
 }
 
+export function pxDeltaToFrames(deltaPx: number, fps: number): number {
+  return Math.round((deltaPx / TIMELINE_PX_PER_SECOND) * fps);
+}
+
+export function getBlockDropIndex(
+  clientX: number,
+  scrollContainer: HTMLElement,
+  layoutItems: TimelineLayoutItem[],
+  fps: number,
+): number {
+  const rect = scrollContainer.getBoundingClientRect();
+  const x = clientX - rect.left + scrollContainer.scrollLeft;
+  const frame = pxToFrame(x, fps);
+
+  const blockItems = layoutItems.filter(
+    (item): item is TimelineLayoutItem & { kind: "block" } => item.kind === "block",
+  );
+
+  if (blockItems.length <= 1) return 0;
+
+  for (let i = 0; i < blockItems.length; i++) {
+    const item = blockItems[i];
+    const midpoint = item.startFrame + item.durationFrames / 2;
+    if (frame < midpoint) {
+      return i;
+    }
+  }
+
+  return blockItems.length - 1;
+}
+
 export function buildTimelineLayout(
   sequence: MotionSequence,
   fps: number,

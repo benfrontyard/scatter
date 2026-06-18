@@ -11,14 +11,12 @@ import { cn } from "@/lib/utils";
 import {
   Download,
   HelpCircle,
+  Palette,
   Redo2,
   Save,
   Undo2,
-  X,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
-import { MainNavigation } from "@/components/layout/MainNavigation";
-import { AdminNavigation } from "@/components/layout/AdminNavigation";
 import { motionFormats } from "@/config/formats";
 import type { UserRole } from "@/types/user";
 
@@ -30,34 +28,23 @@ export function AppHeader({ compact }: AppHeaderProps) {
   const {
     sequence,
     brand,
-    allBrands,
     format,
-    step,
     isDirty,
     canUndo,
     canRedo,
     user,
+    isInternal,
     setUserRole,
-    setBrand,
     setFormat,
-    setStep,
-    clearSelection,
     undo,
     redo,
     saveProject,
     setShowProjectMenu,
-    setShowBrandSystem,
+    setShowBrandPanel,
+    setShowExportModal,
+    setShowStudio,
     setShowShortcuts,
   } = useEditor();
-
-  const toggleExport = () => {
-    if (step === "export") {
-      setStep("motion");
-      return;
-    }
-    clearSelection();
-    setStep("export");
-  };
 
   return (
     <header className="flex h-11 shrink-0 items-center gap-1.5 border-b border-border bg-background px-2 sm:gap-2 sm:px-4">
@@ -128,54 +115,45 @@ export function AppHeader({ compact }: AppHeaderProps) {
         )}
       </div>
 
-      {!compact ? (
-        <div className="hidden min-w-0 flex-1 items-center justify-center gap-2 md:flex">
-          <MainNavigation />
-          <AdminNavigation />
-        </div>
-      ) : null}
+      <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 px-2 text-xs"
+          onClick={() => setShowBrandPanel(true)}
+          aria-label="Brand kit"
+        >
+          <Palette className="h-3.5 w-3.5" />
+          <span className="hidden max-w-[100px] truncate sm:inline">{brand.name}</span>
+          <span className="sm:hidden">Brand</span>
+        </Button>
 
-      {!compact && (
-        <div className="hidden items-center gap-2 lg:flex">
-          <Select value={brand.id} onValueChange={setBrand}>
-            <SelectTrigger className="h-8 w-[130px] text-xs" aria-label="Brand preset">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {allBrands.map((preset) => (
-                <SelectItem key={preset.id} value={preset.id}>
-                  {preset.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <Select value={format.id} onValueChange={setFormat}>
+          <SelectTrigger className="h-8 w-[88px] text-xs sm:w-[100px]" aria-label="Aspect ratio">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {motionFormats.map((item) => (
+              <SelectItem key={item.id} value={item.id}>
+                {item.aspectRatio}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
+        {isInternal ? (
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="h-7 px-2 text-xs"
-            onClick={() => setShowBrandSystem(true)}
+            className="hidden h-8 px-2.5 text-xs md:inline-flex"
+            onClick={() => setShowStudio(true)}
           >
-            Edit brand
+            Studio
           </Button>
+        ) : null}
 
-          <Select value={format.id} onValueChange={setFormat}>
-            <SelectTrigger className="h-8 w-[120px] text-xs" aria-label="Aspect ratio">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {motionFormats.map((item) => (
-                <SelectItem key={item.id} value={item.id}>
-                  {item.aspectRatio}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      <div className={cn("ml-auto flex shrink-0 items-center gap-1", compact && "gap-0.5")}>
         <Select
           value={user.role}
           onValueChange={(v) => setUserRole(v as UserRole)}
@@ -185,10 +163,10 @@ export function AppHeader({ compact }: AppHeaderProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="user">User</SelectItem>
-            <SelectItem value="maker">Maker</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="internal">Internal</SelectItem>
           </SelectContent>
         </Select>
+
         <ThemeToggle />
         <Button
           variant="ghost"
@@ -202,22 +180,12 @@ export function AppHeader({ compact }: AppHeaderProps) {
         </Button>
         <Button
           size="sm"
-          className="h-8 px-2.5 text-xs"
-          variant={step === "export" ? "secondary" : "default"}
-          onClick={toggleExport}
-          title={step === "export" ? "Back to editor" : "Export video"}
+          className={cn("h-8 px-2.5 text-xs", compact && "px-2")}
+          onClick={() => setShowExportModal(true)}
+          title="Export video"
         >
-          {step === "export" ? (
-            <>
-              <X className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Back</span>
-            </>
-          ) : (
-            <>
-              <Download className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Export</span>
-            </>
-          )}
+          <Download className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Export</span>
         </Button>
       </div>
     </header>

@@ -70,8 +70,8 @@ const MOTION_PRESETS = [
   "Camera push",
 ] as const;
 
-export function BlockBuilder() {
-  const { showBlockBuilder, setShowBlockBuilder, isAdminMode, showToast } = useEditor();
+export function BlockBuilder({ embedded = false }: { embedded?: boolean }) {
+  const { showBlockBuilder, setShowBlockBuilder, isInternal, showToast } = useEditor();
   const [step, setStep] = useState(0);
   const [family, setFamily] = useState<MotionBlockFamily>("image-video");
   const [primitive, setPrimitive] = useState<string>(LAYOUT_PRIMITIVES[0]);
@@ -80,7 +80,8 @@ export function BlockBuilder() {
   const [motionPreset, setMotionPreset] = useState<string>(MOTION_PRESETS[0]);
   const [fallbackMedia, setFallbackMedia] = useState("color-fill");
 
-  if (!isAdminMode || !showBlockBuilder) return null;
+  if (!isInternal) return null;
+  if (!embedded && !showBlockBuilder) return null;
 
   const toggleSlot = (slot: string) => {
     setSelectedSlots((prev) =>
@@ -89,33 +90,31 @@ export function BlockBuilder() {
   };
 
   const handleSaveDraft = () => {
-    showToast({ message: `Block "${blockName || "Untitled"}" saved as draft.` });
-    setShowBlockBuilder(false);
+    showToast({ message: `Block "${blockName || "Untitled"}" config saved locally (not persisted).` });
+    if (!embedded) setShowBlockBuilder(false);
   };
 
-  const handlePublish = () => {
-    showToast({ message: `Block "${blockName || "Untitled"}" submitted for approval.` });
-    setShowBlockBuilder(false);
+  const handleExportJson = () => {
+    const config = {
+      name: blockName || "Untitled",
+      family,
+      primitive,
+      slots: selectedSlots,
+      motionPreset,
+      fallbackMedia,
+    };
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${(blockName || "block").replace(/\s+/g, "-").toLowerCase()}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    if (!embedded) setShowBlockBuilder(false);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 gap-1.5"
-          onClick={() => setShowBlockBuilder(false)}
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back
-        </Button>
-        <span className="text-sm font-semibold">Block Builder</span>
-        <span className="text-xs text-muted-foreground">
-          Step {step + 1} of {BUILDER_STEPS.length}
-        </span>
-      </header>
-
+  const body = (
+    <>
       <div className="flex min-h-0 flex-1">
         <aside className="w-56 shrink-0 border-r border-border p-3 lg:w-64">
           <ol className="space-y-1">
@@ -289,8 +288,8 @@ export function BlockBuilder() {
 
             {step === 9 ? (
               <p className="text-sm text-muted-foreground">
-                Publishing marks the block as approved and makes it available in the user-facing
-                Motion Blocks Library (when metadata and editor bridge are complete).
+                Export the block configuration as JSON. Approval and library publishing are not
+                persisted yet — use Studio Playground to test blocks with real previews.
               </p>
             ) : null}
           </div>
@@ -314,8 +313,8 @@ export function BlockBuilder() {
             </Button>
           ) : null}
           {step === 9 ? (
-            <Button size="sm" onClick={handlePublish}>
-              Publish
+            <Button size="sm" onClick={handleExportJson}>
+              Export JSON
             </Button>
           ) : (
             <Button size="sm" onClick={() => setStep((s) => Math.min(BUILDER_STEPS.length - 1, s + 1))}>
@@ -325,6 +324,31 @@ export function BlockBuilder() {
           )}
         </div>
       </footer>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="flex h-full min-h-0 flex-col">{body}</div>;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-3">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5"
+          onClick={() => setShowBlockBuilder(false)}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back
+        </Button>
+        <span className="text-sm font-semibold">Block Builder</span>
+        <span className="text-xs text-muted-foreground">
+          Step {step + 1} of {BUILDER_STEPS.length}
+        </span>
+      </header>
+      {body}
     </div>
   );
 }

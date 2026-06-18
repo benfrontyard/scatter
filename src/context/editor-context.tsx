@@ -1,7 +1,11 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { defaultMotionSequence } from "@/config/sequences/default";
 import { motionFormats } from "@/config/formats";
-import { addBlockToSequence, removeBlockFromSequence } from "@/lib/sequence-utils";
+import {
+  addBlockToSequence,
+  removeBlockFromSequence,
+  reorderBlockInSequence,
+} from "@/lib/sequence-utils";
 import {
   createEmptyCustomBrand,
   duplicateBrandAsCustom,
@@ -41,9 +45,9 @@ import { getAudioDuration } from "@/lib/audio";
 import { getOrDecodeAudioBuffer } from "@/lib/audio/audio-buffer-cache";
 import { runMagicEditPipeline } from "@/lib/magic-edit";
 import { buildAnixaDemoProject } from "@/lib/demo/anixa-demo";
-import { EDITOR_FPS, type EditorStep, type MainNavId, type WorkspaceTab } from "@/types/editor";
+import { EDITOR_FPS, type EditorStep, type MainNavId, type StudioTab, type WorkspaceTab } from "@/types/editor";
 import type { User, UserRole } from "@/types/user";
-import { isAdminRole } from "@/types/user";
+import { isInternalRole } from "@/types/user";
 import { normalizePostFXSettings } from "@/lib/post-fx";
 import { usePlaybackEngine } from "@/hooks/use-playback-engine";
 import {
@@ -60,7 +64,8 @@ const USER_ROLE_STORAGE_KEY = "scatter-user-role";
 function readStoredUserRole(): UserRole {
   if (typeof window === "undefined") return "user";
   const stored = window.localStorage.getItem(USER_ROLE_STORAGE_KEY);
-  if (stored === "admin" || stored === "maker" || stored === "user") return stored;
+  if (stored === "internal" || stored === "admin" || stored === "maker") return "internal";
+  if (stored === "user") return "user";
   return "user";
 }
 
@@ -105,6 +110,7 @@ type EditorActions = {
   selectTransition: (transitionId: string | null) => void;
   clearSelection: () => void;
   addBlock: (blockId: string) => void;
+  reorderBlock: (blockId: string, toIndex: number) => void;
   deleteBlock: (blockId: string) => void;
   deleteSelectedBlock: () => void;
   deleteSelectedTransition: () => void;
@@ -156,6 +162,26 @@ type EditorActions = {
   setShowBlockLibraryManager: (show: boolean) => void;
   setShowBrandTestLab: (show: boolean) => void;
   setShowDebugTools: (show: boolean) => void;
+  showBlockLibraryDrawer: boolean;
+  setShowBlockLibraryDrawer: (show: boolean) => void;
+  showSettingsInspector: boolean;
+  setShowSettingsInspector: (show: boolean) => void;
+  settingsInspectorPinned: boolean;
+  setSettingsInspectorPinned: (pinned: boolean) => void;
+  openSettingsInspector: () => void;
+  closeSettingsInspector: () => void;
+  showExportModal: boolean;
+  setShowExportModal: (show: boolean) => void;
+  showBrandPanel: boolean;
+  setShowBrandPanel: (show: boolean) => void;
+  timelineCollapsed: boolean;
+  setTimelineCollapsed: (collapsed: boolean) => void;
+  showStudio: boolean;
+  setShowStudio: (show: boolean) => void;
+  studioTab: StudioTab;
+  setStudioTab: (tab: StudioTab) => void;
+  showInternalBlocks: boolean;
+  setShowInternalBlocks: (show: boolean) => void;
 };
 
 type EditorContextValue = {
@@ -192,12 +218,22 @@ type EditorContextValue = {
   isMagicEditRunning: boolean;
   user: User;
   isAdminMode: boolean;
+  isInternal: boolean;
   workspaceTab: WorkspaceTab;
   mainNav: MainNavId;
   showBlockBuilder: boolean;
   showBlockLibraryManager: boolean;
   showBrandTestLab: boolean;
   showDebugTools: boolean;
+  showBlockLibraryDrawer: boolean;
+  showSettingsInspector: boolean;
+  settingsInspectorPinned: boolean;
+  showExportModal: boolean;
+  showBrandPanel: boolean;
+  timelineCollapsed: boolean;
+  showStudio: boolean;
+  studioTab: StudioTab;
+  showInternalBlocks: boolean;
 } & EditorActions;
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -229,6 +265,15 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const [showBrandTestLab, setShowBrandTestLab] = useState(false);
   const [showDebugTools, setShowDebugTools] = useState(false);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
+  const [showBlockLibraryDrawer, setShowBlockLibraryDrawer] = useState(false);
+  const [showSettingsInspector, setShowSettingsInspector] = useState(false);
+  const [settingsInspectorPinned, setSettingsInspectorPinned] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showBrandPanel, setShowBrandPanel] = useState(false);
+  const [timelineCollapsed, setTimelineCollapsed] = useState(false);
+  const [showStudio, setShowStudio] = useState(false);
+  const [studioTab, setStudioTab] = useState<StudioTab>("playground");
+  const [showInternalBlocks, setShowInternalBlocks] = useState(false);
   const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTab>("timeline");
   const [mainNav, setMainNav] = useState<MainNavId>("home");
   const [user, setUserState] = useState<User>(() => createDefaultUser());
@@ -338,7 +383,18 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const isAdminMode = isAdminRole(user.role);
+  const isInternal = isInternalRole(user.role);
+  const isAdminMode = isInternal;
+
+  const openSettingsInspector = useCallback(() => {
+    setShowSettingsInspector(true);
+  }, []);
+
+  const closeSettingsInspector = useCallback(() => {
+    if (!settingsInspectorPinned) {
+      setShowSettingsInspector(false);
+    }
+  }, [settingsInspectorPinned]);
 
   const setUserRole = useCallback((role: UserRole) => {
     setUserState((prev) => ({ ...prev, role }));
@@ -382,12 +438,33 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       setShowDebugTools,
       showProjectMenu,
       setShowProjectMenu,
+      showBlockLibraryDrawer,
+      setShowBlockLibraryDrawer,
+      showSettingsInspector,
+      setShowSettingsInspector,
+      settingsInspectorPinned,
+      setSettingsInspectorPinned,
+      openSettingsInspector,
+      closeSettingsInspector,
+      showExportModal,
+      setShowExportModal,
+      showBrandPanel,
+      setShowBrandPanel,
+      timelineCollapsed,
+      setTimelineCollapsed,
+      showStudio,
+      setShowStudio,
+      studioTab,
+      setStudioTab,
+      showInternalBlocks,
+      setShowInternalBlocks,
       workspaceTab,
       setWorkspaceTab,
       mainNav,
       setMainNav,
       user,
       isAdminMode,
+      isInternal,
       setUserRole,
       settingsPanelView,
       postFx,
@@ -565,6 +642,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         if (blockId) {
           setSelectedTransitionId(null);
           setStep("motion");
+          setShowSettingsInspector(true);
         }
       },
       selectTransition: (transitionId) => {
@@ -572,11 +650,15 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         if (transitionId) {
           setSelectedBlockId(null);
           setStep("motion");
+          setShowSettingsInspector(true);
         }
       },
       clearSelection: () => {
         setSelectedBlockId(null);
         setSelectedTransitionId(null);
+        if (!settingsInspectorPinned) {
+          setShowSettingsInspector(false);
+        }
       },
       addBlock: (blockId) => {
         let newBlockId: string | null = null;
@@ -587,6 +669,14 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         });
         setSelectedBlockId(newBlockId);
         setSelectedTransitionId(null);
+        setShowBlockLibraryDrawer(false);
+        setShowSettingsInspector(true);
+      },
+      reorderBlock: (blockId, toIndex) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: reorderBlockInSequence(prev.sequence, blockId, toIndex),
+        }));
       },
       deleteBlock: (blockId) => {
         let nextSelectedId: string | null = selectedBlockId;
@@ -1073,11 +1163,23 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       showBrandTestLab,
       showDebugTools,
       showProjectMenu,
+      showBlockLibraryDrawer,
+      showSettingsInspector,
+      settingsInspectorPinned,
+      showExportModal,
+      showBrandPanel,
+      timelineCollapsed,
+      showStudio,
+      studioTab,
+      showInternalBlocks,
       workspaceTab,
       mainNav,
       user,
       isAdminMode,
+      isInternal,
       setUserRole,
+      openSettingsInspector,
+      closeSettingsInspector,
       settingsPanelView,
       postFx,
       camera,

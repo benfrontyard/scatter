@@ -1,6 +1,7 @@
 import {
   getApprovedLibraryBlocks,
   getEditorBlockIdForLibraryEntry,
+  getPlaygroundBlocks,
   MOTION_BLOCK_FAMILIES,
 } from "@/lib/motion-block-library";
 import { useEditor } from "@/context/editor-context";
@@ -25,22 +26,31 @@ type BlockLibraryPanelProps = {
 };
 
 export function BlockLibraryPanel({ className }: BlockLibraryPanelProps) {
-  const { addBlock, isAdminMode, setShowMotionPlayground, showToast } = useEditor();
+  const {
+    addBlock,
+    isInternal,
+    showInternalBlocks,
+    setShowInternalBlocks,
+    setShowStudio,
+    setStudioTab,
+    showToast,
+  } = useEditor();
   const [activeFamily, setActiveFamily] = useState<MotionBlockFamily | "all">("all");
   const [search, setSearch] = useState("");
 
   const approvedBlocks = getApprovedLibraryBlocks();
+  const catalogBlocks = showInternalBlocks ? getPlaygroundBlocks() : approvedBlocks;
 
   const filteredBlocks = useMemo(() => {
-    return approvedBlocks.filter((block) => {
+    return catalogBlocks.filter((block) => {
       if (activeFamily !== "all" && block.family !== activeFamily) return false;
       if (search && !block.name.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [approvedBlocks, activeFamily, search]);
+  }, [catalogBlocks, activeFamily, search]);
 
   const handleAddBlock = (libraryBlockId: string) => {
-    const entry = approvedBlocks.find((b) => b.id === libraryBlockId);
+    const entry = catalogBlocks.find((b) => b.id === libraryBlockId);
     if (!entry) return;
 
     const editorBlockId = getEditorBlockIdForLibraryEntry(entry);
@@ -66,6 +76,17 @@ export function BlockLibraryPanel({ className }: BlockLibraryPanelProps) {
       </div>
 
       <div className="shrink-0 border-b border-border p-2">
+        {isInternal ? (
+          <label className="mb-2 flex items-center gap-2 px-1 text-[10px] text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={showInternalBlocks}
+              onChange={(e) => setShowInternalBlocks(e.target.checked)}
+              className="rounded border-border"
+            />
+            Show all block statuses (internal)
+          </label>
+        ) : null}
         <div className="relative">
           <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -108,22 +129,25 @@ export function BlockLibraryPanel({ className }: BlockLibraryPanelProps) {
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-2">
-        {approvedBlocks.length === 0 ? (
+        {catalogBlocks.length === 0 ? (
           <div className="flex flex-col items-center gap-3 px-3 py-8 text-center">
             <p className="text-xs leading-relaxed text-muted-foreground">
-              No approved motion blocks yet. Go to Admin → Motion Block Playground to approve or
-              publish blocks.
+              No approved motion blocks yet. Internal users can approve blocks in Studio →
+              Playground.
             </p>
-            {isAdminMode ? (
+            {isInternal ? (
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 className="h-8 gap-1.5 text-xs"
-                onClick={() => setShowMotionPlayground(true)}
+                onClick={() => {
+                  setStudioTab("playground");
+                  setShowStudio(true);
+                }}
               >
                 <ExternalLink className="h-3 w-3" />
-                Open Playground
+                Open Studio
               </Button>
             ) : null}
           </div>
