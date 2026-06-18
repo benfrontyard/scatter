@@ -132,8 +132,7 @@ export function BlockLibraryPanel({ className }: BlockLibraryPanelProps) {
         {catalogBlocks.length === 0 ? (
           <div className="flex flex-col items-center gap-3 px-3 py-8 text-center">
             <p className="text-xs leading-relaxed text-muted-foreground">
-              No approved motion blocks yet. Internal users can approve blocks in Studio →
-              Playground.
+              No approved motion blocks yet. Internal users can approve blocks in Studio → Review.
             </p>
             {isInternal ? (
               <Button
@@ -142,12 +141,12 @@ export function BlockLibraryPanel({ className }: BlockLibraryPanelProps) {
                 variant="outline"
                 className="h-8 gap-1.5 text-xs"
                 onClick={() => {
-                  setStudioTab("playground");
+                  setStudioTab("review");
                   setShowStudio(true);
                 }}
               >
                 <ExternalLink className="h-3 w-3" />
-                Open Studio
+                Open Studio Review
               </Button>
             ) : null}
           </div>

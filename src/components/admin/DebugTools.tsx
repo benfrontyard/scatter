@@ -33,8 +33,8 @@ export function DebugTools({ embedded = false }: { embedded?: boolean }) {
   const content = (
     <div className="flex-1 overflow-y-auto p-4">
       <p className="mb-4 text-sm text-muted-foreground">
-        Toggle debug overlays for preview and playground sessions. Use Studio Playground for live
-        preview with these layers.
+        Toggle debug overlays for preview sessions. Use Studio Review (Debug preview mode or
+        Advanced → Debug) for live preview with these layers.
       </p>
       <div className="space-y-3">
         <Label className="text-xs text-muted-foreground">Overlay toggles</Label>

@@ -71,6 +71,27 @@ export function ExportPanel({ className, compact }: ExportPanelProps) {
 
   const handleExport = async () => {
     if (!exportReady) return;
+    // #region agent log
+    fetch("http://127.0.0.1:7333/ingest/b24888df-fe91-4b21-bfa6-9cf313f7d223", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "84895d" },
+      body: JSON.stringify({
+        sessionId: "84895d",
+        runId: "pre-fix",
+        hypothesisId: "B",
+        location: "ExportPanel.tsx:handleExport",
+        message: "Export started",
+        data: {
+          exportReady,
+          blockCount: sequence.blocks.length,
+          durationInFrames,
+          formatId: format.id,
+          fps,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
     setIsPlaying(false);
     setStatus("rendering");
     setError(null);
@@ -105,6 +126,23 @@ export function ExportPanel({ className, compact }: ExportPanelProps) {
       } else {
         setStatus("error");
         setError(err instanceof Error ? err.message : "Export failed.");
+        // #region agent log
+        fetch("http://127.0.0.1:7333/ingest/b24888df-fe91-4b21-bfa6-9cf313f7d223", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "84895d" },
+          body: JSON.stringify({
+            sessionId: "84895d",
+            runId: "pre-fix",
+            hypothesisId: "E",
+            location: "ExportPanel.tsx:catch",
+            message: "Export error surfaced to UI",
+            data: {
+              error: err instanceof Error ? err.message : String(err),
+            },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+        // #endregion
       }
     } finally {
       exportAbortRef.current = null;

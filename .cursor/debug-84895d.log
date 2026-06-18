@@ -1,0 +1,2 @@
+{"sessionId":"84895d","runId":"pre-fix","hypothesisId":"B","location":"ExportPanel.tsx:handleExport","message":"Export started","data":{"exportReady":true,"blockCount":4,"durationInFrames":366,"formatId":"format-9-16","fps":60},"timestamp":1781767913289}
+{"sessionId":"84895d","runId":"pre-fix","hypothesisId":"A","location":"export-video.ts:startResponse","message":"Render POST response","data":{"ok":true,"status":202,"contentType":"application/json; charset=utf-8"},"timestamp":1781767913403}

@@ -272,7 +272,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const [showBrandPanel, setShowBrandPanel] = useState(false);
   const [timelineCollapsed, setTimelineCollapsed] = useState(false);
   const [showStudio, setShowStudio] = useState(false);
-  const [studioTab, setStudioTab] = useState<StudioTab>("playground");
+  const [studioTab, setStudioTab] = useState<StudioTab>("review");
   const [showInternalBlocks, setShowInternalBlocks] = useState(false);
   const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTab>("timeline");
   const [mainNav, setMainNav] = useState<MainNavId>("home");

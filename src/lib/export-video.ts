@@ -99,6 +99,21 @@ async function pollRenderJob(
       return serverJob;
     }
     if (serverJob.status === "failed") {
+      // #region agent log
+      fetch("http://127.0.0.1:7333/ingest/b24888df-fe91-4b21-bfa6-9cf313f7d223", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "84895d" },
+        body: JSON.stringify({
+          sessionId: "84895d",
+          runId: "pre-fix",
+          hypothesisId: "C",
+          location: "export-video.ts:pollFailed",
+          message: "Render job failed",
+          data: { jobId, error: serverJob.error, message: serverJob.message },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       throw new Error(serverJob.error || serverJob.message || "Render failed.");
     }
     if (serverJob.status === "cancelled") {
@@ -137,6 +152,27 @@ export async function exportSequenceToMp4(input: ExportVideoInput): Promise<Blob
     signal: input.signal,
   });
 
+  const startContentType = startResponse.headers.get("content-type") ?? "";
+  // #region agent log
+  fetch("http://127.0.0.1:7333/ingest/b24888df-fe91-4b21-bfa6-9cf313f7d223", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "84895d" },
+    body: JSON.stringify({
+      sessionId: "84895d",
+      runId: "pre-fix",
+      hypothesisId: "A",
+      location: "export-video.ts:startResponse",
+      message: "Render POST response",
+      data: {
+        ok: startResponse.ok,
+        status: startResponse.status,
+        contentType: startContentType,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
+
   if (!startResponse.ok) {
     const message = await startResponse.text();
     job = updateRenderJobProgress(job, "failed", 0, message || "Render request failed.");
@@ -144,7 +180,38 @@ export async function exportSequenceToMp4(input: ExportVideoInput): Promise<Blob
     throw new Error(message || "Render request failed.");
   }
 
-  const { jobId } = (await startResponse.json()) as { jobId: string };
+  if (startContentType.includes("video/mp4")) {
+    throw new Error(
+      "Render server is out of date. Stop and restart `npm run dev` so the export API reloads.",
+    );
+  }
+
+  let jobId: string;
+  try {
+    ({ jobId } = (await startResponse.json()) as { jobId: string });
+  } catch (error) {
+    // #region agent log
+    fetch("http://127.0.0.1:7333/ingest/b24888df-fe91-4b21-bfa6-9cf313f7d223", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "84895d" },
+      body: JSON.stringify({
+        sessionId: "84895d",
+        runId: "pre-fix",
+        hypothesisId: "A",
+        location: "export-video.ts:startJsonParse",
+        message: "Failed to parse render POST JSON",
+        data: {
+          contentType: startContentType,
+          error: error instanceof Error ? error.message : String(error),
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    throw new Error(
+      "Unexpected render server response. Restart `npm run dev` and try export again.",
+    );
+  }
 
   const abortHandler = () => {
     void cancelRenderJob(jobId);

@@ -10,7 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEditor } from "@/context/editor-context";
-import { MOTION_BLOCK_FAMILIES } from "@/lib/motion-block-library";
+import { MOTION_BLOCK_FAMILIES, createDraftBlockFromBuilder } from "@/lib/motion-block-library";
+import type { MotionBlockLibraryEntry } from "@/types/motion-block-library";
 import { cn } from "@/lib/utils";
 import type { MotionBlockFamily } from "@/types/motion-block-library";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
@@ -70,7 +71,13 @@ const MOTION_PRESETS = [
   "Camera push",
 ] as const;
 
-export function BlockBuilder({ embedded = false }: { embedded?: boolean }) {
+export function BlockBuilder({
+  embedded = false,
+  onSaveDraftBlock,
+}: {
+  embedded?: boolean;
+  onSaveDraftBlock?: (block: MotionBlockLibraryEntry) => void;
+}) {
   const { showBlockBuilder, setShowBlockBuilder, isInternal, showToast } = useEditor();
   const [step, setStep] = useState(0);
   const [family, setFamily] = useState<MotionBlockFamily>("image-video");
@@ -90,6 +97,18 @@ export function BlockBuilder({ embedded = false }: { embedded?: boolean }) {
   };
 
   const handleSaveDraft = () => {
+    const draft = createDraftBlockFromBuilder({
+      name: blockName || "Untitled Block",
+      family,
+      primitive,
+      slotLabels: selectedSlots,
+    });
+
+    if (onSaveDraftBlock) {
+      onSaveDraftBlock(draft);
+      return;
+    }
+
     showToast({ message: `Block "${blockName || "Untitled"}" config saved locally (not persisted).` });
     if (!embedded) setShowBlockBuilder(false);
   };
@@ -262,8 +281,8 @@ export function BlockBuilder({ embedded = false }: { embedded?: boolean }) {
 
             {step === 6 ? (
               <p className="text-sm text-muted-foreground">
-                Preview with sample brands in the Motion Block Playground after saving. Family:{" "}
-                {family}, primitive: {primitive}, motion: {motionPreset}.
+                After saving, you&apos;ll return to Review to test across brands and aspect ratios.
+                Family: {family}, primitive: {primitive}, motion: {motionPreset}.
               </p>
             ) : null}
 
@@ -288,8 +307,8 @@ export function BlockBuilder({ embedded = false }: { embedded?: boolean }) {
 
             {step === 9 ? (
               <p className="text-sm text-muted-foreground">
-                Export the block configuration as JSON. Approval and library publishing are not
-                persisted yet — use Studio Playground to test blocks with real previews.
+                Export the block configuration as JSON. Approval is session-only — use Review to test
+                blocks with the production Canvas renderer.
               </p>
             ) : null}
           </div>
