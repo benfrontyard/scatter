@@ -38,6 +38,16 @@ export type {
 export type { EasingPreset, EasingBezier, EasingCategory } from "./easing";
 export type { MotionSequence, SequenceTimelineItem } from "./sequence";
 export type {
+  ExportFXQuality,
+  PostFXBlendMode,
+  PostFXEffect,
+  PostFXEffectType,
+  PostFXPreset,
+  PostFXQuality,
+  PostFXRenderMode,
+  PostFXSettings,
+} from "./post-fx";
+export type {
   BlockTypographyOverride,
   FontRole,
   HeadingStyleName,

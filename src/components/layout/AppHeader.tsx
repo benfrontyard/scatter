@@ -15,6 +15,7 @@ import {
   Redo2,
   Save,
   Undo2,
+  X,
 } from "lucide-react";
 import { motionFormats } from "@/config/formats";
 
@@ -44,7 +45,11 @@ export function AppHeader({ compact }: AppHeaderProps) {
     setShowShortcuts,
   } = useEditor();
 
-  const openExport = () => {
+  const toggleExport = () => {
+    if (step === "export") {
+      setStep("motion");
+      return;
+    }
     clearSelection();
     setStep("export");
   };
@@ -190,10 +195,20 @@ export function AppHeader({ compact }: AppHeaderProps) {
           size="sm"
           className="h-8 px-2.5 text-xs"
           variant={step === "export" ? "secondary" : "default"}
-          onClick={openExport}
+          onClick={toggleExport}
+          title={step === "export" ? "Back to editor" : "Export video"}
         >
-          <Download className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Export</span>
+          {step === "export" ? (
+            <>
+              <X className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Back</span>
+            </>
+          ) : (
+            <>
+              <Download className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Export</span>
+            </>
+          )}
         </Button>
       </div>
     </header>

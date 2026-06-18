@@ -1,4 +1,5 @@
 import type { MotionBlockInstance } from "./motion-block";
+import type { PostFXSettings } from "./post-fx";
 import type { BlockTransition } from "./transition";
 
 export type MotionSequence = {
@@ -9,6 +10,7 @@ export type MotionSequence = {
   canvasBackground?: string;
   fps?: number;
   logoText?: string;
+  postFx?: PostFXSettings;
   blocks: MotionBlockInstance[];
   transitions: BlockTransition[];
 };

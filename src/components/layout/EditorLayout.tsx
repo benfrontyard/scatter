@@ -103,14 +103,14 @@ function SidePanelTabs({ className }: SidePanelTabsProps) {
       }}
       className={className}
     >
-      <TabsList className="mx-3 mt-2 h-8 w-auto shrink-0 justify-start rounded-md bg-secondary/50 p-0.5">
-        <TabsTrigger value="blocks" className="h-7 px-3 text-xs">
+      <TabsList className="mx-3 mt-2 h-8 w-fit shrink-0 self-start justify-start rounded-md bg-secondary/50 p-0.5">
+        <TabsTrigger value="blocks" className="h-7 shrink-0 px-3 text-xs">
           Blocks
         </TabsTrigger>
-        <TabsTrigger value="settings" className="h-7 px-3 text-xs">
+        <TabsTrigger value="settings" className="h-7 shrink-0 px-3 text-xs">
           Settings
         </TabsTrigger>
-        <TabsTrigger value="export" className="h-7 px-3 text-xs">
+        <TabsTrigger value="export" className="h-7 shrink-0 px-3 text-xs">
           Export
         </TabsTrigger>
       </TabsList>

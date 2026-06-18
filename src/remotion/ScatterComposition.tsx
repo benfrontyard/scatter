@@ -8,18 +8,24 @@ import {
   resolveFontStack,
   resolvedTypeStyleToCss,
 } from "@/lib/typography";
-import type { BrandPreset, MotionFormat, MotionSequence } from "@/types";
+import type { BrandPreset, MotionFormat, MotionSequence, PostFXRenderMode } from "@/types";
 import { AbsoluteFill, Sequence as RemotionSequence, useCurrentFrame } from "remotion";
 import { renderBlockContent } from "./blocks";
 import { LoadProjectFont } from "./LoadProjectFont";
+import { PostFXWrapper } from "./PostFXWrapper";
 import { getBlockTransitionOverlay } from "./transitions";
 
 export type ScatterCompositionProps = {
   sequence: MotionSequence;
   customBrands?: BrandPreset[];
+  renderMode?: PostFXRenderMode;
 };
 
-export function ScatterComposition({ sequence, customBrands = [] }: ScatterCompositionProps) {
+export function ScatterComposition({
+  sequence,
+  customBrands = [],
+  renderMode = "export",
+}: ScatterCompositionProps) {
   const brand = resolveBrand(sequence.brandPresetId, customBrands);
   const format = motionFormatMap[sequence.format] ?? Object.values(motionFormatMap)[0];
   const fontFamilies = getBrandFontFamilies(brand.typography);
@@ -51,37 +57,39 @@ export function ScatterComposition({ sequence, customBrands = [] }: ScatterCompo
     <>
       <LoadProjectFont families={fontFamilies} />
       <AbsoluteFill style={{ backgroundColor: sequence.canvasBackground || brand.colors.background }}>
-        {sequence.blocks.map((block, index) => {
-          const definition = motionBlockMap[block.blockId];
-          if (!definition) return null;
+        <PostFXWrapper postFx={sequence.postFx} renderMode={renderMode}>
+          {sequence.blocks.map((block, index) => {
+            const definition = motionBlockMap[block.blockId];
+            if (!definition) return null;
 
-          const startFrame = getBlockStartFrame(sequence, index);
+            const startFrame = getBlockStartFrame(sequence, index);
 
-          return (
-            <RemotionSequence
-              key={block.id}
-              from={startFrame}
-              durationInFrames={block.duration}
-              layout="none"
-            >
-              <BlockWithTransitions
-                blockIndex={index}
-                blockDuration={block.duration}
-                sequence={sequence}
-                customBrands={customBrands}
-                formatWidth={format.width}
-                formatHeight={format.height}
+            return (
+              <RemotionSequence
+                key={block.id}
+                from={startFrame}
+                durationInFrames={block.duration}
+                layout="none"
               >
-                {renderBlockContent({
-                  brand,
-                  block,
-                  definition,
-                  format,
-                })}
-              </BlockWithTransitions>
-            </RemotionSequence>
-          );
-        })}
+                <BlockWithTransitions
+                  blockIndex={index}
+                  blockDuration={block.duration}
+                  sequence={sequence}
+                  customBrands={customBrands}
+                  formatWidth={format.width}
+                  formatHeight={format.height}
+                >
+                  {renderBlockContent({
+                    brand,
+                    block,
+                    definition,
+                    format,
+                  })}
+                </BlockWithTransitions>
+              </RemotionSequence>
+            );
+          })}
+        </PostFXWrapper>
       </AbsoluteFill>
     </>
   );

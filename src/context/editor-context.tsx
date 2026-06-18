@@ -26,10 +26,22 @@ import type {
   TextAnimationInstance,
   MotionBlockInstance,
   MotionSequence,
+  PostFXSettings,
   ProjectAsset,
 } from "@/types";
 import { EDITOR_FPS, type EditorStep } from "@/types/editor";
+import { normalizePostFXSettings } from "@/lib/post-fx";
 import type { PlayerRef } from "@remotion/player";
+
+type SettingsPanelView = "project" | "postFx";
+
+export type EditorToastState = {
+  message: string;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+};
 
 type EditorActions = {
   setStep: (step: EditorStep) => void;
@@ -39,6 +51,9 @@ type EditorActions = {
   setProjectName: (name: string) => void;
   setFps: (fps: number) => void;
   setLogoText: (text: string) => void;
+  setSettingsPanelView: (view: SettingsPanelView) => void;
+  updatePostFX: (postFx: PostFXSettings) => void;
+  applyPostFXPreset: (postFx: PostFXSettings) => void;
   updateBlockTypographyOverride: (
     blockId: string,
     override: BlockTypographyOverride | undefined,
@@ -84,6 +99,8 @@ type EditorActions = {
   setIsPlaying: (playing: boolean) => void;
   registerPlayer: (player: PlayerRef | null) => void;
   nudgePlayhead: (deltaFrames: number) => void;
+  showToast: (toast: EditorToastState) => void;
+  dismissToast: () => void;
 };
 
 type EditorContextValue = {
@@ -109,6 +126,9 @@ type EditorContextValue = {
   setShowBrandSystem: (show: boolean) => void;
   showProjectMenu: boolean;
   setShowProjectMenu: (show: boolean) => void;
+  settingsPanelView: SettingsPanelView;
+  postFx: PostFXSettings;
+  toast: EditorToastState | null;
 } & EditorActions;
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -137,6 +157,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showBrandSystem, setShowBrandSystem] = useState(false);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
+  const [settingsPanelView, setSettingsPanelView] = useState<SettingsPanelView>("project");
+  const [toast, setToast] = useState<EditorToastState | null>(null);
+  const toastTimeoutRef = useRef<number | null>(null);
 
   const playerRef = useRef<PlayerRef | null>(null);
 
@@ -149,6 +172,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const allBrands = getAllBrands(customBrands);
   const format = motionFormats.find((item) => item.id === sequence.format) ?? motionFormats[0];
   const fps = sequence.fps ?? EDITOR_FPS;
+  const postFx = normalizePostFXSettings(sequence.postFx);
 
   const isDirty = !snapshotsEqual(history.present, savedSnapshotRef.current);
 
@@ -212,6 +236,28 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     [currentFrame, seekToFrame],
   );
 
+  const dismissToast = useCallback(() => {
+    if (toastTimeoutRef.current !== null) {
+      window.clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = null;
+    }
+    setToast(null);
+  }, []);
+
+  const showToast = useCallback(
+    (next: EditorToastState) => {
+      if (toastTimeoutRef.current !== null) {
+        window.clearTimeout(toastTimeoutRef.current);
+      }
+      setToast(next);
+      toastTimeoutRef.current = window.setTimeout(() => {
+        setToast(null);
+        toastTimeoutRef.current = null;
+      }, 5000);
+    },
+    [],
+  );
+
   const value = useMemo<EditorContextValue>(
     () => ({
       step,
@@ -236,6 +282,10 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       setShowBrandSystem,
       showProjectMenu,
       setShowProjectMenu,
+      settingsPanelView,
+      postFx,
+      toast,
+      setSettingsPanelView,
       setStep,
       setBrand: (brandPresetId) => {
         updateSnapshot((prev) => ({
@@ -322,13 +372,41 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           sequence: { ...prev.sequence, logoText: text },
         }));
       },
+      updatePostFX: (nextPostFx) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: { ...prev.sequence, postFx: normalizePostFXSettings(nextPostFx) },
+        }));
+      },
+      applyPostFXPreset: (nextPostFx) => {
+        const normalized = normalizePostFXSettings(structuredClone(nextPostFx));
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: {
+            ...prev.sequence,
+            postFx: {
+              ...normalized,
+              effects: normalized.effects.map((effect) => ({
+                ...effect,
+                id: `${effect.type}-${crypto.randomUUID().slice(0, 8)}`,
+              })),
+            },
+          },
+        }));
+      },
       selectBlock: (blockId) => {
         setSelectedBlockId(blockId);
-        if (blockId) setSelectedTransitionId(null);
+        if (blockId) {
+          setSelectedTransitionId(null);
+          setStep("motion");
+        }
       },
       selectTransition: (transitionId) => {
         setSelectedTransitionId(transitionId);
-        if (transitionId) setSelectedBlockId(null);
+        if (transitionId) {
+          setSelectedBlockId(null);
+          setStep("motion");
+        }
       },
       clearSelection: () => {
         setSelectedBlockId(null);
@@ -625,6 +703,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       setIsPlaying,
       registerPlayer,
       nudgePlayhead,
+      showToast,
+      dismissToast,
     }),
     [
       step,
@@ -645,6 +725,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       showShortcuts,
       showBrandSystem,
       showProjectMenu,
+      settingsPanelView,
+      postFx,
+      toast,
       updateSnapshot,
       loadSnapshot,
       setCurrentFrame,
@@ -653,6 +736,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       setIsPlaying,
       registerPlayer,
       nudgePlayhead,
+      showToast,
+      dismissToast,
     ],
   );
 

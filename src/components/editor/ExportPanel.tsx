@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertTriangle, Download, Film, Loader2 } from "lucide-react";
+import { AlertTriangle, Download, Film, Loader2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { motionFormats } from "@/config/formats";
 
@@ -36,7 +36,7 @@ function MetaRow({ label, value }: { label: string; value: string }) {
 }
 
 export function ExportPanel({ className, compact }: ExportPanelProps) {
-  const { sequence, format, fps, customBrands, setFormat, setFps } = useEditor();
+  const { sequence, format, fps, customBrands, setFormat, setFps, setStep } = useEditor();
   const [fileName, setFileName] = useState(() =>
     sequence.name.replace(/[^a-z0-9-_]+/gi, "-").toLowerCase() || "export",
   );
@@ -214,12 +214,23 @@ export function ExportPanel({ className, compact }: ExportPanelProps) {
     >
       <div className="flex shrink-0 items-start gap-2 border-b border-border px-3 py-2.5">
         <Film className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h2 className="truncate text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Export
           </h2>
           <p className="mt-0.5 truncate text-sm font-medium text-foreground">{sequence.name}</p>
         </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 shrink-0"
+          onClick={() => setStep("motion")}
+          aria-label="Back to editor"
+          title="Back to editor"
+        >
+          <X className="h-3.5 w-3.5" />
+        </Button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3">{content}</div>
     </aside>

@@ -2,6 +2,7 @@ import { BlockAdvancedTypography } from "@/components/editor/BlockAdvancedTypogr
 import { BlockAdvancedEffects } from "@/components/editor/BlockAdvancedEffects";
 import { TextAnimationPanel } from "@/components/editor/TextAnimationPanel";
 import { ExportPanel } from "@/components/editor/ExportPanel";
+import { PostFXPanel } from "@/components/editor/PostFXPanel";
 import { EasingPicker } from "@/components/editor/EasingPicker";
 import { motionBlockMap } from "@/config/blocks";
 import { motionFormats } from "@/config/formats";
@@ -33,9 +34,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Film, Layers, SlidersHorizontal } from "lucide-react";
+import { Film, Layers, SlidersHorizontal, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 
 function AssetsSection() {
@@ -565,6 +567,7 @@ function BlockSettings({ className }: { className?: string }) {
                   block={selectedBlock}
                   onChange={(effects) => updateBlockEffects(selectedBlock.id, effects)}
                 />
+                <PostFXJumpButton />
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -702,6 +705,70 @@ function TransitionSettings({ className }: { className?: string }) {
   );
 }
 
+function CompositionSettingsTabs({
+  className,
+  activeView,
+}: {
+  className?: string;
+  activeView: "project" | "postFx";
+}) {
+  const { setSettingsPanelView, postFx } = useEditor();
+
+  return (
+    <Tabs
+      value={activeView}
+      onValueChange={(value) => setSettingsPanelView(value as "project" | "postFx")}
+      className={cn("flex min-h-0 flex-1 flex-col", className)}
+    >
+      <TabsList className="mx-3 mt-2 h-8 w-fit shrink-0 self-start justify-start rounded-md bg-secondary/50 p-0.5">
+        <TabsTrigger value="project" className="h-7 shrink-0 px-3 text-xs">
+          Project
+        </TabsTrigger>
+        <TabsTrigger value="postFx" className="h-7 shrink-0 px-3 text-xs">
+          <Sparkles className="mr-1 h-3 w-3" />
+          Post FX
+          {postFx.enabled ? (
+            <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+          ) : null}
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent
+        value="project"
+        className="mt-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+      >
+        <ProjectSettings className="h-full w-full min-w-0 max-w-none border-l-0" />
+      </TabsContent>
+      <TabsContent
+        value="postFx"
+        className="mt-0 min-h-0 flex-1 overflow-hidden data-[state=inactive]:hidden"
+      >
+        <PostFXPanel className="h-full w-full min-w-0 max-w-none border-l-0" />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+function PostFXJumpButton() {
+  const { setSettingsPanelView } = useEditor();
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="h-7 w-full text-[10px]"
+      onClick={() => setSettingsPanelView("postFx")}
+    >
+      <Sparkles className="mr-1 h-3 w-3" />
+      Open Post FX
+    </Button>
+  );
+}
+
+function ProjectSettingsTabs({ className }: { className?: string }) {
+  return <CompositionSettingsTabs className={className} activeView="project" />;
+}
+
 function ProjectSettings({ className }: { className?: string }) {
   const {
     brand,
@@ -810,7 +877,7 @@ function ProjectSettings({ className }: { className?: string }) {
 }
 
 export function SettingsPanel({ className }: SettingsPanelProps) {
-  const { step } = useEditor();
+  const { step, settingsPanelView } = useEditor();
   const selectedBlock = useSelectedBlock();
   const selectedTransition = useSelectedTransition();
 
@@ -826,5 +893,9 @@ export function SettingsPanel({ className }: SettingsPanelProps) {
     return <ExportPanel className={className} />;
   }
 
-  return <ProjectSettings className={className} />;
+  if (settingsPanelView === "postFx") {
+    return <CompositionSettingsTabs className={className} activeView="postFx" />;
+  }
+
+  return <ProjectSettingsTabs className={className} />;
 }

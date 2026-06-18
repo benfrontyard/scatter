@@ -1,5 +1,6 @@
 import { Player } from "@remotion/player";
 import { useEditor } from "@/context/editor-context";
+import { isPreviewQualityReduced } from "@/lib/post-fx";
 import { getSequenceDurationInFrames } from "@/lib/sequence-utils";
 import { ScatterComposition } from "@/remotion/ScatterComposition";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
     togglePlayback,
     setCurrentFrame,
     setIsPlaying,
+    postFx,
     registerPlayer,
   } = useEditor();
 
@@ -182,7 +184,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
           <Player
             ref={playerRef}
             component={ScatterComposition}
-            inputProps={{ sequence, customBrands }}
+            inputProps={{ sequence, customBrands, renderMode: "preview" }}
             durationInFrames={durationInFrames}
             compositionWidth={compositionWidth}
             compositionHeight={compositionHeight}
@@ -194,6 +196,13 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
           />
 
           <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/5" />
+          {postFx.enabled && isPreviewQualityReduced(postFx) ? (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center p-2">
+              <span className="rounded-full bg-black/70 px-2.5 py-1 text-[10px] text-white/80 backdrop-blur-sm">
+                Previewing Post FX at reduced quality. Full quality will apply on export.
+              </span>
+            </div>
+          ) : null}
         </div>
       </div>
 
