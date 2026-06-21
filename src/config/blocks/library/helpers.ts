@@ -5,7 +5,7 @@ import type {
   MotionPreset,
 } from "@/types/motion-block-library";
 
-const ALL_FORMATS: MotionAspectRatio[] = ["16:9", "9:16", "1:1", "4:5", "5:4"];
+const ALL_FORMATS: MotionAspectRatio[] = ["16:9", "9:16", "1:1", "4:5"];
 
 export function allFormats(): MotionAspectRatio[] {
   return [...ALL_FORMATS];
@@ -31,7 +31,6 @@ export function layout(
 ): Partial<Record<MotionAspectRatio, MotionLayoutRule>> {
   return {
     "16:9": landscape,
-    "5:4": { ...landscape, ...square },
     "1:1": square ? { ...landscape, ...square } : { ...landscape, gap: (landscape.gap ?? 0.02) * 1.1 },
     "4:5": vertical ? { ...landscape, ...vertical } : { ...landscape, stackDirection: "column" },
     "9:16": vertical ? { ...landscape, ...vertical } : { ...landscape, stackDirection: "column", gap: (landscape.gap ?? 0.02) * 1.2 },

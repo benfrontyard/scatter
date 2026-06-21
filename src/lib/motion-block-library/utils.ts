@@ -85,7 +85,7 @@ export function createDraftBlockFromBuilder(options: {
     },
     stylePreset: { textAlign: "left", emphasis: "standard" },
     fallbackRules: { missingMedia: "gradient", longText: "shrink" },
-    supportedFormats: ["16:9", "9:16", "1:1", "4:5", "5:4"],
+    supportedFormats: ["16:9", "9:16", "1:1", "4:5"],
     debugMetadata: { version: "0.1", notes: `Created from Builder (${options.primitive})` },
   };
 }

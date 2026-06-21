@@ -5,7 +5,6 @@ export const MOTION_ASPECT_RATIOS: MotionAspectRatio[] = [
   "9:16",
   "1:1",
   "4:5",
-  "5:4",
 ];
 
 export const MOTION_ASPECT_RATIO_LABELS: Record<MotionAspectRatio, string> = {
@@ -13,7 +12,6 @@ export const MOTION_ASPECT_RATIO_LABELS: Record<MotionAspectRatio, string> = {
   "9:16": "Vertical (9:16)",
   "1:1": "Square (1:1)",
   "4:5": "Portrait (4:5)",
-  "5:4": "Landscape (5:4)",
 };
 
 export const MOTION_FORMAT_ID_MAP: Record<MotionAspectRatio, string> = {
@@ -21,7 +19,6 @@ export const MOTION_FORMAT_ID_MAP: Record<MotionAspectRatio, string> = {
   "9:16": "format-9-16",
   "1:1": "format-1-1",
   "4:5": "format-4-5",
-  "5:4": "format-5-4",
 };
 
 export const FORMAT_ID_TO_ASPECT: Record<string, MotionAspectRatio> = Object.fromEntries(

@@ -119,6 +119,31 @@ export function getSequenceDurationInFrames(sequence: MotionSequence): number {
   return Math.max(blockFrames - transitionOverlap, 1);
 }
 
+const MIN_BLOCK_DURATION_FRAMES = 15;
+
+/** Scale all block durations proportionally to hit a target sequence length. */
+export function scaleSequenceToTargetDuration(
+  sequence: MotionSequence,
+  targetSeconds: number,
+  fps: number,
+): MotionSequence {
+  if (sequence.blocks.length === 0) return sequence;
+
+  const targetFrames = Math.round(targetSeconds * fps);
+  const currentFrames = getSequenceDurationInFrames(sequence);
+  if (currentFrames <= 0) return sequence;
+
+  const ratio = targetFrames / currentFrames;
+
+  return {
+    ...sequence,
+    blocks: sequence.blocks.map((block) => ({
+      ...block,
+      duration: Math.max(MIN_BLOCK_DURATION_FRAMES, Math.round(block.duration * ratio)),
+    })),
+  };
+}
+
 export function buildTimelineItems(sequence: MotionSequence): SequenceTimelineItem[] {
   const items: SequenceTimelineItem[] = [];
 

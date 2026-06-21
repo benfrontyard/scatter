@@ -236,7 +236,7 @@ export function BlockBuilder({
 
             {step === 3 ? (
               <p className="text-sm text-muted-foreground">
-                Responsive layouts will be generated for 16:9, 9:16, 1:1, 4:5, and 5:4 based on the{" "}
+                Responsive layouts will be generated for 16:9, 9:16, 1:1, and 4:5 based on the{" "}
                 <strong>{primitive}</strong> primitive with {selectedSlots.length} slot
                 {selectedSlots.length === 1 ? "" : "s"}.
               </p>

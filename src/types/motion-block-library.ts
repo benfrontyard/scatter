@@ -9,7 +9,7 @@ export type MotionBlockFamily =
 
 export type MotionBlockStatus = "draft" | "needs-review" | "approved" | "deprecated";
 
-export type MotionAspectRatio = "16:9" | "9:16" | "1:1" | "4:5" | "5:4";
+export type MotionAspectRatio = "16:9" | "9:16" | "1:1" | "4:5";
 
 export type MotionSlotType =
   | "text"

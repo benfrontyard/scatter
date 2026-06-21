@@ -8,7 +8,6 @@ const ASPECT_TO_FORMAT: Record<MotionAspectRatio, string> = {
   "9:16": "format-9-16",
   "1:1": "format-1-1",
   "4:5": "format-4-5",
-  "5:4": "format-5-4",
 };
 
 export function canUseProductionPlaygroundRenderer(entry: MotionBlockLibraryEntry): boolean {

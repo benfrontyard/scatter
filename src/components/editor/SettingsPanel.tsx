@@ -9,6 +9,7 @@ import { CameraPanel } from "@/components/editor/CameraPanel";
 import { EasingPicker } from "@/components/editor/EasingPicker";
 import { motionBlockMap } from "@/config/blocks";
 import { motionFormats } from "@/config/formats";
+import { PLATFORM_DURATION_PRESETS } from "@/config/duration-presets";
 import { transitionDefinitions } from "@/config/transitions";
 import { useEditor, useSelectedBlock, useSelectedTransition } from "@/context/editor-context";
 import {
@@ -441,7 +442,7 @@ function AdminBlockSettings({ className }: { className?: string }) {
           frames={selectedBlock.duration}
           fps={fps}
           minFrames={30}
-          maxFrames={300}
+          maxFrames={fps * 60}
           onChange={(duration) => updateBlockDuration(selectedBlock.id, duration)}
         />
 
@@ -845,6 +846,7 @@ function ProjectSettings({ className }: { className?: string }) {
     setFps,
     setCanvasBackground,
     setShowBrandSystem,
+    applyDurationPreset,
   } = useEditor();
   const sequenceDuration = getSequenceDurationInFrames(sequence);
   const canvasBackground = sequence.canvasBackground ?? "";
@@ -921,19 +923,42 @@ function ProjectSettings({ className }: { className?: string }) {
 
         <AssetsSection />
 
-        <div className="rounded-md border border-border bg-background/50 p-2.5">
+        <div className="rounded-md border border-border bg-background/50 p-2.5 space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-muted-foreground">Sequence duration</Label>
             <span className="font-mono text-xs tabular-nums">
               {framesToSeconds(sequenceDuration, fps)}s
             </span>
           </div>
-          <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
+          <p className="text-[10px] leading-relaxed text-muted-foreground">
             {sequenceDuration} frames across {sequence.blocks.length} blocks
             {sequence.transitions.length > 0
               ? ` · ${sequence.transitions.length} transitions`
               : ""}
           </p>
+          {sequence.blocks.length > 0 ? (
+            <div className="space-y-1.5">
+              <Label className="text-[10px] text-muted-foreground">Target length</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {PLATFORM_DURATION_PRESETS.map((preset) => (
+                  <Button
+                    key={preset.id}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    title={preset.platforms}
+                    onClick={() => applyDurationPreset(preset.seconds)}
+                  >
+                    {preset.label}
+                  </Button>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Scales all block durations proportionally to match platform lengths.
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
     </PanelShell>

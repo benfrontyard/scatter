@@ -1,7 +1,7 @@
 import { bundle } from "@remotion/bundler";
 import { makeCancelSignal, renderMedia, selectComposition } from "@remotion/renderer";
 import express from "express";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, watch } from "node:fs";
 import { availableParallelism } from "node:os";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -48,6 +48,29 @@ app.use(express.json({ limit: "50mb" }));
 
 let bundlePromise: Promise<string> | null = null;
 const renderJobs = new Map<string, ServerRenderJob>();
+
+function invalidateBundleCache(reason: string) {
+  if (!bundlePromise) return;
+  bundlePromise = null;
+  console.log(`[render] Bundle cache cleared (${reason})`);
+}
+
+function watchSourceForBundleInvalidation(root: string) {
+  if (process.env.NODE_ENV === "production") return;
+
+  const watchRoots = [
+    join(root, "src/remotion"),
+    join(root, "src/config"),
+  ];
+
+  for (const watchRoot of watchRoots) {
+    watch(watchRoot, { recursive: true }, (_event, filename) => {
+      if (filename) {
+        invalidateBundleCache(filename);
+      }
+    });
+  }
+}
 
 function getProjectRoot(): string {
   return fileURLToPath(new URL("..", import.meta.url));
@@ -278,6 +301,32 @@ app.get("/api/render/:jobId/download", (req, res) => {
   res.send(fileBuffer);
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
+  const root = getProjectRoot();
+  watchSourceForBundleInvalidation(root);
   console.log(`Scatter render API listening on http://localhost:${PORT}`);
 });
+
+server.on("error", (error: NodeJS.ErrnoException) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(
+      `[render] Port ${PORT} is already in use. Stop the other render API process (or prior \`npm run dev\`) and try again.`,
+    );
+    process.exit(1);
+  }
+  throw error;
+});
+
+function shutdown(signal: string) {
+  console.log(`[render] ${signal} received, shutting down…`);
+  for (const job of renderJobs.values()) {
+    if (job.status !== "complete" && job.status !== "failed" && job.status !== "cancelled") {
+      job.cancel();
+    }
+  }
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(1), 5000).unref();
+}
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

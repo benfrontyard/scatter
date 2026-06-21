@@ -66,6 +66,7 @@ function DurationControl({
   label,
   seconds,
   frames,
+  fps,
   minFrames,
   maxFrames,
   onChange,
@@ -74,6 +75,7 @@ function DurationControl({
   label: string;
   seconds: string;
   frames: number;
+  fps: number;
   minFrames: number;
   maxFrames: number;
   onChange: (frames: number) => void;
@@ -88,13 +90,13 @@ function DurationControl({
         type="number"
         inputMode="decimal"
         step={0.1}
-        min={minFrames / 30}
-        max={maxFrames / 30}
+        min={minFrames / fps}
+        max={maxFrames / fps}
         value={seconds}
         onChange={(event) => {
           const nextSeconds = Number.parseFloat(event.target.value);
           if (!Number.isNaN(nextSeconds)) {
-            onChange(Math.round(nextSeconds * 30));
+            onChange(Math.round(nextSeconds * fps));
           }
         }}
         className="h-7 w-14 shrink-0 px-2 text-xs tabular-nums sm:w-16"
@@ -319,8 +321,9 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                 label="Duration"
                 seconds={framesToSeconds(selectedBlock.duration, fps)}
                 frames={selectedBlock.duration}
+                fps={fps}
                 minFrames={30}
-                maxFrames={300}
+                maxFrames={fps * 60}
                 onChange={(duration) => updateBlockDuration(selectedBlock.id, duration)}
                 compact={compact}
               />
@@ -350,6 +353,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                 label="Transition"
                 seconds={framesToSeconds(selectedTransition.duration, fps)}
                 frames={selectedTransition.duration}
+                fps={fps}
                 minFrames={1}
                 maxFrames={60}
                 onChange={(duration) =>

@@ -5,6 +5,7 @@ import {
   addBlockToSequence,
   removeBlockFromSequence,
   reorderBlockInSequence,
+  scaleSequenceToTargetDuration,
 } from "@/lib/sequence-utils";
 import {
   createEmptyCustomBrand,
@@ -124,6 +125,7 @@ type EditorActions = {
     updater: (transition: BlockTransition) => BlockTransition,
   ) => void;
   updateTransitionDuration: (transitionId: string, duration: number) => void;
+  applyDurationPreset: (targetSeconds: number) => void;
   updateCustomBrand: (updater: (brand: BrandPreset) => BrandPreset) => void;
   commitBrandDraft: (brand: BrandPreset, logoText: string) => void;
   duplicateBrandToCustom: (sourceBrandId: string) => void;
@@ -816,6 +818,12 @@ export function EditorProvider({ children }: { children: ReactNode }) {
                 : transition,
             ),
           },
+        }));
+      },
+      applyDurationPreset: (targetSeconds) => {
+        updateSnapshot((prev) => ({
+          ...prev,
+          sequence: scaleSequenceToTargetDuration(prev.sequence, targetSeconds, fps),
         }));
       },
       updateCustomBrand: (updater) => {
