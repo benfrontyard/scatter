@@ -29011,3 +29011,85 @@
 {"sessionId":"3f7d42","location":"use-keyboard-shortcuts.ts:84","message":"spacebar togglePlayback","data":{"typing":false},"timestamp":1781767891967,"hypothesisId":"B"}
 {"sessionId":"3f7d42","location":"playback-engine.ts:113","message":"toggle","data":{"isPlaying":true},"timestamp":1781767891967,"hypothesisId":"B"}
 {"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781767892011,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059382,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059607,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059637,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059663,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059702,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059727,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059753,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059772,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059789,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059806,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059823,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059840,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059857,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059873,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059890,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768059907,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060035,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060053,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060070,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060087,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060105,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060121,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060139,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060156,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060173,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060190,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060206,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060223,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060240,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060258,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060276,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060295,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060313,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060331,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060348,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060373,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060400,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060437,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060464,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060513,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060552,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060578,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060617,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060635,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060652,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060670,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060686,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060703,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060720,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060978,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768060999,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061027,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061045,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061062,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061080,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061098,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061115,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061131,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061148,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061165,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-keyboard-shortcuts.ts:84","message":"spacebar togglePlayback","data":{"typing":false},"timestamp":1781768061384,"hypothesisId":"B"}
+{"sessionId":"3f7d42","location":"playback-engine.ts:113","message":"toggle","data":{"isPlaying":false},"timestamp":1781768061385,"hypothesisId":"B"}
+{"sessionId":"3f7d42","location":"playback-engine.ts:84","message":"play entry","data":{"isPlaying":false,"currentFrame":0,"hasPlayer":true},"timestamp":1781768061385,"hypothesisId":"B"}
+{"sessionId":"3f7d42","location":"audio-engine.ts:90","message":"audio play called","data":{"hasConfig":true,"fromTimelineSec":0,"contextState":"running"},"timestamp":1781768061386,"hypothesisId":"A"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061430,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"audio-engine.ts:100","message":"audio play started","data":{"isRunning":true,"activeSources":0},"timestamp":1781768061447,"hypothesisId":"A"}
+{"sessionId":"3f7d42","location":"playback-engine.ts:95","message":"play complete","data":{"isPlaying":true,"startSec":0,"hasPlayer":true,"useWallClock":false},"timestamp":1781768061447,"hypothesisId":"B","runId":"post-fix"}
+{"sessionId":"3f7d42","location":"playback-engine.ts:loop","message":"visual loop tick","data":{"loopCount":0,"timeSec":0,"frame":0,"hasPlayer":true,"useWallClock":false,"durationSec":6.1},"timestamp":1781768061448,"hypothesisId":"D","runId":"post-fix"}
+{"sessionId":"3f7d42","location":"playback-engine.ts:loop","message":"visual loop tick","data":{"loopCount":1,"timeSec":0.005333333333339851,"frame":0,"hasPlayer":true,"useWallClock":false,"durationSec":6.1},"timestamp":1781768061449,"hypothesisId":"D","runId":"post-fix"}
+{"sessionId":"3f7d42","location":"playback-engine.ts:loop","message":"visual loop tick","data":{"loopCount":2,"timeSec":0.005333333333339851,"frame":0,"hasPlayer":true,"useWallClock":false,"durationSec":6.1},"timestamp":1781768061460,"hypothesisId":"D","runId":"post-fix"}
+{"sessionId":"3f7d42","location":"playback-engine.ts:loop","message":"visual loop tick","data":{"loopCount":3,"timeSec":0.005333333333339851,"frame":0,"hasPlayer":true,"useWallClock":false,"durationSec":6.1},"timestamp":1781768061477,"hypothesisId":"D","runId":"post-fix"}
+{"sessionId":"3f7d42","location":"playback-engine.ts:loop","message":"visual loop tick","data":{"loopCount":4,"timeSec":0.021333333333359406,"frame":1,"hasPlayer":true,"useWallClock":false,"durationSec":6.1},"timestamp":1781768061493,"hypothesisId":"D","runId":"post-fix"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061589,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061687,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061787,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061905,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"playback-engine.ts:loop","message":"visual loop tick","data":{"loopCount":30,"timeSec":0.4586666666666588,"frame":28,"hasPlayer":true,"useWallClock":false,"durationSec":6.1},"timestamp":1781768061933,"hypothesisId":"D","runId":"post-fix"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768061994,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768062096,"hypothesisId":"C"}
+{"sessionId":"3f7d42","location":"use-keyboard-shortcuts.ts:84","message":"spacebar togglePlayback","data":{"typing":false},"timestamp":1781768062164,"hypothesisId":"B"}
+{"sessionId":"3f7d42","location":"playback-engine.ts:113","message":"toggle","data":{"isPlaying":true},"timestamp":1781768062165,"hypothesisId":"B"}
+{"sessionId":"3f7d42","location":"use-playback-engine.ts:101","message":"registerPlayer","data":{"hasPlayer":true},"timestamp":1781768062181,"hypothesisId":"C"}
