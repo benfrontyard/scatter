@@ -14,7 +14,7 @@ import {
   resolvedTypeStyleToCss,
 } from "@/lib/typography";
 import type { ResolvedTypographyRole } from "@/types/typography-role";
-import { resolvedRoleToCss } from "@/lib/layout/typography-css";
+import { fitResolvedRoleToCss } from "@/lib/layout/fit-text";
 import type { BrandPreset, MotionBlockInstance, MotionFormat } from "@/types";
 import type { EffectTarget } from "@/types/effects";
 import type { HeadingStyleName, BodyStyleName } from "@/types/typography";
@@ -76,7 +76,9 @@ export function AnimatedText({
   );
 
   const textCss = layoutSlot
-    ? resolvedRoleToCss(layoutSlot)
+    ? fitResolvedRoleToCss(layoutSlot, displayText, {
+        containerWidth: layoutSlot.maxWidth,
+      })
     : resolvedTypeStyleToCss(legacyStyle);
 
   const maxWidth =

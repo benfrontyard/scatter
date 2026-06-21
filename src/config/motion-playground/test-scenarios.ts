@@ -1,5 +1,18 @@
 import type { ProjectAsset } from "@/types";
 import type { PlaygroundTestScenario } from "@/types/motion-block-library";
+import {
+  buildWave1AssetPresence,
+  buildWave1SlotContent,
+  getWave1RecommendedScenarios,
+  isWave1RecommendedScenario,
+  WAVE1_LIBRARY_BLOCK_IDS,
+} from "@/config/blocks/library/scenarios/wave1";
+
+export {
+  getWave1RecommendedScenarios,
+  isWave1RecommendedScenario,
+  WAVE1_LIBRARY_BLOCK_IDS,
+};
 
 /** 1x1 PNG placeholders as data URLs */
 const PLACEHOLDER_IMAGE =
@@ -70,6 +83,9 @@ export function buildSlotContent(
   const short = scenario === "short-text";
   const samples = long ? LONG_TEXT_SAMPLES : short ? SHORT_TEXT_SAMPLES : null;
 
+  const wave1 = buildWave1SlotContent(blockId, scenario, logoText);
+  if (wave1) return wave1;
+
   const defaults: Record<string, Record<string, string>> = {
     "full-bleed-media-headline": {
       headline: samples?.headline ?? "Discover what's possible",
@@ -129,9 +145,12 @@ export function buildSlotContent(
 }
 
 export function buildAssetPresence(
-  _blockId: string,
+  blockId: string,
   scenario: PlaygroundTestScenario,
 ): Record<string, boolean> {
+  const wave1 = buildWave1AssetPresence(blockId, scenario);
+  if (wave1) return wave1;
+
   if (scenario === "missing-assets") return {};
   return {
     "hero-media": true,

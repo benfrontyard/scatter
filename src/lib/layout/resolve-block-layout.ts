@@ -11,7 +11,7 @@ import {
   alignmentForComposition,
   resolveIntentZone,
 } from "@/config/composition/defaults";
-import { REFERENCE_FORMAT_HEIGHT } from "@/config/typography/roles";
+import { getFormatLayoutScale } from "@/lib/layout/format-scale";
 import { resolveLogoPlacement } from "@/lib/logo/resolve-logo";
 import { buildFontStack } from "@/lib/google-fonts";
 import { clampFontSize, formatLetterSpacing, resolveFontFamilyName } from "@/lib/typography";
@@ -57,6 +57,7 @@ const LOGO_BLOCK_IDS = new Set([
   "logo-reveal",
   "feature-announcement",
   "cta-lockup",
+  "brand-payoff",
 ]);
 
 function blockShouldIncludeLogo(blockId: string, intent: import("@/types/block-layout").BlockLayoutIntent): boolean {
@@ -151,14 +152,14 @@ function clampResponsiveSize(
   explicitSize?: number,
 ): number {
   const aspectRatio = isAspectRatioId(format.aspectRatio) ? format.aspectRatio : "16:9";
+  const layoutScale = getFormatLayoutScale(format);
   const formatScale = role.formatScales[aspectRatio]?.sizeScale ?? 1;
-  const heightScale = format.height / REFERENCE_FORMAT_HEIGHT;
 
-  const minSize = role.minFontSize * heightScale;
-  const maxSize = role.maxFontSize * heightScale;
+  const minSize = role.minFontSize * layoutScale;
+  const maxSize = role.maxFontSize * layoutScale;
 
   const baseSize = explicitSize ?? role.fontSize;
-  const responsiveSize = baseSize * heightScale * formatScale * densityMult * textScale;
+  const responsiveSize = baseSize * layoutScale * formatScale * densityMult * textScale;
 
   return clampFontSize(responsiveSize, Math.round(minSize), Math.round(maxSize));
 }
@@ -176,9 +177,10 @@ function resolveMaxTextWidth(
   const safeWidth = format.width - SAFE_AREA_INSETS[composition.safeArea].x * format.width * 2;
 
   const factor = overrideMaxWidth ?? formatFactor ?? intentMaxWidthFactor;
+  const layoutScale = getFormatLayoutScale(format);
   const charBasedWidth = role.preferredMaxLineLength * role.fontSize * 0.55 * density.lineLengthMult;
 
-  return Math.min(safeWidth * factor, charBasedWidth * (format.height / REFERENCE_FORMAT_HEIGHT));
+  return Math.min(safeWidth * factor, charBasedWidth * layoutScale);
 }
 
 function resolveTypographyRole(

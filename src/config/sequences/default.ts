@@ -1,4 +1,5 @@
 import { motionBlockMap } from "@/config/blocks";
+import { mergeWave1LayoutOverrides } from "@/config/composition/wave1-overrides";
 import { defaultBrandPresetId } from "@/config/brands";
 import { defaultFormatId } from "@/config/formats";
 import { transitionDefinitionMap } from "@/config/transitions";
@@ -18,6 +19,8 @@ export function createBlockInstance(
     throw new Error(`Unknown block: ${blockId}`);
   }
 
+  const layoutOverrides = mergeWave1LayoutOverrides(blockId, overrides?.layoutOverrides);
+
   return {
     id: createInstanceId(blockId),
     blockId,
@@ -25,6 +28,7 @@ export function createBlockInstance(
     content: { ...definition.defaultContent },
     motion: { ...definition.defaultMotion },
     ...overrides,
+    ...(layoutOverrides ? { layoutOverrides } : {}),
   };
 }
 
@@ -54,21 +58,35 @@ export function createTransitionBetween(
   };
 }
 
-const logoReveal = createBlockInstance("logo-reveal");
-const featureAnnouncement = createBlockInstance("feature-announcement");
-const statCard = createBlockInstance("stat-card");
-const ctaLockup = createBlockInstance("cta-lockup");
+const editorialStatement = createBlockInstance("editorial-statement");
+const heroPromptBar = createBlockInstance("hero-prompt-bar");
+const heroSplit = createBlockInstance("hero-split-text-media");
+const templateCarousel = createBlockInstance("template-carousel");
+const cardCollage = createBlockInstance("card-collage-dof");
+const bigStatProof = createBlockInstance("big-stat-proof");
+const brandPayoff = createBlockInstance("brand-payoff");
 
 export const defaultMotionSequence: MotionSequence = {
   id: "demo-sequence",
   name: "Product Launch",
   format: defaultFormatId,
   brandPresetId: defaultBrandPresetId,
-  blocks: [logoReveal, featureAnnouncement, statCard, ctaLockup],
+  blocks: [
+    editorialStatement,
+    heroPromptBar,
+    heroSplit,
+    templateCarousel,
+    cardCollage,
+    bigStatProof,
+    brandPayoff,
+  ],
   transitions: [
-    createTransitionBetween(logoReveal, featureAnnouncement, "crossfade"),
-    createTransitionBetween(featureAnnouncement, statCard, "push"),
-    createTransitionBetween(statCard, ctaLockup, "crossfade"),
+    createTransitionBetween(editorialStatement, heroPromptBar, "crossfade"),
+    createTransitionBetween(heroPromptBar, heroSplit, "crossfade"),
+    createTransitionBetween(heroSplit, templateCarousel, "push"),
+    createTransitionBetween(templateCarousel, cardCollage, "crossfade"),
+    createTransitionBetween(cardCollage, bigStatProof, "push"),
+    createTransitionBetween(bigStatProof, brandPayoff, "crossfade"),
   ],
 };
 

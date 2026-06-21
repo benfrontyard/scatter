@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   PLAYGROUND_TEST_SCENARIOS,
+  getWave1RecommendedScenarios,
+  isWave1RecommendedScenario,
 } from "@/config/motion-playground/test-scenarios";
 import {
   MOTION_BLOCK_STATUS_LABELS,
@@ -140,6 +142,11 @@ export function PlaygroundRightPanel({
             <p>Emphasis: {block.stylePreset.emphasis ?? "standard"}</p>
             <p>Brand: {brand.name}</p>
             <Label className="text-[10px]">Test scenario</Label>
+            {getWave1RecommendedScenarios(block.id).length > 1 ? (
+              <p className="text-[9px] text-muted-foreground">
+                Recommended: {getWave1RecommendedScenarios(block.id).join(", ")}
+              </p>
+            ) : null}
             <select
               value={scenario}
               onChange={(e) => onScenarioChange(e.target.value as PlaygroundTestScenario)}
@@ -147,6 +154,7 @@ export function PlaygroundRightPanel({
             >
               {PLAYGROUND_TEST_SCENARIOS.map((s) => (
                 <option key={s.id} value={s.id}>
+                  {isWave1RecommendedScenario(block.id, s.id) ? "★ " : ""}
                   {s.label}
                 </option>
               ))}

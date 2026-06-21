@@ -1,0 +1,33 @@
+---
+description: Use the design system skills for typography, Swiss grids, responsive layouts, motion blocks, brand templates, and visual composition work.
+globs:
+  - "**/*.tsx"
+  - "**/*.ts"
+  - "**/*.css"
+  - "**/*.scss"
+  - "**/*.md"
+  - "**/*.json"
+alwaysApply: false
+---
+
+# Design System Skills
+
+When the user asks about typography, type scales, responsive type, grids, Swiss design, layout systems, motion blocks, posters, brand systems, template systems, or Scatter design blocks, read and apply these project skills:
+
+- `.cursor/skills/type-scale-system/SKILL.md`
+- `.cursor/skills/swiss-grid-system/SKILL.md`
+- `.cursor/skills/responsive-type-grid-composer/SKILL.md`
+
+For full layout work, start with **responsive-type-grid-composer** — it references the other two.
+
+## Rules
+
+- Prefer practical design-system output over abstract theory.
+- Always output reusable tokens when relevant.
+- Always define grid, margins, gutters, safe areas, and baseline rhythm when relevant.
+- Always connect type choices to layout behavior.
+- For Scatter or motion blocks, design for multiple aspect ratios: 1:1, 4:5, 9:16, 16:9, and print when needed.
+- Preserve flexibility: the system should look good automatically 90% of the time, but allow brand-level and block-level overrides.
+- Do not make the system overly rigid. Swiss grid structure can be mixed with expressive collage, streetwear, music, grunge, motion graphics, and product marketing aesthetics.
+- When generating implementation code, keep design tokens semantic and easy to tune.
+- When generating handoff specs, include exact values and reasoning.

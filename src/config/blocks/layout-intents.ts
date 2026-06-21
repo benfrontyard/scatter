@@ -8,6 +8,14 @@ export const blockLayoutIntents: Record<string, BlockLayoutIntent> = {
   "product-carousel": "list",
   "stat-card": "stat",
   "cta-lockup": "outro",
+  "editorial-statement": "statement",
+  "big-stat-proof": "stat",
+  "brand-payoff": "outro",
+  "hero-split-text-media": "product-feature",
+  "centered-ui-feature": "product-feature",
+  "hero-prompt-bar": "hero",
+  "card-collage-dof": "list",
+  "template-carousel": "list",
 };
 
 /** Typography role mapping per block content slot. */
@@ -39,6 +47,47 @@ export const blockContentSlotRoles: Record<string, Record<string, TypographyRole
     cta: "label",
     url: "caption",
     logoText: "label",
+  },
+  "editorial-statement": {
+    headline: "display",
+    subhead: "body",
+  },
+  "big-stat-proof": {
+    statWrapper: "heading",
+    statValue: "stat",
+    stepLabel: "label",
+  },
+  "brand-payoff": {
+    cta: "subheading",
+    url: "caption",
+    logoText: "label",
+  },
+  "hero-split-text-media": {
+    headline: "heading",
+    subhead: "body",
+    body: "body",
+    cta: "label",
+  },
+  "centered-ui-feature": {
+    headline: "heading",
+    body: "body",
+    inputText: "body",
+    cta: "label",
+    stepLabel: "caption",
+  },
+  "hero-prompt-bar": {
+    hintText: "caption",
+    promptText: "body",
+    highlightPhrase: "body",
+  },
+  "card-collage-dof": {
+    headline: "subheading",
+    stepLabel: "caption",
+  },
+  "template-carousel": {
+    categoryLabel: "caption",
+    headline: "subheading",
+    meta: "caption",
   },
 };
 

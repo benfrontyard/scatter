@@ -600,6 +600,409 @@ export const motionBlockLibrary: MotionBlockLibraryEntry[] = [
     fallbackRules: { missingLogo: "text-fallback", longText: "shrink" },
     debugMetadata: { version: "1.0", rendererId: "cta-lockup" },
   }),
+
+  block({
+    id: "editorial-statement",
+    name: "Editorial Statement",
+    description: "Void-field hook or transition with centered type and optional accent word.",
+    family: "typography",
+    tags: ["hook", "statement", "editorial", "void"],
+    useCases: ["product launch hook", "chapter break", "value proposition"],
+    duration: 90,
+    status: "approved",
+    editorBlockId: "editorial-statement",
+    slots: [
+      { id: "headline", type: "text", role: "headline", label: "Headline", required: true, maxLength: 60 },
+      { id: "subhead", type: "text", role: "subhead", label: "Subhead", required: false, maxLength: 90 },
+    ],
+    requiredAssets: [],
+    optionalAssets: [],
+    layoutRules: layout(
+      {
+        stackDirection: "column",
+        gap: 0.028,
+        slots: [
+          { slotId: "headline", zone: "center", anchor: { x: 0.1, y: 0.38 }, width: 0.8, height: 0.2, zIndex: 1 },
+          { slotId: "subhead", zone: "center", anchor: { x: 0.15, y: 0.6 }, width: 0.7, height: 0.1, zIndex: 1 },
+        ],
+      },
+      {
+        slots: [
+          { slotId: "headline", zone: "center-safe", anchor: { x: 0.08, y: 0.4 }, width: 0.84, height: 0.22, zIndex: 1 },
+          { slotId: "subhead", zone: "center-safe", anchor: { x: 0.1, y: 0.64 }, width: 0.8, height: 0.1, zIndex: 1 },
+        ],
+      },
+      {
+        gap: 0.024,
+        slots: [
+          { slotId: "headline", zone: "center", anchor: { x: 0.1, y: 0.36 }, width: 0.8, height: 0.22, zIndex: 1 },
+          { slotId: "subhead", zone: "center", anchor: { x: 0.12, y: 0.62 }, width: 0.76, height: 0.1, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, readableCenter: true, respectVerticalDanger: true },
+    responsiveRules: { autoShrinkText: true, maxElements: 2 },
+    motionPreset: baseMotion({
+      phases: { in: "fade", main: "hold", out: "fade-out", inRatio: 0.35, mainRatio: 0.5, outRatio: 0.15 },
+      easingId: "soft-reveal",
+      stagger: 8,
+      controls: { glowAccent: "true", intensity: "hero" },
+    }),
+    stylePreset: { textAlign: "center", emphasis: "hero", contrast: "high" },
+    fallbackRules: { longText: "shrink", missingText: "placeholder" },
+    debugMetadata: { version: "1.0", rendererId: "editorial-statement" },
+  }),
+
+  block({
+    id: "big-stat-proof",
+    name: "Big Stat Proof",
+    description: "Wrapper sentence with embedded count-up stat and optional step rail.",
+    family: "typography",
+    tags: ["stat", "proof", "void", "editorial"],
+    useCases: ["revenue share", "growth metric", "KPI payoff"],
+    duration: 90,
+    status: "approved",
+    editorBlockId: "big-stat-proof",
+    slots: [
+      { id: "statWrapper", type: "text", role: "headline", label: "Proof line", required: true, maxLength: 120 },
+      { id: "statValue", type: "stat", role: "stat-value", label: "Stat value", required: true, maxLength: 12 },
+      { id: "stepLabel", type: "text", role: "caption", label: "Step rail", required: false, maxLength: 48 },
+    ],
+    requiredAssets: [],
+    optionalAssets: [],
+    layoutRules: layout(
+      {
+        stackDirection: "column",
+        gap: 0.02,
+        slots: [
+          { slotId: "statWrapper", zone: "center", anchor: { x: 0.08, y: 0.34 }, width: 0.84, height: 0.28, zIndex: 1 },
+        ],
+      },
+      {
+        slots: [
+          { slotId: "statWrapper", zone: "center-safe", anchor: { x: 0.06, y: 0.38 }, width: 0.88, height: 0.3, zIndex: 1 },
+        ],
+      },
+      {
+        slots: [
+          { slotId: "statWrapper", zone: "center", anchor: { x: 0.08, y: 0.36 }, width: 0.84, height: 0.28, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, readableCenter: true },
+    responsiveRules: { autoShrinkText: true, maxElements: 2 },
+    motionPreset: baseMotion({
+      phases: { in: "fade", main: "hold", out: "fade-out", inRatio: 0.3, mainRatio: 0.55, outRatio: 0.15 },
+      easingId: "soft-reveal",
+      stagger: 8,
+      controls: { countUp: "true", intensity: "hero" },
+    }),
+    stylePreset: { textAlign: "center", emphasis: "hero", contrast: "high" },
+    fallbackRules: { longText: "shrink" },
+    debugMetadata: { version: "1.0", rendererId: "big-stat-proof" },
+  }),
+
+  block({
+    id: "brand-payoff",
+    name: "Brand Payoff",
+    description: "Minimal outro — centered logo with CTA and URL on void.",
+    family: "brand-system",
+    tags: ["outro", "logo", "cta", "payoff"],
+    useCases: ["video close", "brand end card", "URL lockup"],
+    duration: 90,
+    status: "approved",
+    editorBlockId: "brand-payoff",
+    slots: [
+      { id: "logo", type: "logo", role: "logo", label: "Logo", required: true },
+      { id: "cta", type: "cta", role: "cta", label: "CTA", required: false, maxLength: 48 },
+      { id: "url", type: "text", role: "caption", label: "URL", required: false, maxLength: 48 },
+    ],
+    requiredAssets: [],
+    optionalAssets: [{ id: "brand-logo", kind: "logo", label: "Brand logo", slotId: "logo" }],
+    layoutRules: layout(
+      {
+        stackDirection: "column",
+        gap: 0.022,
+        slots: [
+          { slotId: "logo", zone: "center", anchor: { x: 0.35, y: 0.36 }, width: 0.3, height: 0.18, zIndex: 1 },
+          { slotId: "cta", zone: "center", anchor: { x: 0.2, y: 0.58 }, width: 0.6, height: 0.08, zIndex: 1 },
+          { slotId: "url", zone: "bottom-center", anchor: { x: 0.25, y: 0.72 }, width: 0.5, height: 0.06, zIndex: 1 },
+        ],
+      },
+      {
+        slots: [
+          { slotId: "logo", zone: "center-safe", anchor: { x: 0.25, y: 0.38 }, width: 0.5, height: 0.14, zIndex: 1 },
+          { slotId: "cta", zone: "lower-third", anchor: { x: 0.15, y: 0.58 }, width: 0.7, height: 0.08, zIndex: 1 },
+          { slotId: "url", zone: "lower-third", anchor: { x: 0.2, y: 0.7 }, width: 0.6, height: 0.06, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, respectVerticalDanger: true, readableCenter: true },
+    responsiveRules: { autoShrinkText: true, maxElements: 3 },
+    motionPreset: baseMotion({
+      phases: { in: "fade", main: "hold", out: "fade-out", inRatio: 0.3, mainRatio: 0.6, outRatio: 0.1 },
+      easingId: "ease-out",
+      stagger: 7,
+    }),
+    stylePreset: { textAlign: "center", emphasis: "standard", contrast: "high" },
+    fallbackRules: { missingLogo: "text-fallback", longText: "shrink" },
+    debugMetadata: { version: "1.0", rendererId: "brand-payoff" },
+  }),
+
+  block({
+    id: "hero-split-text-media",
+    name: "Hero Split Text + Media",
+    description: "Split layout with copy rail and product screenshot for primary product intro.",
+    family: "ui-product",
+    tags: ["hero", "split", "product", "feature"],
+    useCases: ["product intro", "feature explain", "case study"],
+    duration: 120,
+    status: "approved",
+    editorBlockId: "hero-split-text-media",
+    slots: [
+      { id: "headline", type: "text", role: "headline", label: "Headline", required: true, maxLength: 56 },
+      { id: "subhead", type: "text", role: "subhead", label: "Subhead", required: false, maxLength: 120 },
+      { id: "body", type: "text", role: "body", label: "Body", required: false, maxLength: 160 },
+      { id: "media", type: "media", role: "media-primary", label: "Screenshot", required: true },
+      { id: "cta", type: "cta", role: "cta", label: "CTA", required: false, maxLength: 40 },
+    ],
+    requiredAssets: [{ id: "feature-media", kind: "image", label: "Product screenshot", slotId: "media" }],
+    optionalAssets: [],
+    layoutRules: layout(
+      {
+        mediaTreatment: "split",
+        stackDirection: "row",
+        gap: 0.04,
+        slots: [
+          { slotId: "headline", zone: "split-left", anchor: { x: 0.08, y: 0.28 }, width: 0.38, height: 0.18, zIndex: 2 },
+          { slotId: "subhead", zone: "split-left", anchor: { x: 0.08, y: 0.46 }, width: 0.36, height: 0.2, zIndex: 2 },
+          { slotId: "media", zone: "split-right", anchor: { x: 0.52, y: 0.12 }, width: 0.4, height: 0.76, zIndex: 1 },
+        ],
+      },
+      {
+        mediaTreatment: "contained",
+        stackDirection: "column",
+        slots: [
+          { slotId: "headline", zone: "upper-third", anchor: { x: 0.08, y: 0.14 }, width: 0.84, height: 0.14, zIndex: 2 },
+          { slotId: "subhead", zone: "upper-third", anchor: { x: 0.08, y: 0.28 }, width: 0.84, height: 0.12, zIndex: 2 },
+          { slotId: "media", zone: "center", anchor: { x: 0.08, y: 0.42 }, width: 0.84, height: 0.36, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, respectVerticalDanger: true },
+    responsiveRules: { autoShrinkText: true, reflowOnVertical: true, hideOptionalOnTight: true, maxElements: 4 },
+    motionPreset: baseMotion({
+      phases: { in: "slide-up", main: "hold", out: "fade-out", inRatio: 0.35, mainRatio: 0.5, outRatio: 0.15 },
+      easingId: "soft-reveal",
+      stagger: 10,
+    }),
+    stylePreset: { textAlign: "left", emphasis: "standard" },
+    fallbackRules: { missingMedia: "gradient", longText: "wrap", badCrop: "contain" },
+    debugMetadata: { version: "1.0", rendererId: "hero-split-text-media" },
+  }),
+
+  block({
+    id: "centered-ui-feature",
+    name: "Centered UI Feature",
+    description: "Floating UI card on void with headline, input field, and CTA.",
+    family: "ui-product",
+    tags: ["ui", "feature", "modal", "card"],
+    useCases: ["feature explain", "AI prompt UI", "product demo"],
+    duration: 120,
+    status: "approved",
+    editorBlockId: "centered-ui-feature",
+    slots: [
+      { id: "headline", type: "text", role: "headline", label: "Headline", required: true, maxLength: 48 },
+      { id: "body", type: "text", role: "body", label: "Body", required: false, maxLength: 120 },
+      { id: "inputText", type: "text", role: "body", label: "Input text", required: false, maxLength: 80 },
+      { id: "cta", type: "cta", role: "cta", label: "CTA", required: false, maxLength: 24 },
+      { id: "uiScreenshot", type: "media", role: "media-primary", label: "UI screenshot", required: false },
+      { id: "stepLabel", type: "text", role: "caption", label: "Step rail", required: false, maxLength: 40 },
+    ],
+    requiredAssets: [],
+    optionalAssets: [{ id: "ui-shot", kind: "image", label: "UI screenshot", slotId: "uiScreenshot" }],
+    layoutRules: layout(
+      {
+        stackDirection: "column",
+        gap: 0.024,
+        slots: [
+          { slotId: "headline", zone: "center", anchor: { x: 0.18, y: 0.32 }, width: 0.64, height: 0.12, zIndex: 1 },
+        ],
+      },
+      {
+        slots: [
+          { slotId: "headline", zone: "center-safe", anchor: { x: 0.06, y: 0.34 }, width: 0.88, height: 0.14, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, readableCenter: true, respectVerticalDanger: true },
+    responsiveRules: { autoShrinkText: true, hideOptionalOnTight: true, maxElements: 5 },
+    motionPreset: baseMotion({
+      phases: { in: "scale-in", main: "hold", out: "fade-out", inRatio: 0.35, mainRatio: 0.5, outRatio: 0.15 },
+      easingId: "soft-reveal",
+      stagger: 8,
+      controls: { typeOn: "true" },
+    }),
+    stylePreset: { textAlign: "center", emphasis: "standard" },
+    fallbackRules: { missingMedia: "icon-placeholder", longText: "shrink" },
+    debugMetadata: { version: "1.0", rendererId: "centered-ui-feature" },
+  }),
+
+  block({
+    id: "hero-prompt-bar",
+    name: "Hero Prompt Bar",
+    description: "AI/search prompt bar over full-bleed media with optional highlight phrase.",
+    family: "ui-product",
+    tags: ["hero", "prompt", "ai", "search"],
+    useCases: ["product hook", "AI builder intro", "search demo"],
+    duration: 105,
+    status: "approved",
+    editorBlockId: "hero-prompt-bar",
+    slots: [
+      { id: "hintText", type: "text", role: "subhead", label: "Hint", required: false, maxLength: 60 },
+      { id: "promptText", type: "text", role: "body", label: "Prompt", required: true, maxLength: 100 },
+      { id: "highlightPhrase", type: "text", role: "body", label: "Highlight phrase", required: false, maxLength: 40 },
+      { id: "backgroundImage", type: "media", role: "media-primary", label: "Background", required: false },
+    ],
+    requiredAssets: [],
+    optionalAssets: [{ id: "hero-bg", kind: "image", label: "Background image", slotId: "backgroundImage", aspectHint: "16:9" }],
+    layoutRules: layout(
+      {
+        stackDirection: "column",
+        gap: 0.02,
+        slots: [
+          { slotId: "promptText", zone: "center", anchor: { x: 0.15, y: 0.42 }, width: 0.7, height: 0.14, zIndex: 2 },
+        ],
+      },
+      {
+        slots: [
+          { slotId: "promptText", zone: "lower-third", anchor: { x: 0.06, y: 0.62 }, width: 0.88, height: 0.16, zIndex: 2 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, respectVerticalDanger: true },
+    responsiveRules: { autoShrinkText: true, reflowOnVertical: true },
+    motionPreset: baseMotion({
+      phases: { in: "scale-in", main: "hold", out: "fade-out", inRatio: 0.3, mainRatio: 0.55, outRatio: 0.15 },
+      easingId: "soft-reveal",
+      stagger: 8,
+      controls: { typeOn: "true", intensity: "hero" },
+    }),
+    stylePreset: { textAlign: "center", emphasis: "hero", contrast: "high" },
+    fallbackRules: { missingMedia: "gradient", longText: "shrink" },
+    debugMetadata: { version: "1.0", rendererId: "hero-prompt-bar" },
+  }),
+
+  block({
+    id: "card-collage-dof",
+    name: "Card Collage DOF",
+    description: "Multi-card collage with depth-of-field blur on satellite cards.",
+    family: "ui-product",
+    tags: ["collage", "dof", "cards", "proof"],
+    useCases: ["portfolio proof", "multi-project", "template showcase"],
+    duration: 150,
+    status: "approved",
+    editorBlockId: "card-collage-dof",
+    slots: [
+      { id: "headline", type: "text", role: "headline", label: "Headline", required: false, maxLength: 48 },
+      { id: "stepLabel", type: "text", role: "caption", label: "Step rail", required: false, maxLength: 48 },
+      { id: "card-1-title", type: "text", role: "headline", label: "Card 1 title", required: true, maxLength: 32 },
+      { id: "card-2-title", type: "text", role: "subhead", label: "Card 2 title", required: false, maxLength: 32 },
+      { id: "card-3-title", type: "text", role: "subhead", label: "Card 3 title", required: false, maxLength: 32 },
+    ],
+    requiredAssets: [],
+    optionalAssets: [
+      { id: "card-1-image", kind: "image", label: "Card 1 image", slotId: "card-1-title" },
+      { id: "card-2-image", kind: "image", label: "Card 2 image", slotId: "card-2-title" },
+      { id: "card-3-image", kind: "image", label: "Card 3 image", slotId: "card-3-title" },
+    ],
+    layoutRules: layout(
+      {
+        mediaTreatment: "collage",
+        gap: 0.02,
+        slots: [
+          { slotId: "card-1-title", zone: "center", anchor: { x: 0.32, y: 0.18 }, width: 0.36, height: 0.58, zIndex: 3 },
+          { slotId: "card-2-title", zone: "collage-b", anchor: { x: 0.62, y: 0.1 }, width: 0.28, height: 0.38, zIndex: 2 },
+          { slotId: "card-3-title", zone: "collage-c", anchor: { x: 0.08, y: 0.46 }, width: 0.26, height: 0.36, zIndex: 1 },
+        ],
+      },
+      {
+        mediaTreatment: "collage",
+        stackDirection: "column",
+        slots: [
+          { slotId: "card-1-title", zone: "center-safe", anchor: { x: 0.1, y: 0.28 }, width: 0.8, height: 0.38, zIndex: 3 },
+          { slotId: "card-2-title", zone: "upper-third", anchor: { x: 0.06, y: 0.12 }, width: 0.42, height: 0.22, zIndex: 1 },
+          { slotId: "card-3-title", zone: "lower-third", anchor: { x: 0.52, y: 0.68 }, width: 0.42, height: 0.22, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, respectVerticalDanger: true },
+    responsiveRules: { hideOptionalOnTight: true, maxElements: 6, reflowOnVertical: true },
+    motionPreset: baseMotion({
+      phases: { in: "scale-in", main: "hold", out: "fade-out", inRatio: 0.35, mainRatio: 0.5, outRatio: 0.15 },
+      easingId: "soft-reveal",
+      stagger: 6,
+      controls: { blurAmount: 12, heroCardIndex: "1" },
+    }),
+    stylePreset: { textAlign: "left", emphasis: "standard" },
+    fallbackRules: { missingMedia: "icon-placeholder", longText: "shrink" },
+    debugMetadata: { version: "1.0", rendererId: "card-collage-dof" },
+  }),
+
+  block({
+    id: "template-carousel",
+    name: "Template Carousel",
+    description: "Horizontal carousel with focused center card and dimmed flanks.",
+    family: "ui-product",
+    tags: ["carousel", "compare", "templates", "pricing"],
+    useCases: ["plan compare", "template picker", "product lineup"],
+    duration: 150,
+    status: "approved",
+    editorBlockId: "template-carousel",
+    slots: [
+      { id: "categoryLabel", type: "text", role: "caption", label: "Category", required: false, maxLength: 48 },
+      { id: "item-1-title", type: "text", role: "headline", label: "Item 1 title", required: true, maxLength: 40 },
+      { id: "item-1-meta", type: "text", role: "caption", label: "Item 1 meta", required: false, maxLength: 24 },
+      { id: "item-2-title", type: "text", role: "subhead", label: "Item 2 title", required: false, maxLength: 40 },
+      { id: "item-2-meta", type: "text", role: "caption", label: "Item 2 meta", required: false, maxLength: 24 },
+      { id: "item-3-title", type: "text", role: "subhead", label: "Item 3 title", required: false, maxLength: 40 },
+      { id: "item-3-meta", type: "text", role: "caption", label: "Item 3 meta", required: false, maxLength: 24 },
+    ],
+    requiredAssets: [],
+    optionalAssets: [
+      { id: "item-1-media", kind: "image", label: "Item 1 media", slotId: "item-1-title" },
+      { id: "item-2-media", kind: "image", label: "Item 2 media", slotId: "item-2-title" },
+      { id: "item-3-media", kind: "image", label: "Item 3 media", slotId: "item-3-title" },
+    ],
+    layoutRules: layout(
+      {
+        stackDirection: "row",
+        gap: 0.02,
+        slots: [
+          { slotId: "categoryLabel", zone: "top-left", anchor: { x: 0.06, y: 0.06 }, width: 0.5, height: 0.06, zIndex: 2 },
+          { slotId: "item-1-title", zone: "center", anchor: { x: 0.36, y: 0.28 }, width: 0.28, height: 0.52, zIndex: 1 },
+        ],
+      },
+      {
+        stackDirection: "column",
+        slots: [
+          { slotId: "categoryLabel", zone: "top-left", anchor: { x: 0.06, y: 0.06 }, width: 0.7, height: 0.06, zIndex: 2 },
+          { slotId: "item-1-title", zone: "center-safe", anchor: { x: 0.08, y: 0.34 }, width: 0.84, height: 0.42, zIndex: 1 },
+        ],
+      },
+    ),
+    safeAreas: { hardSafe: true, softSafe: true, respectVerticalDanger: true },
+    responsiveRules: { hideOptionalOnTight: true, maxElements: 5 },
+    motionPreset: baseMotion({
+      phases: { in: "slide-up", main: "hold", out: "fade-out", inRatio: 0.25, mainRatio: 0.6, outRatio: 0.15 },
+      easingId: "soft-reveal",
+      stagger: 6,
+      controls: { activeIndex: "1", dimOpacity: 0.25 },
+    }),
+    stylePreset: { textAlign: "center", emphasis: "standard" },
+    fallbackRules: { missingMedia: "gradient", longText: "shrink", badCrop: "contain" },
+    debugMetadata: { version: "1.0", rendererId: "template-carousel" },
+  }),
 ];
 
 export const motionBlockLibraryMap = Object.fromEntries(

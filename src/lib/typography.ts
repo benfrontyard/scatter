@@ -3,8 +3,8 @@ import {
   createBrandTypography,
   defaultBrandTypography,
   FORMAT_TYPE_PROFILES,
-  REFERENCE_FORMAT_HEIGHT,
 } from "@/config/typography/defaults";
+import { getFormatLayoutScale } from "@/lib/layout/format-scale";
 import {
   createDefaultTypographyRoles,
   rolesFromLegacyScale,
@@ -116,11 +116,11 @@ export function resolveFontStack(
 
 export function scaleTypeForFormat(typeStyle: TypeStyle, format: MotionFormat): TypeStyle {
   const profile = FORMAT_TYPE_PROFILES[format.aspectRatio] ?? FORMAT_TYPE_PROFILES["16:9"];
-  const heightScale = format.height / REFERENCE_FORMAT_HEIGHT;
+  const layoutScale = getFormatLayoutScale(format);
 
   return {
     ...typeStyle,
-    fontSize: clampFontSize(typeStyle.fontSize * heightScale * profile.sizeScale),
+    fontSize: clampFontSize(typeStyle.fontSize * layoutScale * profile.sizeScale),
   };
 }
 
@@ -149,7 +149,7 @@ export function resolvedTypeStyleToCss(style: ResolvedTypeStyle): CSSProperties 
     maxWidth: style.maxWidth,
     textAlign: style.textAlign,
     overflowWrap: "break-word",
-    wordBreak: "break-word",
+    wordBreak: "normal",
   };
 }
 

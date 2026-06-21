@@ -20,6 +20,22 @@ const BLOCK_COLORS: Record<string, string> = {
     "border-emerald-500/35 bg-emerald-500/10 text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-100",
   "cta-lockup":
     "border-amber-500/35 bg-amber-500/10 text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-100",
+  "editorial-statement":
+    "border-slate-500/35 bg-slate-500/10 text-slate-800 dark:border-slate-500/40 dark:bg-slate-500/15 dark:text-slate-100",
+  "big-stat-proof":
+    "border-emerald-500/35 bg-emerald-500/10 text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-100",
+  "brand-payoff":
+    "border-amber-500/35 bg-amber-500/10 text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-100",
+  "hero-split-text-media":
+    "border-violet-500/35 bg-violet-500/10 text-violet-800 dark:border-violet-500/40 dark:bg-violet-500/15 dark:text-violet-100",
+  "centered-ui-feature":
+    "border-cyan-500/35 bg-cyan-500/10 text-cyan-800 dark:border-cyan-500/40 dark:bg-cyan-500/15 dark:text-cyan-100",
+  "hero-prompt-bar":
+    "border-blue-500/35 bg-blue-500/10 text-blue-800 dark:border-blue-500/40 dark:bg-blue-500/15 dark:text-blue-100",
+  "card-collage-dof":
+    "border-fuchsia-500/35 bg-fuchsia-500/10 text-fuchsia-800 dark:border-fuchsia-500/40 dark:bg-fuchsia-500/15 dark:text-fuchsia-100",
+  "template-carousel":
+    "border-cyan-500/35 bg-cyan-500/10 text-cyan-800 dark:border-cyan-500/40 dark:bg-cyan-500/15 dark:text-cyan-100",
 };
 
 const CATEGORY_COLORS: Record<BlockCategory, string> = {

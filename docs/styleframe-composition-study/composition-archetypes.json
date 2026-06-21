@@ -1,0 +1,869 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "generatedAt": "2026-06-21",
+    "sourceFolder": "~/Desktop/video-screenshots/",
+    "screenshotsAnalyzed": 62,
+    "series": {
+      "build-a-website": { "count": 18, "aspectRatio": "16:9", "resolution": "1920x1080" },
+      "framer": { "count": 20, "aspectRatio": "16:9", "resolution": "3840x2160" },
+      "grammarly": { "count": 17, "aspectRatio": "16:9", "resolution": "1920x1080" },
+      "flipp": { "count": 7, "aspectRatio": "1:1", "resolution": "320x320" }
+    },
+    "designSkills": [
+      ".cursor/skills/swiss-grid-system/SKILL.md",
+      ".cursor/skills/type-scale-system/SKILL.md",
+      ".cursor/skills/responsive-type-grid-composer/SKILL.md"
+    ],
+    "defaultBrand": {
+      "compositionStyle": "product",
+      "safeArea": "standard",
+      "gridStrength": "balanced",
+      "density": "balanced",
+      "typeBase": 30,
+      "typeRatio": 1.25,
+      "allowGridBreaks": false
+    }
+  },
+  "storyBeats": [
+    "hook",
+    "introduce product",
+    "explain feature",
+    "show proof/data",
+    "compare",
+    "transition",
+    "payoff/CTA"
+  ],
+  "archetypes": [
+    {
+      "id": "editorial-statement",
+      "name": "Editorial Statement",
+      "family": "typography",
+      "storyBeat": "hook",
+      "storyBeats": ["hook", "transition", "payoff/CTA"],
+      "bestFor": ["product launch", "chapter break", "value proposition", "creator program"],
+      "referenceFrames": [
+        "framer/frame_0001.jpg",
+        "framer/frame_0002.jpg",
+        "framer/frame_0005.jpg",
+        "framer/frame_0006.jpg",
+        "framer/frame_0016.jpg",
+        "build-a-website/frame_0001.jpg"
+      ],
+      "aspectRatios": ["16:9", "9:16", "1:1", "4:5"],
+      "grid": {
+        "columns": 12,
+        "rows": 8,
+        "marginStyle": "generous",
+        "gutterStyle": "medium",
+        "safeArea": "generous",
+        "gridType": "column",
+        "gridStrength": "strict"
+      },
+      "zones": {
+        "headline": "center cols 2-11 rows 3-5",
+        "subhead": "center below headline",
+        "accentWord": "inline in headline",
+        "media": null,
+        "supportingText": "optional below headline",
+        "logo": null,
+        "cta": "bottom-center optional"
+      },
+      "typeScaleRoles": {
+        "headline": "display",
+        "subhead": "body",
+        "accent": "display"
+      },
+      "valueHierarchy": {
+        "background": "void low contrast field (0-15%)",
+        "primaryObject": "headline highest contrast (90-100%)",
+        "secondaryObjects": "subhead mid (60-70%)",
+        "accent": "highlight word or glow edge"
+      },
+      "layeringModel": ["background void", "optional glow mid", "typography foreground"],
+      "negativeSpaceStrategy": "extreme center void; message occupies ≤15% of frame area",
+      "motion": {
+        "entrance": "headline fade + slight tracking; accent word delayed scale or glow",
+        "transition": "fade or zoom-through type into next scene",
+        "stableElements": ["center axis", "void background"],
+        "exit": "fade to black or scale up type"
+      },
+      "responsiveBehavior": {
+        "16:9": { "contentZone": "center", "textScale": 1.0, "maxTextWidth": 0.85 },
+        "9:16": { "contentZone": "center-safe", "textScale": 1.08, "reflowOnVertical": true },
+        "1:1": { "contentZone": "center", "textScale": 0.9, "maxTextWidth": 0.82 },
+        "4:5": { "contentZone": "center", "textScale": 0.96, "maxTextWidth": 0.84 }
+      },
+      "controls": {
+        "brandLevel": ["typeScale", "marginDensity", "voidColor", "accentColor"],
+        "blockLevel": ["headlineSize", "accentWordIndex", "contentZone", "textScale", "breakGrid"]
+      },
+      "contentInputs": ["headline", "optionalSubhead", "optionalAccentWord"],
+      "rules": {
+        "do": ["one message per frame", "maximum type/background contrast", "hold for read time"],
+        "dont": ["add UI chrome", "multiple accent words", "long body copy"]
+      }
+    },
+    {
+      "id": "hero-split-text-media",
+      "name": "Hero Split — Text Rail + Media",
+      "family": "product",
+      "storyBeat": "introduce product",
+      "storyBeats": ["introduce product", "explain feature"],
+      "bestFor": ["SaaS demo", "feature intro", "product marketing"],
+      "referenceFrames": [
+        "grammarly/frame_0008.jpg",
+        "grammarly/frame_0009.jpg",
+        "grammarly/frame_0010.jpg",
+        "build-a-website/frame_0016.jpg"
+      ],
+      "aspectRatios": ["16:9", "9:16", "1:1", "4:5"],
+      "grid": {
+        "columns": 12,
+        "rows": 8,
+        "marginStyle": "standard",
+        "gutterStyle": "medium",
+        "safeArea": "standard",
+        "splitRatio": "5/7",
+        "gridType": "column",
+        "gridStrength": "balanced"
+      },
+      "zones": {
+        "headline": "left cols 1-5 upper-third",
+        "subhead": "left cols 1-5 below headline",
+        "body": "left cols 1-5",
+        "media": "right cols 6-12 contained or split",
+        "supportingText": "below headline left",
+        "logo": "top-left cols 1-2",
+        "cta": "bottom-left cols 1-4",
+        "dataGraph": "inside media or lower-right"
+      },
+      "typeScaleRoles": {
+        "headline": "heading",
+        "subhead": "subheading",
+        "body": "body",
+        "cta": "label"
+      },
+      "valueHierarchy": {
+        "background": "gradient or photo mid-value",
+        "primaryObject": "headline dark on light OR UI card bright on dark",
+        "secondaryObjects": "media panel mid-value",
+        "accent": "CTA button or cursor"
+      },
+      "layeringModel": ["background", "media midground", "text and UI foreground"],
+      "negativeSpaceStrategy": "left text column breathing room; media owns right mass",
+      "motion": {
+        "entrance": "headline resolves first; media slides from split side; interaction last",
+        "transition": "media scales into next feature or wipes across split",
+        "stableElements": ["left text anchor", "split boundary"],
+        "exit": "media expand or text hold while media transitions"
+      },
+      "responsiveBehavior": {
+        "16:9": { "contentZone": "split-left", "textScale": 1.0, "mediaTreatment": "split", "stackDirection": "row" },
+        "9:16": { "contentZone": "center-safe", "textScale": 1.08, "mediaTreatment": "contained", "stackDirection": "column", "reflowOnVertical": true },
+        "1:1": { "contentZone": "top-center", "textScale": 0.9, "mediaTreatment": "contained", "stackDirection": "column" },
+        "4:5": { "contentZone": "top-center", "textScale": 0.96, "mediaTreatment": "top-hero", "stackDirection": "column" }
+      },
+      "controls": {
+        "brandLevel": ["typeScale", "marginDensity", "splitRatio", "mediaTreatment", "cornerRadius"],
+        "blockLevel": ["mediaPosition", "headlineSize", "contentZone", "textScale", "chartVisibility"]
+      },
+      "contentInputs": ["headline", "subhead", "body", "mediaPrimary", "optionalCta"],
+      "rules": {
+        "do": ["anchor text to column edge", "maintain split at gutter not center", "one media focal point"],
+        "dont": ["straddle gutter with text", "equal-weight split without hierarchy"]
+      }
+    },
+    {
+      "id": "centered-ui-feature",
+      "name": "Centered UI Feature Card",
+      "family": "product",
+      "storyBeat": "explain feature",
+      "storyBeats": ["explain feature"],
+      "bestFor": ["modal demo", "single-task UI", "compose/action moment"],
+      "referenceFrames": [
+        "build-a-website/frame_0009.jpg",
+        "framer/frame_0011.jpg",
+        "framer/frame_0012.jpg"
+      ],
+      "aspectRatios": ["16:9", "9:16", "1:1", "4:5"],
+      "grid": {
+        "columns": 12,
+        "rows": 8,
+        "marginStyle": "generous",
+        "gutterStyle": "medium",
+        "safeArea": "generous",
+        "gridType": "column",
+        "gridStrength": "balanced"
+      },
+      "zones": {
+        "headline": "in-card top",
+        "subhead": "in-card",
+        "media": null,
+        "uiPanel": "center cols 3-10 rows 2-7",
+        "stepRail": "top full-width optional",
+        "supportingText": "in-card hints",
+        "logo": null,
+        "cta": "in-card footer"
+      },
+      "typeScaleRoles": {
+        "headline": "heading",
+        "body": "body",
+        "cta": "label"
+      },
+      "valueHierarchy": {
+        "background": "void or heavy blur (0-20%)",
+        "primaryObject": "card face (90-100%)",
+        "secondaryObjects": "in-card text (5-15%)",
+        "accent": "primary button and cursor"
+      },
+      "layeringModel": ["blurred background", "optional step rail", "card", "cursor"],
+      "negativeSpaceStrategy": "void isolates single task; card ≤60% frame width",
+      "motion": {
+        "entrance": "card pop scale 0.92-1; type-on in inputs; step rail slides down",
+        "transition": "card dissolve or shrink into next",
+        "stableElements": ["step rail", "card center anchor"],
+        "exit": "CTA pulse then transition"
+      },
+      "responsiveBehavior": {
+        "16:9": { "contentZone": "center", "cardWidth": 0.58 },
+        "9:16": { "contentZone": "center-safe", "cardWidth": 0.92 },
+        "1:1": { "contentZone": "center", "cardWidth": 0.85 },
+        "4:5": { "contentZone": "center", "cardWidth": 0.88 }
+      },
+      "controls": {
+        "brandLevel": ["cornerRadius", "shadowDepth", "voidColor"],
+        "blockLevel": ["cardWidth", "stepRailVisibility", "annotationVisibility", "textScale"]
+      },
+      "contentInputs": ["cardTitle", "inputText", "buttonLabel", "optionalStepIndex"],
+      "rules": {
+        "do": ["blur background", "one primary action", "stable step context"],
+        "dont": ["multiple competing cards", "sharp busy background"]
+      }
+    },
+    {
+      "id": "hero-prompt-bar",
+      "name": "Hero Prompt Bar",
+      "family": "product",
+      "storyBeat": "hook",
+      "storyBeats": ["hook", "introduce product"],
+      "bestFor": ["AI product", "search moment", "creation flow start"],
+      "referenceFrames": [
+        "build-a-website/frame_0002.jpg",
+        "build-a-website/frame_0003.jpg",
+        "build-a-website/frame_0004.jpg"
+      ],
+      "aspectRatios": ["16:9", "9:16", "1:1", "4:5"],
+      "grid": {
+        "columns": 12,
+        "rows": 8,
+        "marginStyle": "generous",
+        "gutterStyle": "medium",
+        "safeArea": "standard",
+        "gridType": "column",
+        "gridStrength": "balanced"
+      },
+      "zones": {
+        "headline": "above bar center",
+        "promptBar": "center cols 3-10 vertical center or lower-third",
+        "media": "full-bleed background lifestyle or gradient",
+        "supportingText": "above bar",
+        "logo": null,
+        "cta": "end of bar submit button"
+      },
+      "typeScaleRoles": {
+        "hint": "subheading",
+        "prompt": "body",
+        "highlight": "body accent"
+      },
+      "valueHierarchy": {
+        "background": "photo or gradient mid-value",
+        "primaryObject": "white pill bar (95-100%)",
+        "secondaryObjects": "hint text low contrast",
+        "accent": "submit button or highlight word"
+      },
+      "layeringModel": ["full-bleed media", "hint text", "prompt bar foreground"],
+      "negativeSpaceStrategy": "sky/gradient quiet zones; bar is brightest element",
+      "motion": {
+        "entrance": "bg parallax; bar scale-in; type-on with highlight color resolve",
+        "transition": "bar expands to full UI or slides to header",
+        "stableElements": ["bar vertical anchor", "horizon if lifestyle"],
+        "exit": "bar wipe or expand"
+      },
+      "responsiveBehavior": {
+        "16:9": { "barZone": "center", "barMaxWidth": 0.7 },
+        "9:16": { "barZone": "lower-third", "barMaxWidth": 0.88 },
+        "1:1": { "barZone": "center", "barMaxWidth": 0.85 },
+        "4:5": { "barZone": "center", "barMaxWidth": 0.86 }
+      },
+      "controls": {
+        "brandLevel": ["barRadius", "backgroundTreatment", "highlightColor"],
+        "blockLevel": ["promptText", "highlightWords", "backgroundMedia", "barWidth"]
+      },
+      "contentInputs": ["promptString", "hintText", "backgroundMedia", "highlightIndices"],
+      "rules": {
+        "do": ["bar brightest element", "one highlight phrase max"],
+        "dont": ["full-width bar", "block entire background"]
+      }
+    },
+    {
+      "id": "big-stat-proof",
+      "name": "Big Stat Proof",
+      "family": "typography",
+      "storyBeat": "show proof/data",
+      "storyBeats": ["show proof/data", "payoff/CTA"],
+      "bestFor": ["revenue share", "growth metric", "pricing proof"],
+      "referenceFrames": ["framer/frame_0006.jpg"],
+      "aspectRatios": ["16:9", "1:1", "9:16"],
+      "grid": {
+        "columns": 12,
+        "rows": 8,
+        "marginStyle": "generous",
+        "gutterStyle": "medium",
+        "safeArea": "generous",
+        "gridType": "column",
+        "gridStrength": "strict"
+      },
+      "zones": {
+        "headline": "center with embedded stat",
+        "stat": "center dominant numeral",
+        "stepRail": "top optional",
+        "media": null,
+        "supportingText": "wrapper copy around stat",
+        "logo": null,
+        "cta": "bottom optional"
+      },
+      "typeScaleRoles": {
+        "stat": "stat",
+        "wrapper": "heading",
+        "qualifier": "caption"
+      },
+      "valueHierarchy": {
+        "background": "void 0%",
+        "primaryObject": "stat + wrapper white 100%",
+        "secondaryObjects": "step rail mid",
+        "accent": "numeral emphasis"
+      },
+      "layeringModel": ["void", "optional step rail", "stat typography"],
+      "negativeSpaceStrategy": "stat surrounded by void; numeral largest glyph",
+      "motion": {
+        "entrance": "count-up on stat; wrapper fade; step rail stable",
+        "transition": "fade to dashboard or editorial",
+        "stableElements": ["step rail", "center anchor"],
+        "exit": "hold then fade"
+      },
+      "responsiveBehavior": {
+        "16:9": { "textScale": 1.0 },
+        "9:16": { "textScale": 1.05, "statOwnLine": true },
+        "1:1": { "textScale": 0.92 }
+      },
+      "controls": {
+        "brandLevel": ["typeScale.stat", "voidColor"],
+        "blockLevel": ["statValue", "prefix", "suffix", "countUpDuration"]
+      },
+      "contentInputs": ["statNumber", "wrapperText", "qualifier", "stepIndex"],
+      "rules": {
+        "do": ["tabular figures", "one dominant number"],
+        "dont": ["competing charts", "secondary stats same size"]
+      }
+    },
+    {
+      "id": "card-collage-dof",
+      "name": "Card Collage with Depth",
+      "family": "system",
+      "storyBeat": "introduce product",
+      "storyBeats": ["introduce product", "explain feature", "show proof/data"],
+      "bestFor": ["ecosystem overview", "multi-feature", "content breadth"],
+      "referenceFrames": [
+        "grammarly/frame_0005.jpg",
+        "grammarly/frame_0014.jpg",
+        "build-a-website/frame_0015.jpg",
+        "framer/frame_0015.jpg"
+      ],
+      "aspectRatios": ["16:9", "4:5", "1:1"],
+      "grid": {
+        "columns": 12,
+        "rows": 8,
+        "marginStyle": "generous",
+        "gutterStyle": "medium",
+        "safeArea": "standard",
+        "gridType": "hierarchical",
+        "gridStrength": "loose"
+      },
+      "zones": {
+        "headline": "hero card internal",
+        "media": "in-card images",
+        "heroCard": "center module",
+        "satelliteCards": "peripheral modules blurred",
+        "supportingText": "per-card captions",
+        "logo": "optional badge on hero",
+        "cta": "in-card buttons"
+      },
+      "typeScaleRoles": {
+        "heroTitle": "heading",
+        "cardTitle": "subheading",
+        "caption": "caption"
+      },
+      "valueHierarchy": {
+        "background": "gradient or blur field",
+        "primaryObject": "sharp hero card (95-100%)",
+        "secondaryObjects": "satellites 40-70% + blur",
+        "accent": "hero CTA or photo contrast"
+      },
+      "layeringModel": ["background gradient", "blurred satellites", "sharp hero", "text"],
+      "negativeSpaceStrategy": "blur fills space; sharp count ≤2",
+      "motion": {
+        "entrance": "satellites parallax drift; hero snap focus last",
+        "transition": "fly-through hero into detail block",
+        "stableElements": ["background gradient anchor"],
+        "exit": "hero expand or satellites scatter"
+      },
+      "responsiveBehavior": {
+        "16:9": { "maxSharpCards": 3, "maxTotalCards": 6 },
+        "9:16": { "maxSharpCards": 1, "maxTotalCards": 3, "reflowOnVertical": true },
+        "1:1": { "maxSharpCards": 1, "maxTotalCards": 4 }
+      },
+      "controls": {
+        "brandLevel": ["blurAmount", "cardRadius", "bgGradient"],
+        "blockLevel": ["cardCount", "heroIndex", "chartVisibility", "satelliteSpread"]
+      },
+      "contentInputs": ["cards array: title, image, optionalStat"],
+      "rules": {
+        "do": ["one sharp hero", "depth via blur and scale"],
+        "dont": ["all cards equal focus", "more than 6 legible cards"]
+      }
+    },
+    {
+      "id": "template-carousel",
+      "name": "Focused Template Carousel",
+      "family": "system",
+      "storyBeat": "introduce product",
+      "storyBeats": ["introduce product", "compare"],
+      "bestFor": ["template gallery", "portfolio browse", "variant picker"],
+      "referenceFrames": [
+        "framer/frame_0003.jpg",
+        "build-a-website/frame_0006.jpg"
+      ],
+      "aspectRatios": ["16:9", "1:1", "4:5"],
+      "grid": {
+        "columns": 12,
+        "rows": 8,
+        "marginStyle": "generous",
+        "gutterStyle": "medium",
+        "safeArea": "generous",
+        "gridType": "column",
+        "gridStrength": "balanced"
+      },
+      "zones": {
+        "headline": "below center card",
+        "categoryLabel": "top-left",
+        "media": "center preview card cols 4-9",
+        "flankCards": "partial cols 1-3 and 10-12 dimmed",
+        "supportingText": "price or meta below title",
+        "logo": null,
+        "cta": "header optional"
+      },
+      "typeScaleRoles": {
+        "category": "label",
+        "title": "heading",
+        "meta": "caption"
+      },
+      "valueHierarchy": {
+        "background": "void 0-5%",
+        "primaryObject": "center card 100%",
+        "secondaryObjects": "flanks 20-30%",
+        "accent": "center preview content"
+      },
+      "layeringModel": ["void", "dimmed flanks", "bright center", "labels"],
+      "negativeSpaceStrategy": "void isolates carousel; center promotion via value",
+      "motion": {
+        "entrance": "flanks slide in; center scale up",
+        "transition": "horizontal slide; brightness follows focus",
+        "stableElements": ["header category", "void"],
+        "exit": "center card expands to full scene"
+      },
+      "responsiveBehavior": {
+        "16:9": { "visibleFlanks": 2 },
+        "1:1": { "visibleFlanks": 0, "swipeHint": true },
+        "4:5": { "visibleFlanks": 1 }
+      },
+      "controls": {
+        "brandLevel": ["dimAmount", "cardAspect", "voidColor"],
+        "blockLevel": ["activeIndex", "itemCount", "headerStep"]
+      },
+      "contentInputs": ["items array: preview, title, meta"],
+      "rules": {
+        "do": ["center brightest", "smooth horizontal slide"],
+        "dont": ["equal flank brightness"]
+      }
+    },
+    {
+      "id": "editorial-display-hero",
+      "name": "Editorial Display Hero",
+      "family": "typography",
+      "storyBeat": "hook",
+      "storyBeats": ["hook", "introduce product"],
+      "bestFor": ["campaign hero", "portfolio name", "collection drop"],
+      "referenceFrames": [
+        "build-a-website/frame_0005.jpg",
+        "build-a-website/frame_0013.jpg",
+        "build-a-website/frame_0014.jpg",
+        "framer/frame_0007.jpg",
+        "framer/frame_0008.jpg"
+      ],
+      "aspectRatios": ["16:9", "4:5", "9:16", "1:1"],
+      "grid": {
+        "columns": 12,
+        "rows": 8,
+        "marginStyle": "tight",
+        "gutterStyle": "medium",
+        "safeArea": "standard",
+        "gridType": "modular",
+        "gridStrength": "loose",
+        "allowGridBreaks": true
+      },
+      "zones": {
+        "headline": "display spans cols 2-11 top and/or bottom",
+        "media": "center or inset modules",
+        "metaRail": "top edge small caps",
+        "supportingText": "corners or side blocks",
+        "logo": "corner",
+        "cta": "bracket style bottom-right"
+      },
+      "typeScaleRoles": {
+        "display": "display",
+        "meta": "label",
+        "cta": "label"
+      },
+      "valueHierarchy": {
+        "background": "photo or field mid",
+        "primaryObject": "display type highest",
+        "secondaryObjects": "subjects and insets",
+        "accent": "CTA or brand color word"
+      },
+      "layeringModel": ["bg photo", "display behind subject", "subject mid", "display foreground", "UI chrome"],
+      "negativeSpaceStrategy": "type wraps subject; meta rails use small type in margins",
+      "motion": {
+        "entrance": "display mask reveal; photo rise; sandwich parallax",
+        "transition": "photo expand or type scale through",
+        "stableElements": ["editorial top bar if present"],
+        "exit": "type slide off; photo full bleed"
+      },
+      "responsiveBehavior": {
+        "16:9": { "breakGrid": true, "textScale": 1.0 },
+        "9:16": { "displayLines": "stack", "textScale": 0.85, "contentZone": "center-safe" },
+        "1:1": { "displayLines": "stack", "textScale": 0.8 }
+      },
+      "controls": {
+        "brandLevel": ["displayScale", "allowGridBreaks", "metaDensity"],
+        "blockLevel": ["sandwichDepth", "insetModules", "tickerVisibility", "breakGrid"]
+      },
+      "contentInputs": ["displayLines", "metaStrings", "heroPhoto", "insetAssets", "cta"],
+      "rules": {
+        "do": ["scale contrast", "one display owner", "anchor one axis on break"],
+        "dont": ["shrink display to fit on 16:9"]
+      }
+    },
+    {
+      "id": "dashboard-proof",
+      "name": "Dashboard KPI Proof",
+      "family": "proof",
+      "storyBeat": "show proof/data",
+      "storyBeats": ["show proof/data"],
+      "bestFor": ["analytics", "creator earnings", "SaaS metrics"],
+      "referenceFrames": [
+        "framer/frame_0013.jpg",
+        "framer/frame_0014.jpg"
+      ],
+      "aspectRatios": ["16:9", "1:1"],
+      "grid": {
+        "columns": 12,
+        "rows": 8,
+        "marginStyle": "standard",
+        "gutterStyle": "medium",
+        "safeArea": "standard",
+        "sidebarCols": 2,
+        "gridType": "column",
+        "gridStrength": "strict"
+      },
+      "zones": {
+        "headline": "KPI labels",
+        "stat": "KPI numerals top main",
+        "media": null,
+        "uiPanel": "full dashboard",
+        "dataGraph": "KPI row + table",
+        "supportingText": "table cells",
+        "logo": "sidebar brand",
+        "cta": "top-right primary action"
+      },
+      "typeScaleRoles": {
+        "kpi": "stat",
+        "header": "label",
+        "cell": "caption"
+      },
+      "valueHierarchy": {
+        "background": "void or dark shell",
+        "primaryObject": "KPI white numerals",
+        "secondaryObjects": "table rows mid",
+        "accent": "primary button and highlight row"
+      },
+      "layeringModel": ["void", "panel", "KPI row", "highlight row"],
+      "negativeSpaceStrategy": "row spacing and KPI gutters prevent density crush",
+      "motion": {
+        "entrance": "panel slide; KPI count-up; rows stagger",
+        "transition": "drill into highlight row",
+        "stableElements": ["sidebar", "table header"],
+        "exit": "row expand to detail"
+      },
+      "responsiveBehavior": {
+        "16:9": { "showTable": true, "kpiColumns": 5 },
+        "1:1": { "showTable": false, "kpiColumns": 2 },
+        "9:16": { "sidebarCollapsed": true, "kpiColumns": 2 }
+      },
+      "controls": {
+        "brandLevel": ["panelRadius", "accentColor"],
+        "blockLevel": ["kpiValues", "tableRows", "highlightRowIndex"]
+      },
+      "contentInputs": ["kpis", "tableRows", "navItems", "primaryAction"],
+      "rules": {
+        "do": ["tabular nums", "highlight row tells story"],
+        "dont": ["empty table on mobile without KPI fallback"]
+      }
+    },
+    {
+      "id": "social-proof-wall",
+      "name": "Social Proof Wall",
+      "family": "proof",
+      "storyBeat": "show proof/data",
+      "storyBeats": ["show proof/data", "payoff/CTA"],
+      "bestFor": ["testimonials", "creator receipts", "tweet wall"],
+      "referenceFrames": ["framer/frame_0015.jpg"],
+      "aspectRatios": ["16:9", "1:1"],
+      "grid": {
+        "columns": 12,
+        "rows": 8,
+        "marginStyle": "generous",
+        "gutterStyle": "tight",
+        "safeArea": "generous",
+        "gridType": "hierarchical",
+        "gridStrength": "loose"
+      },
+      "zones": {
+        "headline": "center card quote",
+        "media": "avatars in cards",
+        "heroCard": "center perspective",
+        "satelliteCards": "surrounding depth",
+        "dataGraph": "mini charts in cards optional",
+        "supportingText": "handles and snippets",
+        "logo": null,
+        "cta": null
+      },
+      "typeScaleRoles": {
+        "quote": "body",
+        "amount": "stat",
+        "handle": "caption"
+      },
+      "valueHierarchy": {
+        "background": "void 0%",
+        "primaryObject": "center card brightest",
+        "secondaryObjects": "orbiting cards varied blur",
+        "accent": "payment amount or chart spike"
+      },
+      "layeringModel": ["void", "depth-blurred cards", "sharp center", "slow orbit"],
+      "negativeSpaceStrategy": "void makes card cloud feel abundant",
+      "motion": {
+        "entrance": "cards fly from Z depth; center resolves last",
+        "transition": "push into center card",
+        "stableElements": ["void", "center weight"],
+        "exit": "center card full screen"
+      },
+      "responsiveBehavior": {
+        "16:9": { "maxSharp": 5 },
+        "1:1": { "maxSharp": 3, "centerOnly": true }
+      },
+      "controls": {
+        "brandLevel": ["cardTemplate", "depthRange", "voidColor"],
+        "blockLevel": ["cardCount", "centerIndex", "blurCurve"]
+      },
+      "contentInputs": ["proofCards: avatar, name, snippet, optionalChart"],
+      "rules": {
+        "do": ["legible center", "depth variation"],
+        "dont": ["all cards sharp", "unreadable snippets"]
+      }
+    },
+    {
+      "id": "brand-payoff",
+      "name": "Brand Payoff",
+      "family": "typography",
+      "storyBeat": "payoff/CTA",
+      "storyBeats": ["payoff/CTA"],
+      "bestFor": ["outro", "logo reveal", "URL card"],
+      "referenceFrames": [
+        "framer/frame_0018.jpg",
+        "framer/frame_0019.jpg",
+        "framer/frame_0020.jpg",
+        "grammarly/frame_0017.jpg",
+        "build-a-website/frame_0018.jpg"
+      ],
+      "aspectRatios": ["16:9", "9:16", "1:1", "4:5"],
+      "grid": {
+        "columns": 12,
+        "rows": 8,
+        "marginStyle": "generous",
+        "gutterStyle": "medium",
+        "safeArea": "generous",
+        "gridType": "column",
+        "gridStrength": "strict"
+      },
+      "zones": {
+        "headline": null,
+        "media": null,
+        "logo": "center rows 3-5",
+        "supportingText": null,
+        "cta": "bottom-center row 7",
+        "url": "below CTA or center under logo"
+      },
+      "typeScaleRoles": {
+        "cta": "subheading",
+        "url": "caption"
+      },
+      "valueHierarchy": {
+        "background": "void or soft gradient high key",
+        "primaryObject": "logo mark",
+        "secondaryObjects": "CTA and URL",
+        "accent": "logo"
+      },
+      "layeringModel": ["background", "logo", "CTA text"],
+      "negativeSpaceStrategy": "logo occupies ≤20% frame; maximum breathing room",
+      "motion": {
+        "entrance": "logo scale or draw; CTA delayed fade up",
+        "transition": "fade to black end",
+        "stableElements": ["center anchor"],
+        "exit": "hold 2s minimum"
+      },
+      "responsiveBehavior": {
+        "16:9": { "logoScale": 1.0 },
+        "9:16": { "logoScale": 0.95, "respectBottomDanger": true },
+        "1:1": { "logoScale": 0.9 }
+      },
+      "controls": {
+        "brandLevel": ["logoAsset", "bgColor", "gradient"],
+        "blockLevel": ["showUrl", "ctaText", "logoVariant", "logoScale"]
+      },
+      "contentInputs": ["logo", "ctaText", "url"],
+      "rules": {
+        "do": ["breathing room", "high contrast logo"],
+        "dont": ["extra UI", "competing taglines"]
+      }
+    },
+    {
+      "id": "glass-document-panel",
+      "name": "Glass Document Panel",
+      "family": "product",
+      "storyBeat": "introduce product",
+      "storyBeats": ["introduce product", "explain feature"],
+      "bestFor": ["doc workspace", "AI writing demo", "collaboration"],
+      "referenceFrames": [
+        "grammarly/frame_0002.jpg",
+        "grammarly/frame_0003.jpg",
+        "grammarly/frame_0004.jpg",
+        "grammarly/frame_0006.jpg",
+        "grammarly/frame_0007.jpg"
+      ],
+      "aspectRatios": ["16:9", "4:5", "9:16"],
+      "grid": {
+        "columns": 12,
+        "rows": 8,
+        "marginStyle": "standard",
+        "gutterStyle": "medium",
+        "safeArea": "standard",
+        "gridType": "column",
+        "gridStrength": "balanced"
+      },
+      "zones": {
+        "headline": "doc upper-left",
+        "body": "greeked lines in doc",
+        "media": "optional avatar overlap col 2",
+        "uiPanel": "center cols 2-11",
+        "iconRail": "col 12 vertical",
+        "supportingText": "doc header nav",
+        "logo": null,
+        "cta": "rail icons"
+      },
+      "typeScaleRoles": {
+        "docTitle": "heading",
+        "body": "body",
+        "nav": "caption"
+      },
+      "valueHierarchy": {
+        "background": "gradient + grid 30-50%",
+        "primaryObject": "doc panel 95-100%",
+        "secondaryObjects": "avatar and rail",
+        "accent": "icons on rail"
+      },
+      "layeringModel": ["gradient bg", "doc window", "avatar overlap", "icon rail"],
+      "negativeSpaceStrategy": "generous doc padding; greeked lines not dense prose",
+      "motion": {
+        "entrance": "window scale-in; title first; lines stagger; avatar slide",
+        "transition": "panel swap or rail tool change",
+        "stableElements": ["window frame", "rail anchor"],
+        "exit": "zoom into doc content"
+      },
+      "responsiveBehavior": {
+        "16:9": { "docWidth": 0.82, "railVisible": true },
+        "9:16": { "docWidth": 0.94, "railVisible": true, "reflowOnVertical": true },
+        "4:5": { "docWidth": 0.9 }
+      },
+      "controls": {
+        "brandLevel": ["gradient", "gridOverlay", "docRadius"],
+        "blockLevel": ["docTitle", "lineCount", "avatarVisible", "railIcons"]
+      },
+      "contentInputs": ["docTitle", "bodyLines", "avatar", "railIconSet"],
+      "rules": {
+        "do": ["greeked body for motion", "rail as vertical anchor"],
+        "dont": ["long real paragraphs", "hide rail without replacement anchor"]
+      }
+    }
+  ],
+  "gaps": [
+    {
+      "id": "native-vertical-frames",
+      "description": "No native 9:16 or 4:5 captures; vertical reflow rules are inferred",
+      "severity": "high"
+    },
+    {
+      "id": "before-after-compare",
+      "description": "No before/after or slider comparison frames",
+      "severity": "medium"
+    },
+    {
+      "id": "device-frame-hero",
+      "description": "No phone/laptop bezel hero compositions",
+      "severity": "medium"
+    },
+    {
+      "id": "flipp-resolution",
+      "description": "Flipp series at 320x320 limits mobile detail analysis",
+      "severity": "medium"
+    },
+    {
+      "id": "chart-hero-frames",
+      "description": "Few pure chart-as-hero frames; data mostly in dashboards or overlays",
+      "severity": "low"
+    }
+  ],
+  "priorityBuildOrder": [
+    "editorial-statement",
+    "hero-split-text-media",
+    "centered-ui-feature",
+    "hero-prompt-bar",
+    "brand-payoff",
+    "card-collage-dof",
+    "big-stat-proof",
+    "template-carousel",
+    "editorial-display-hero",
+    "glass-document-panel",
+    "dashboard-proof",
+    "social-proof-wall"
+  ]
+}

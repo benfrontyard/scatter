@@ -14,11 +14,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  getWave1ToggleKeys,
+  isWave1Block,
+  Wave1BlockControls,
+} from "@/components/editor/Wave1BlockControls";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 
-const MEDIA_CONTENT_KEYS = new Set(["image", "screenshot", "backgroundImage", "avatar"]);
+const MEDIA_CONTENT_KEYS = new Set([
+  "image",
+  "screenshot",
+  "backgroundImage",
+  "avatar",
+  "media",
+  "uiScreenshot",
+]);
 const STYLE_CONTENT_KEYS = new Set(["backgroundColor", "accentColor"]);
+const WAVE1_TOGGLE_KEYS = new Set([
+  "showStepRail",
+  "showUrl",
+  "accentWord",
+  "heroCardIndex",
+  "activeIndex",
+]);
 
 const INTENSITY_MAP = {
   calm: { intensity: "subtle", speed: "calm", stagger: 4 },
@@ -62,8 +81,12 @@ export function UserBlockControls({ className }: UserBlockControlsProps) {
     (key) =>
       !STYLE_CONTENT_KEYS.has(key) &&
       !MEDIA_CONTENT_KEYS.has(key) &&
+      !WAVE1_TOGGLE_KEYS.has(key) &&
       typeof definition.defaultContent[key] === "string",
   );
+  const optionalToggleKeys = isWave1Block(selectedBlock.blockId)
+    ? getWave1ToggleKeys(selectedBlock.blockId)
+    : textKeys.slice(1);
   const mediaKeys = Object.keys(definition.defaultContent).filter((key) =>
     MEDIA_CONTENT_KEYS.has(key),
   );
@@ -210,22 +233,28 @@ export function UserBlockControls({ className }: UserBlockControlsProps) {
         </div>
       </div>
 
-      {textKeys.length > 1 ? (
+      {textKeys.length > 1 || optionalToggleKeys.length > 0 ? (
         <div className="space-y-1">
           <Label className="text-[10px] text-muted-foreground">Optional elements</Label>
           <div className="flex flex-wrap gap-1">
-            {textKeys.slice(1).map((key) => (
+            {optionalToggleKeys.map((key) => (
               <button
                 key={key}
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  const isHidden = hiddenSlots.has(key);
                   setHiddenSlots((prev) => {
                     const next = new Set(prev);
-                    if (next.has(key)) next.delete(key);
+                    if (isHidden) next.delete(key);
                     else next.add(key);
                     return next;
-                  })
-                }
+                  });
+                  if (key.startsWith("show")) {
+                    updateBlockContent(selectedBlock.id, key, isHidden ? "true" : "false");
+                  } else if (!isHidden) {
+                    updateBlockContent(selectedBlock.id, key, "");
+                  }
+                }}
                 className={cn(
                   "rounded px-2 py-0.5 text-[10px]",
                   hiddenSlots.has(key)
@@ -239,6 +268,27 @@ export function UserBlockControls({ className }: UserBlockControlsProps) {
           </div>
         </div>
       ) : null}
+
+      <Wave1BlockControls
+        block={selectedBlock}
+        formatId={format.id}
+        onContentChange={(key, value) => updateBlockContent(selectedBlock.id, key, value)}
+        onMotionChange={(key, value) => updateBlockMotion(selectedBlock.id, key, value)}
+        onLayoutOverride={(patch) =>
+          updateBlock(selectedBlock.id, (current) => ({
+            ...current,
+            layoutOverrides: {
+              formats: {
+                ...current.layoutOverrides?.formats,
+                [format.id]: {
+                  ...current.layoutOverrides?.formats?.[format.id],
+                  ...patch,
+                },
+              },
+            },
+          }))
+        }
+      />
 
       <Button
         type="button"

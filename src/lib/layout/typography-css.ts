@@ -12,6 +12,7 @@ export function resolvedRoleToCss(role: ResolvedTypographyRole): CSSProperties {
     textAlign: role.textAlign,
     maxWidth: role.maxWidth,
     overflowWrap: "break-word",
-    wordBreak: "break-word",
+    wordBreak: "normal",
+    hyphens: "manual",
   };
 }
