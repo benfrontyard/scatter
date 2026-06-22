@@ -8,12 +8,28 @@ export function SettingsInspector() {
   const {
     showSettingsInspector,
     settingsInspectorPinned,
+    settingsPanelView,
+    selectedBlockId,
+    selectedTransitionId,
     setSettingsInspectorPinned,
     setShowSettingsInspector,
     closeSettingsInspector,
   } = useEditor();
 
   if (!showSettingsInspector) return null;
+
+  const inspectorTitle =
+    selectedTransitionId
+      ? "Transition settings"
+      : selectedBlockId
+        ? "Scene settings"
+        : settingsPanelView === "audio"
+          ? "Audio settings"
+          : settingsPanelView === "camera"
+            ? "Camera settings"
+            : settingsPanelView === "postFx"
+              ? "Post FX settings"
+              : "Project settings";
 
   return (
     <>
@@ -31,7 +47,7 @@ export function SettingsInspector() {
       >
         <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Scene settings
+            {inspectorTitle}
           </h2>
           <div className="flex items-center gap-0.5">
             <Button

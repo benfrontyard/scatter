@@ -1,6 +1,8 @@
 /* ── Fake brand motion preview system ── */
 
 .fake-brand-preview {
+  position: relative;
+  isolation: isolate;
   --preview-accent: var(--brand-accent);
   --preview-bg: var(--preview-stage-bg, var(--brand-background));
   --preview-fg: var(--preview-stage-fg, var(--brand-primary));

@@ -33,6 +33,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
     registerPlayer,
     postFx,
     isAdminMode,
+    openProjectSettings,
   } = useEditor();
   const reducedMotion = useReducedMotion();
   useGoogleFont(brand.typography.fontFamilies.heading);
@@ -109,12 +110,18 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
     >
       {showMeta && (
         <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2 sm:px-4">
-          <div className="min-w-0">
+          <button
+            type="button"
+            className="min-w-0 text-left transition-colors hover:text-foreground"
+            onClick={openProjectSettings}
+            aria-label="Open project settings"
+            title="Project settings"
+          >
             <p className="truncate text-xs font-medium sm:text-sm">{sequence.name}</p>
             <p className="truncate text-[10px] text-muted-foreground sm:text-xs">
               {format.aspectRatio} · {format.width}×{format.height} · {fps}fps
             </p>
-          </div>
+          </button>
           <div className="flex shrink-0 items-center gap-2">
             <span
               className="font-mono text-[10px] tabular-nums text-muted-foreground sm:text-xs"

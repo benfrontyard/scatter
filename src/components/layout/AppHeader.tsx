@@ -16,6 +16,7 @@ import {
   Palette,
   Redo2,
   Save,
+  Settings2,
   Undo2,
 } from "lucide-react";
 import { motionFormats } from "@/config/formats";
@@ -43,6 +44,7 @@ export function AppHeader({ compact }: AppHeaderProps) {
     setShowProjectMenu,
     setShowBrandPanel,
     setShowExportModal,
+    openProjectSettings,
     openStudio,
     setShowShortcuts,
     goHome,
@@ -109,6 +111,19 @@ export function AppHeader({ compact }: AppHeaderProps) {
               </Button>
             )}
           </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 px-2 text-xs"
+            onClick={openProjectSettings}
+            aria-label="Project settings"
+            title="Project settings"
+          >
+            <Settings2 className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Project</span>
+          </Button>
 
           <Button
             type="button"

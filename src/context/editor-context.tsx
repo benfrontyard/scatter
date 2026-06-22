@@ -186,6 +186,7 @@ type EditorActions = {
   settingsInspectorPinned: boolean;
   setSettingsInspectorPinned: (pinned: boolean) => void;
   openSettingsInspector: () => void;
+  openProjectSettings: () => void;
   closeSettingsInspector: () => void;
   showExportModal: boolean;
   setShowExportModal: (show: boolean) => void;
@@ -457,6 +458,13 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     setShowSettingsInspector(true);
   }, []);
 
+  const openProjectSettings = useCallback(() => {
+    setSelectedBlockId(null);
+    setSelectedTransitionId(null);
+    setSettingsPanelView("project");
+    setShowSettingsInspector(true);
+  }, []);
+
   const closeSettingsInspector = useCallback(() => {
     if (!settingsInspectorPinned) {
       setShowSettingsInspector(false);
@@ -578,6 +586,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       settingsInspectorPinned,
       setSettingsInspectorPinned,
       openSettingsInspector,
+      openProjectSettings,
       closeSettingsInspector,
       showExportModal,
       setShowExportModal,
@@ -1356,6 +1365,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       isInternal,
       setUserRole,
       openSettingsInspector,
+      openProjectSettings,
       closeSettingsInspector,
       settingsPanelView,
       postFx,

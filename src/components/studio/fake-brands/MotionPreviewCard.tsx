@@ -47,8 +47,6 @@ export function MotionPreviewCard({
           `fake-brand-preview--brand-${slug}`,
           `fake-brand-preview--${variant}`,
           reducedMotion && "fake-brand-preview--reduced",
-          hasGrain && "fake-brand-preview__grain",
-          hasVignette && "fake-brand-preview__vignette",
           featured && "ring-1 ring-border transition-shadow group-hover:shadow-md",
         )}
         style={{
@@ -62,6 +60,8 @@ export function MotionPreviewCard({
           className={cn(
             "fake-brand-preview__frame",
             featured ? "aspect-[16/10]" : "aspect-video",
+            hasGrain && "fake-brand-preview__grain",
+            hasVignette && "fake-brand-preview__vignette",
           )}
         >
           <div className="fake-brand-preview__stage h-full">
