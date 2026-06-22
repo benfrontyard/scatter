@@ -257,13 +257,13 @@ export function CameraPanel({ className }: CameraPanelProps) {
             }
           >
             <SelectTrigger className="h-8 text-xs">
-              <SelectValue placeholder="Select block…" />
+              <SelectValue placeholder="Select scene…" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">None</SelectItem>
               {focusTargetBlocks.map((block, index) => (
                 <SelectItem key={block.id} value={block.id}>
-                  Block {index + 1}
+                  Scene {index + 1}
                 </SelectItem>
               ))}
             </SelectContent>

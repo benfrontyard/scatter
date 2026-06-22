@@ -15,24 +15,6 @@ export type SplitTextOptions = {
   respectNewlines?: boolean;
 };
 
-function createWhitespaceUnit(
-  text: string,
-  index: number,
-  lineIndex: number,
-  wordIndex: number,
-  charIndex: number,
-): TextUnit {
-  return {
-    text,
-    index,
-    lineIndex,
-    wordIndex,
-    charIndex,
-    isWhitespace: true,
-    animate: false,
-  };
-}
-
 function splitCharacters(text: string, lineIndex: number, wordIndex: number): TextUnit[] {
   const units: TextUnit[] = [];
   let charIndex = 0;
@@ -88,9 +70,10 @@ function splitWordsInLine(line: string, lineIndex: number): TextUnit[] {
     if (!part) continue;
 
     if (/^\s+$/.test(part)) {
-      units.push(
-        createWhitespaceUnit(part, units.length, lineIndex, wordIndex, 0),
-      );
+      const prev = units[units.length - 1];
+      if (prev && !prev.isWhitespace) {
+        prev.text += part;
+      }
       continue;
     }
 
@@ -176,9 +159,10 @@ export function splitText(
     for (const part of wordParts) {
       if (!part) continue;
       if (/^\s+$/.test(part)) {
-        allUnits.push(
-          createWhitespaceUnit(part, allUnits.length, lineIndex, wordIndex, 0),
-        );
+        const prev = allUnits[allUnits.length - 1];
+        if (prev) {
+          prev.text += part;
+        }
         continue;
       }
 

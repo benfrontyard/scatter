@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Trash2, Wand2, Plus, SlidersHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, Wand2, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { AudioPanelJumpButton } from "@/components/editor/AudioPanel";
 import { TimelineBlockClip } from "@/components/timeline/TimelineBlockClip";
 import { TimelineTransitionMarker } from "@/components/timeline/TimelineTransitionMarker";
@@ -141,7 +141,6 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
     seekToFrame,
     runMagicEdit,
     isMagicEditRunning,
-    openSettingsInspector,
     setShowBlockLibraryDrawer,
   } = useEditor();
 
@@ -370,7 +369,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
       <div className="flex shrink-0 flex-col gap-2 border-b border-border px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-4">
         <div className="flex min-w-0 items-center gap-2">
           <h2 className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
-            Timeline
+            Scenes
           </h2>
           <span
             className="font-mono text-[10px] tabular-nums text-muted-foreground sm:text-xs"
@@ -380,7 +379,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
             {formatTimelineTime(currentTime)} / {formatTimelineTime(totalTime)}
           </span>
           <span className="hidden truncate text-[10px] text-muted-foreground sm:inline sm:text-xs">
-            · {sequence.blocks.length} blocks
+            · {sequence.blocks.length} scenes
           </span>
         </div>
 
@@ -399,17 +398,6 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
           </Button>
           {selectedBlock && selectedBlockDef ? (
             <>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-7 shrink-0 gap-1 px-2 text-xs"
-                onClick={openSettingsInspector}
-                title="Open block settings"
-              >
-                <SlidersHorizontal className="h-3 w-3" />
-                {!compact && "Settings"}
-              </Button>
               <span
                 className={cn(
                   "truncate text-xs font-medium",
@@ -426,7 +414,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                   className="h-7 w-7 shrink-0"
                   disabled={sequence.blocks.findIndex((b) => b.id === selectedBlock.id) <= 0}
                   onClick={() => moveSelectedBlock(-1)}
-                  aria-label="Move block earlier"
+                  aria-label="Move scene earlier"
                   title="Move earlier (Alt+←)"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
@@ -441,7 +429,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                     sequence.blocks.length - 1
                   }
                   onClick={() => moveSelectedBlock(1)}
-                  aria-label="Move block later"
+                  aria-label="Move scene later"
                   title="Move later (Alt+→)"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
@@ -465,7 +453,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                 className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
                 disabled={!canDeleteBlock}
                 onClick={deleteSelectedBlock}
-                aria-label="Delete selected block"
+                aria-label="Delete selected scene"
                 title="Delete (Backspace)"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -473,17 +461,6 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
             </>
           ) : selectedTransition && selectedTransitionDef ? (
             <>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-7 shrink-0 gap-1 px-2 text-xs"
-                onClick={openSettingsInspector}
-                title="Open transition settings"
-              >
-                <SlidersHorizontal className="h-3 w-3" />
-                {!compact && "Settings"}
-              </Button>
               <span
                 className={cn(
                   "truncate text-xs font-medium",
@@ -538,8 +515,8 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
           ) : (
             <p className="text-[10px] text-muted-foreground sm:text-xs">
               {sequence.blocks.length === 0
-                ? "Add a motion block to start"
-                : "Click blocks or junction markers to edit · drag to reorder"}
+                ? "Add a scene to start"
+                : "Click scenes or junction markers to edit · drag to reorder"}
             </p>
           )}
         </div>
@@ -651,7 +628,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                 className="flex h-12 items-center justify-center rounded-md border border-dashed border-border px-4 text-xs text-muted-foreground"
                 style={{ marginLeft: TIMELINE_PADDING_START, marginRight: TIMELINE_PADDING_END }}
               >
-                Add a motion block to start
+                Add a scene to start
               </div>
             ) : (
               layoutItems.map((item) => {
@@ -793,8 +770,8 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                     : TIMELINE_PADDING_START,
               }}
               onClick={() => setShowBlockLibraryDrawer(true)}
-              aria-label="Add motion block"
-              title="Add block"
+              aria-label="Add scene"
+              title="Add scene"
             >
               <Plus className="h-4 w-4" />
             </button>

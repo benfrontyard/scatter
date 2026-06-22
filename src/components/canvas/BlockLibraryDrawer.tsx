@@ -14,7 +14,7 @@ export function BlockLibraryDrawer() {
       <button
         type="button"
         className="absolute inset-0 z-30 bg-black/40"
-        aria-label="Close block library"
+        aria-label="Close scene library"
         onClick={() => setShowBlockLibraryDrawer(false)}
       />
       <div
@@ -25,7 +25,7 @@ export function BlockLibraryDrawer() {
       >
         <div className="flex shrink-0 items-center justify-between border-b border-border bg-card px-3 py-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Add Block
+            Add Scene
           </h2>
           <Button
             type="button"
@@ -33,7 +33,7 @@ export function BlockLibraryDrawer() {
             size="icon"
             className="h-7 w-7"
             onClick={() => setShowBlockLibraryDrawer(false)}
-            aria-label="Close block library"
+            aria-label="Close scene library"
           >
             <X className="h-3.5 w-3.5" />
           </Button>

@@ -10,10 +10,10 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { mediaQueries } from "@/lib/breakpoints";
 
 export function Studio() {
-  const { isInternal, showStudio, studioTab } = useEditor();
+  const { isInternal, appShell, studioTab } = useEditor();
   const isMobile = useMediaQuery(mediaQueries.mobile);
 
-  if (!isInternal || !showStudio) return null;
+  if (!isInternal || appShell !== "studio") return null;
 
   return (
     <StudioProvider>

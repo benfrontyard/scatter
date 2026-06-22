@@ -45,13 +45,13 @@ export function EditorLayout() {
               aria-label="Expand timeline"
             >
               <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Timeline
+                Scenes
               </span>
               <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
                 {currentTime}s / {totalTime}s
               </span>
               <span className="truncate text-[10px] text-muted-foreground">
-                · {sequence.blocks.length} blocks
+                · {sequence.blocks.length} scenes
               </span>
             </button>
             <Button

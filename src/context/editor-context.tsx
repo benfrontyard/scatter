@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
-import { buildGoldenDemoSequence } from "@/lib/demo/golden-demo";
+import { generateProjectFromCreateFlow } from "@/lib/video-recipes";
+import { getInitialCreateFlowStep } from "@/lib/create-flow-steps";
 import { motionFormats } from "@/config/formats";
 import {
   addBlockToSequence,
@@ -17,6 +18,7 @@ import {
 import { createSnapshot, snapshotsEqual, type EditorSnapshot } from "@/lib/editor-snapshot";
 import type { ScatterProject } from "@/types";
 import {
+  createEmptyProject,
   createNewProject,
   loadProject,
   saveProject,
@@ -47,7 +49,18 @@ import { getOrDecodeAudioBuffer } from "@/lib/audio/audio-buffer-cache";
 import { runMagicEditPipeline } from "@/lib/magic-edit";
 import { buildAnixaDemoProject } from "@/lib/demo/anixa-demo";
 import { applyBrandMotionKitToProject } from "@/lib/brand-motion-kit-integration";
-import { EDITOR_FPS, type EditorStep, type MainNavId, type StudioTab, type WorkspaceTab } from "@/types/editor";
+import {
+  EDITOR_FPS,
+  DEFAULT_CREATE_FLOW_DRAFT,
+  type AppShell,
+  type CreateFlowDraft,
+  type CreateFlowStep,
+  type CreatePath,
+  type EditorStep,
+  type MainNavId,
+  type StudioTab,
+  type WorkspaceTab,
+} from "@/types/editor";
 import type { User, UserRole } from "@/types/user";
 import { isInternalRole } from "@/types/user";
 import { normalizePostFXSettings } from "@/lib/post-fx";
@@ -186,6 +199,22 @@ type EditorActions = {
   setStudioTab: (tab: StudioTab) => void;
   showInternalBlocks: boolean;
   setShowInternalBlocks: (show: boolean) => void;
+  appShell: AppShell;
+  setAppShell: (shell: AppShell) => void;
+  createFlowDraft: CreateFlowDraft;
+  createFlowStep: CreateFlowStep;
+  updateCreateFlowDraft: (patch: Partial<CreateFlowDraft>) => void;
+  setCreateFlowStep: (step: CreateFlowStep) => void;
+  goHome: () => void;
+  openEditor: () => void;
+  startCreateFlow: (options?: {
+    path?: CreatePath;
+    recipeId?: string;
+    projectName?: string;
+  }) => void;
+  openStudio: () => void;
+  completeCreateFlow: () => void;
+  openProjectInEditor: (projectId: string) => void;
 };
 
 type EditorContextValue = {
@@ -239,6 +268,9 @@ type EditorContextValue = {
   showStudio: boolean;
   studioTab: StudioTab;
   showInternalBlocks: boolean;
+  appShell: AppShell;
+  createFlowDraft: CreateFlowDraft;
+  createFlowStep: CreateFlowStep;
 } & EditorActions;
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -253,7 +285,7 @@ function readAssetAsDataUrl(file: File): Promise<string> {
 }
 
 export function EditorProvider({ children }: { children: ReactNode }) {
-  const initialProject = useMemo(() => createNewProject(buildGoldenDemoSequence().name), []);
+  const initialProject = useMemo(() => createEmptyProject(), []);
   const savedSnapshotRef = useRef<EditorSnapshot>(
     createSnapshot(initialProject.sequence, initialProject.customBrands, initialProject.assets),
   );
@@ -276,7 +308,10 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showBrandPanel, setShowBrandPanel] = useState(false);
   const [timelineCollapsed, setTimelineCollapsed] = useState(false);
-  const [showStudio, setShowStudio] = useState(false);
+  const [appShell, setAppShellState] = useState<AppShell>("home");
+  const studioReturnShellRef = useRef<AppShell>("editor");
+  const [createFlowDraft, setCreateFlowDraft] = useState<CreateFlowDraft>(DEFAULT_CREATE_FLOW_DRAFT);
+  const [createFlowStep, setCreateFlowStepState] = useState<CreateFlowStep>("path");
   const [studioTab, setStudioTab] = useState<StudioTab>("blocks");
   const [showInternalBlocks, setShowInternalBlocks] = useState(false);
   const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTab>("timeline");
@@ -390,6 +425,33 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   const isInternal = isInternalRole(user.role);
   const isAdminMode = isInternal;
+  const showStudio = appShell === "studio";
+
+  const setAppShell = useCallback((shell: AppShell) => {
+    setAppShellState(shell);
+  }, []);
+
+  const setShowStudio = useCallback(
+    (show: boolean) => {
+      if (show) {
+        if (isInternalRole(user.role)) {
+          studioReturnShellRef.current = appShell === "home" ? "home" : "editor";
+          setAppShellState("studio");
+        }
+        return;
+      }
+      setAppShellState(studioReturnShellRef.current);
+    },
+    [user.role, appShell],
+  );
+
+  const updateCreateFlowDraft = useCallback((patch: Partial<CreateFlowDraft>) => {
+    setCreateFlowDraft((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  const setCreateFlowStep = useCallback((step: CreateFlowStep) => {
+    setCreateFlowStepState(step);
+  }, []);
 
   const openSettingsInspector = useCallback(() => {
     setShowSettingsInspector(true);
@@ -400,6 +462,71 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       setShowSettingsInspector(false);
     }
   }, [settingsInspectorPinned]);
+
+  const goHome = useCallback(() => {
+    setAppShellState("home");
+    setShowProjectMenu(false);
+    setShowExportModal(false);
+    setShowBlockLibraryDrawer(false);
+    setShowSettingsInspector(false);
+  }, []);
+
+  const openEditor = useCallback(() => {
+    setAppShellState("editor");
+    setStep("motion");
+  }, []);
+
+  const startCreateFlow = useCallback(
+    (options?: { path?: CreatePath; recipeId?: string; projectName?: string }) => {
+      const path = options?.path ?? null;
+      setCreateFlowDraft({
+        ...DEFAULT_CREATE_FLOW_DRAFT,
+        path,
+        brandKitId: "nimbo",
+        recipeId:
+          options?.recipeId ??
+          (path === "scratch" ? "blank" : path === "template" ? "product-launch" : null),
+        projectName: options?.projectName ?? "",
+        formatIds: ["format-16-9"],
+      });
+      setCreateFlowStepState(getInitialCreateFlowStep(path));
+      setAppShellState("createFlow");
+    },
+    [],
+  );
+
+  const openStudio = useCallback(() => {
+    if (isInternalRole(user.role)) {
+      studioReturnShellRef.current = appShell === "home" ? "home" : "editor";
+      setAppShellState("studio");
+    }
+  }, [user.role, appShell]);
+
+  const completeCreateFlow = useCallback(() => {
+    const project = generateProjectFromCreateFlow(createFlowDraft, customBrands);
+    loadSnapshot(
+      createSnapshot(project.sequence, project.customBrands, project.assets),
+      project.id,
+    );
+    setCreateFlowDraft(DEFAULT_CREATE_FLOW_DRAFT);
+    setCreateFlowStepState("path");
+    setAppShellState("editor");
+    setStep("motion");
+  }, [createFlowDraft, customBrands, loadSnapshot]);
+
+  const openProjectInEditor = useCallback(
+    (id: string) => {
+      const project = loadProject(id);
+      if (!project) return;
+      loadSnapshot(
+        createSnapshot(project.sequence, project.customBrands, project.assets),
+        project.id,
+      );
+      setAppShellState("editor");
+      setStep("motion");
+    },
+    [loadSnapshot],
+  );
 
   const setUserRole = useCallback((role: UserRole) => {
     setUserState((prev) => ({ ...prev, role }));
@@ -464,6 +591,18 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       setStudioTab,
       showInternalBlocks,
       setShowInternalBlocks,
+      appShell,
+      setAppShell,
+      createFlowDraft,
+      createFlowStep,
+      updateCreateFlowDraft,
+      setCreateFlowStep,
+      goHome,
+      openEditor,
+      startCreateFlow,
+      openStudio,
+      completeCreateFlow,
+      openProjectInEditor,
       workspaceTab,
       setWorkspaceTab,
       mainNav,
@@ -676,6 +815,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         setSelectedBlockId(newBlockId);
         setSelectedTransitionId(null);
         setShowBlockLibraryDrawer(false);
+        setShowSettingsInspector(true);
         setShowSettingsInspector(true);
       },
       reorderBlock: (blockId, toIndex) => {
@@ -1141,6 +1281,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           project.id,
         );
         setStep("motion");
+        setAppShellState("editor");
         return true;
       },
       loadProjectById: (id) => {
@@ -1151,6 +1292,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           project.id,
         );
         setStep("motion");
+        setAppShellState("editor");
       },
       importProject: (project) => {
         loadSnapshot(
@@ -1158,6 +1300,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           project.id,
         );
         setStep("motion");
+        setAppShellState("editor");
       },
       setCurrentFrame,
       seekToFrame,
@@ -1203,6 +1346,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       showStudio,
       studioTab,
       showInternalBlocks,
+      appShell,
+      createFlowDraft,
+      createFlowStep,
       workspaceTab,
       mainNav,
       user,
@@ -1227,6 +1373,15 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       nudgePlayhead,
       showToast,
       dismissToast,
+      setAppShell,
+      updateCreateFlowDraft,
+      setCreateFlowStep,
+      goHome,
+      openEditor,
+      startCreateFlow,
+      openStudio,
+      completeCreateFlow,
+      openProjectInEditor,
     ],
   );
 

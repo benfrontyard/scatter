@@ -110,6 +110,7 @@ export function AnimatedText({
 
   return (
     <div
+      aria-label={displayText}
       style={mergeMotionAndEffectStyle(
         {
           ...wrapperStyle,
@@ -118,7 +119,6 @@ export function AnimatedText({
         effectStyle,
       )}
     >
-      <span className="sr-only">{displayText}</span>
       <span
         aria-hidden
         style={{

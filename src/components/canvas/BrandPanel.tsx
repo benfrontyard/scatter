@@ -130,8 +130,8 @@ export function BrandPanel() {
   };
 
   const handleResetToDefault = () => {
-    setBrand("default-dark");
-    showToast({ message: "Reset to Default Dark brand kit." });
+    setBrand("nimbo");
+    showToast({ message: "Reset to Nimbo brand kit." });
   };
 
   const handleOpenInBrandLab = () => {

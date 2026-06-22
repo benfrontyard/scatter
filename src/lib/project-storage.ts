@@ -1,3 +1,4 @@
+import { buildEmptySequence } from "@/lib/empty-sequence";
 import { buildGoldenDemoSequence } from "@/lib/demo/golden-demo";
 import { CUSTOM_BRAND_ID, duplicateBrandAsCustom, resolveBrand } from "@/lib/brand-utils";
 import { normalizeBlockLayoutOverrides } from "@/lib/block-layout";
@@ -30,16 +31,20 @@ function writeJson(key: string, value: unknown): void {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-export function createNewProject(name = "Launch a branded video in minutes"): ScatterProject {
+export function createNewProject(name = "Untitled video", useDemo = false): ScatterProject {
   return {
     version: 1,
     id: crypto.randomUUID(),
     name,
     savedAt: new Date().toISOString(),
-    sequence: structuredClone(buildGoldenDemoSequence()),
+    sequence: structuredClone(useDemo ? buildGoldenDemoSequence() : buildEmptySequence(name)),
     customBrands: [],
     assets: [],
   };
+}
+
+export function createEmptyProject(name = "Untitled video"): ScatterProject {
+  return createNewProject(name, false);
 }
 
 export function projectToJson(project: ScatterProject): string {

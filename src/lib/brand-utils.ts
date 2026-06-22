@@ -15,15 +15,16 @@ export function resolveBrand(
   customBrands: BrandPreset[],
 ): BrandPreset {
   let brand: BrandPreset;
+  const fallback = studioBrandPresets[0] ?? brandPresets[0];
   if (brandPresetId === CUSTOM_BRAND_ID) {
-    brand = customBrands.find((b) => b.id === CUSTOM_BRAND_ID) ?? brandPresets[0];
+    brand = customBrands.find((b) => b.id === CUSTOM_BRAND_ID) ?? fallback;
   } else {
     const custom = customBrands.find((b) => b.id === brandPresetId);
     brand =
       custom ??
       studioBrandPresetMap[brandPresetId] ??
       brandPresetMap[brandPresetId] ??
-      brandPresets[0];
+      fallback;
   }
 
   return normalizeBrand({
@@ -38,10 +39,9 @@ export function resolveBrand(
 
 export function getAllBrands(customBrands: BrandPreset[]): BrandPreset[] {
   const customIds = new Set(customBrands.map((b) => b.id));
-  const demoIds = new Set(studioBrandPresets.map((b) => b.id));
-  const builtins = brandPresets.filter((b) => !customIds.has(b.id) && !demoIds.has(b.id));
   const demos = studioBrandPresets.filter((b) => !customIds.has(b.id));
-  return [...builtins, ...demos, ...customBrands];
+  const savedCustom = customBrands.filter((b) => b.id !== CUSTOM_BRAND_ID);
+  return [...demos, ...savedCustom];
 }
 
 export function duplicateBrandAsCustom(source: BrandPreset): BrandPreset {
@@ -53,7 +53,7 @@ export function duplicateBrandAsCustom(source: BrandPreset): BrandPreset {
 }
 
 export function createEmptyCustomBrand(base?: BrandPreset): BrandPreset {
-  const source = base ?? brandPresets[0];
+  const source = base ?? studioBrandPresets[0] ?? brandPresets[0];
   return {
     id: CUSTOM_BRAND_ID,
     name: "Custom Brand",

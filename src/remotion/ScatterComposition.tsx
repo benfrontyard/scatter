@@ -66,7 +66,7 @@ export function ScatterComposition({
             ...emptyBodyStyle,
           }}
         >
-          Add a motion block to start
+          Add a scene to start
         </AbsoluteFill>
       </>
     );

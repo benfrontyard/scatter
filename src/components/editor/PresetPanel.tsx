@@ -1,4 +1,3 @@
-import { brandPresets } from "@/config/brands";
 import { motionFormats } from "@/config/formats";
 import { useEditor } from "@/context/editor-context";
 import { getEasingPreset, normalizeBrandMotion } from "@/lib/easing";
@@ -13,7 +12,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 
 export function PresetPanel() {
-  const { brand, format, setBrand, setFormat } = useEditor();
+  const { brand, format, setBrand, setFormat, allBrands } = useEditor();
   const motion = normalizeBrandMotion(brand.motion);
   const entrancePreset = getEasingPreset(motion.entranceEasingId);
 
@@ -33,7 +32,7 @@ export function PresetPanel() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {brandPresets.map((preset) => (
+              {allBrands.map((preset) => (
                 <SelectItem key={preset.id} value={preset.id}>
                   {preset.name}
                 </SelectItem>

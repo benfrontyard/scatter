@@ -73,7 +73,7 @@ function AssetsSection() {
       </div>
       {assets.filter((a) => a.type === "image").length === 0 ? (
         <p className="py-3 text-center text-xs text-muted-foreground">
-          No assets uploaded. Add images to use in blocks.
+          No assets uploaded. Add images to use in scenes.
         </p>
       ) : (
         <ul className="space-y-1.5">
@@ -386,7 +386,7 @@ function BlockSettings({ className }: { className?: string }) {
 
   if (!isAdminMode) {
     return (
-      <PanelShell className={className} icon={SlidersHorizontal} title="Block" subtitle="Edit content">
+      <PanelShell className={className} icon={SlidersHorizontal} title="Scene" subtitle="Edit content">
         <UserBlockControls />
       </PanelShell>
     );
@@ -435,7 +435,7 @@ function AdminBlockSettings({ className }: { className?: string }) {
     <PanelShell
       className={className}
       icon={SlidersHorizontal}
-      title="Block"
+      title="Scene"
       subtitle={definition.name}
     >
       <div className="space-y-3 p-3">

@@ -1,3 +1,4 @@
+import { recordExport } from "@/lib/export-history";
 import { motionBlockMap } from "@/config/blocks";
 import { useEditor } from "@/context/editor-context";
 import {
@@ -38,7 +39,7 @@ function MetaRow({ label, value }: { label: string; value: string }) {
 }
 
 export function ExportPanel({ className, compact }: ExportPanelProps) {
-  const { sequence, format, fps, customBrands, assets, setFormat, setFps, setIsPlaying } =
+  const { sequence, format, fps, customBrands, assets, projectId, setFormat, setFps, setIsPlaying } =
     useEditor();
   const [fileName, setFileName] = useState(() =>
     sequence.name.replace(/[^a-z0-9-_]+/gi, "-").toLowerCase() || "export",
@@ -118,6 +119,13 @@ export function ExportPanel({ className, compact }: ExportPanelProps) {
       anchor.download = `${fileName}.mp4`;
       anchor.click();
       URL.revokeObjectURL(url);
+      recordExport({
+        projectId,
+        projectName: sequence.name,
+        fileName,
+        formatId: format.id,
+        aspectRatio: format.aspectRatio,
+      });
       setStatus("done");
     } catch (err) {
       if (err instanceof ExportCancelledError) {
@@ -221,7 +229,7 @@ export function ExportPanel({ className, compact }: ExportPanelProps) {
       {blockSummaries.length > 0 ? (
         <div className="rounded-md border border-border bg-background/50 px-2.5 py-2">
           <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-            Blocks ({blockSummaries.length})
+            Scenes ({blockSummaries.length})
           </p>
           <ul className="mt-1.5 space-y-1">
             {blockSummaries.map((block) => (
@@ -238,7 +246,7 @@ export function ExportPanel({ className, compact }: ExportPanelProps) {
         </div>
       ) : (
         <p className="rounded-md border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
-          Add blocks to your sequence before exporting.
+          Add scenes to your sequence before exporting.
         </p>
       )}
 

@@ -11,7 +11,7 @@ const SHORTCUTS = [
   { keys: ["⌘", "Y"], description: "Redo" },
   { keys: ["⌘", "S"], description: "Save project" },
   { keys: ["⌘", "N"], description: "New project" },
-  { keys: ["Delete"], description: "Delete selected block or transition" },
+  { keys: ["Delete"], description: "Delete selected scene or transition" },
   { keys: ["Esc"], description: "Deselect / close panel" },
   { keys: ["←", "→"], description: "Nudge playhead (timeline focused)" },
   { keys: ["?"], description: "Keyboard shortcuts" },

@@ -132,7 +132,7 @@ export const brandPresets: BrandPreset[] = [
   },
 ];
 
-export const defaultBrandPresetId = "default-dark";
+export const defaultBrandPresetId = "nimbo";
 
 export const brandPresetMap = Object.fromEntries(
   brandPresets.map((preset) => [preset.id, preset]),

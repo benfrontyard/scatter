@@ -71,7 +71,7 @@ export function BlockLibraryPanel({ className }: BlockLibraryPanelProps) {
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2.5">
         <Blocks className="h-3.5 w-3.5 text-muted-foreground" />
         <h2 className="truncate text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Motion Blocks Library
+          Scene Library
         </h2>
       </div>
 
@@ -92,7 +92,7 @@ export function BlockLibraryPanel({ className }: BlockLibraryPanelProps) {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search blocks…"
+            placeholder="Search scene styles…"
             className="h-8 pl-7 text-xs"
           />
         </div>
@@ -132,7 +132,7 @@ export function BlockLibraryPanel({ className }: BlockLibraryPanelProps) {
         {catalogBlocks.length === 0 ? (
           <div className="flex flex-col items-center gap-3 px-3 py-8 text-center">
             <p className="text-xs leading-relaxed text-muted-foreground">
-              No approved motion blocks yet. Internal users can publish blocks in Studio → Blocks.
+              No approved scene styles yet. Internal users can publish scenes in Studio → Blocks.
             </p>
             {isInternal ? (
               <Button
@@ -152,7 +152,7 @@ export function BlockLibraryPanel({ className }: BlockLibraryPanelProps) {
           </div>
         ) : filteredBlocks.length === 0 ? (
           <p className="px-2 py-4 text-center text-xs text-muted-foreground">
-            No blocks match your filters.
+            No scene styles match your filters.
           </p>
         ) : (
           <ul className="space-y-1">

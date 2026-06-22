@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { defaultBrandEffects } from "@/config/effects/defaults";
-import { brandPresets } from "@/config/brands";
+import { studioBrandPresets } from "@/lib/brand-motion-kit-adapter";
 import {
   applyPersonalityToBrand,
   BRAND_PERSONALITIES,
@@ -547,7 +547,7 @@ export function BrandAdvancedSection({
           size="sm"
           onClick={() =>
             onBrandChange({
-              ...structuredClone(brandPresets[0]),
+              ...structuredClone(studioBrandPresets[0]),
               id: draftBrand.id,
               name: draftBrand.name,
               personality: draftBrand.personality,
