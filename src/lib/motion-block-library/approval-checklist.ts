@@ -116,7 +116,7 @@ export function getApprovalChecklist(input: ApprovalChecklistInput): ApprovalChe
     });
   }
 
-  if (block.status === "approved") {
+  if (block.status === "approved" || block.status === "published") {
     items.push({
       id: "canvas-visibility",
       label: "Visible in Canvas library",
@@ -145,18 +145,25 @@ export function getTestMatrixResults(
     aspectRatio: MotionAspectRatio,
     brand: BrandPreset,
   ) => MotionBlockWarning[],
-): { brandId: string; aspectRatio: MotionAspectRatio; ok: boolean; errorCount: number }[] {
+): { brandId: string; aspectRatio: MotionAspectRatio; ok: boolean; errorCount: number; firstError?: string }[] {
   return brands.flatMap((brand) =>
     aspectRatios.map((aspectRatio) => {
       const hasLayout = Boolean(block.layoutRules[aspectRatio]);
       const supported = block.supportedFormats?.includes(aspectRatio) ?? false;
       const warnings = validate(block, aspectRatio, brand);
-      const errors = warnings.filter((w) => w.severity === "error").length;
+      const errors = warnings.filter((w) => w.severity === "error");
+      const firstError =
+        !hasLayout
+          ? `No layout for ${aspectRatio}`
+          : !supported
+            ? `${aspectRatio} not in supported formats`
+            : errors[0]?.message;
       return {
         brandId: brand.id,
         aspectRatio,
-        ok: hasLayout && supported && errors === 0,
-        errorCount: errors,
+        ok: hasLayout && supported && errors.length === 0,
+        errorCount: errors.length,
+        firstError,
       };
     }),
   );

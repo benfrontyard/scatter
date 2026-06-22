@@ -1,8 +1,11 @@
-import { motionBlockMap } from "@/config/blocks";
 import {
   createBlockInstance,
   createTransitionBetween,
-} from "@/config/sequences/default";
+} from "@/lib/sequence-factory";
+import { getTransitionPresetId } from "@/lib/transitions/migrate-transition";
+import {
+  pickTransitionPresetForSequencePair,
+} from "@/lib/transitions/sequence-handoffs";
 import type { BlockTransition, MotionSequence, SequenceTimelineItem } from "@/types";
 
 export function framesToSeconds(frames: number, fps: number): string {
@@ -12,13 +15,9 @@ export function framesToSeconds(frames: number, fps: number): string {
 function pickDefaultTransitionId(
   fromBlockId: string,
   toBlockId: string,
+  sequence: MotionSequence,
 ): string {
-  const fromDef = motionBlockMap[fromBlockId];
-  const toDef = motionBlockMap[toBlockId];
-  const fromCompatible = fromDef?.compatibleTransitions ?? [];
-  const toCompatible = toDef?.compatibleTransitions ?? [];
-  const shared = fromCompatible.filter((id) => toCompatible.includes(id));
-  return shared[0] ?? "crossfade";
+  return pickTransitionPresetForSequencePair(fromBlockId, toBlockId, sequence);
 }
 
 export function addBlockToSequence(
@@ -30,7 +29,11 @@ export function addBlockToSequence(
   const transitions = [...sequence.transitions];
 
   if (lastBlock) {
-    const transitionId = pickDefaultTransitionId(lastBlock.blockId, newBlock.blockId);
+    const transitionId = pickDefaultTransitionId(
+      lastBlock.blockId,
+      newBlock.blockId,
+      sequence,
+    );
     transitions.push(createTransitionBetween(lastBlock, newBlock, transitionId));
   }
 
@@ -63,7 +66,11 @@ export function reorderBlockInSequence(
   for (let i = 0; i < blocks.length - 1; i++) {
     const fromBlock = blocks[i];
     const toBlock = blocks[i + 1];
-    const transitionId = pickDefaultTransitionId(fromBlock.blockId, toBlock.blockId);
+    const transitionId = pickDefaultTransitionId(
+      fromBlock.blockId,
+      toBlock.blockId,
+      sequence,
+    );
     transitions.push(createTransitionBetween(fromBlock, toBlock, transitionId));
   }
 
@@ -86,7 +93,7 @@ export function removeBlockFromSequence(
   );
 
   if (prevBlock && nextBlock) {
-    const transitionId = pickDefaultTransitionId(prevBlock.blockId, nextBlock.blockId);
+    const transitionId = pickDefaultTransitionId(prevBlock.blockId, nextBlock.blockId, sequence);
     transitions = [
       ...transitions,
       createTransitionBetween(prevBlock, nextBlock, transitionId),
@@ -108,6 +115,13 @@ export function getTransitionBetweenBlocks(
     (transition) =>
       transition.fromBlockId === fromBlock.id && transition.toBlockId === toBlock.id,
   );
+}
+
+export function getTransitionOverlapFrames(transition: BlockTransition | undefined): number {
+  if (!transition || transition.overlap === 0) return 0;
+  const presetId = getTransitionPresetId(transition);
+  if (presetId === "cut" || presetId === "hold-cut") return 0;
+  return Math.max(Math.round(transition.duration * transition.overlap), 0);
 }
 
 export function getSequenceDurationInFrames(sequence: MotionSequence): number {

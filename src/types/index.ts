@@ -40,6 +40,11 @@ export type {
   ResolveBlockLayoutInput,
 } from "./block-layout";
 export type {
+  BlockHeroAnchor,
+  BlockTransitionMetadata,
+  BlockTransitionPose,
+} from "./block-transition";
+export type {
   EffectCategory,
   EffectControlDefinition,
   EffectControlType,

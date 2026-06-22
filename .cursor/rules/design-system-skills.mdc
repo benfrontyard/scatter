@@ -20,6 +20,8 @@ When the user asks about typography, type scales, responsive type, grids, Swiss 
 
 For full layout work, start with **responsive-type-grid-composer** — it references the other two.
 
+For motion life, pacing, polish, and block transitions, use the motion skills in `skills/README.md` and `.cursor/rules/motion-skills.mdc`.
+
 ## Rules
 
 - Prefer practical design-system output over abstract theory.

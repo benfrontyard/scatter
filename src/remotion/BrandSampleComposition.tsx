@@ -1,5 +1,5 @@
 import { motionBlockMap } from "@/config/blocks";
-import { createBlockInstance } from "@/config/sequences/default";
+import { createBlockInstance } from "@/lib/sequence-factory";
 import { getBrandFontFamilies } from "@/lib/typography";
 import type { BrandPreset, MotionFormat, ProjectAsset } from "@/types";
 import { AbsoluteFill } from "remotion";

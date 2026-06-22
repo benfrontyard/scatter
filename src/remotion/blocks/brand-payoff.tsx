@@ -10,11 +10,11 @@ import {
   getEnterProgress,
   getFadeOpacity,
   getIntroTiming,
-  getOutroOpacity,
-  getScale,
+  getScaleWithSettle,
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { useBlockEnterProgress, useBlockOutroOpacity, useHandoffExitOffset, useHandoffHeroTransform } from "../block-sequence-context";
 import { getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 import { VoidStage } from "./wave1/primitives";
 
@@ -46,14 +46,27 @@ export function BrandPayoffBlock({
   const logoText = block.content.logoText || brand.logos.textFallback || brand.name || "SCATTER";
 
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.08, exitEasing);
-
-  const logoProgress = getEnterProgress(
+  const outroOpacity = useBlockOutroOpacity(frame, duration, 0.08, exitEasing);
+  const handoffExit = useHandoffExitOffset(
     frame,
+    duration,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
+
+  const logoProgress = useBlockEnterProgress(
     timing.primaryStart,
     timing.enterFrames,
     speed,
     entranceEasing,
+  );
+  const heroTransform = useHandoffHeroTransform(
+    "logo-cta",
+    logoProgress,
+    formatWidth,
+    formatHeight,
   );
   const ctaProgress = getEnterProgress(
     frame,
@@ -74,7 +87,7 @@ export function BrandPayoffBlock({
   const ctaOpacity = getFadeOpacity(ctaProgress) * outroOpacity;
   const urlOpacity = getFadeOpacity(urlProgress) * outroOpacity;
 
-  const logoScale = getScale(logoProgress, intensity);
+  const logoScale = getScaleWithSettle(logoProgress, intensity);
   const logoTranslate = getTranslate(
     logoProgress,
     direction,
@@ -82,6 +95,8 @@ export function BrandPayoffBlock({
     formatHeight,
     intensity,
   );
+  const scaledLogoX = logoTranslate.x * heroTransform.travelScale;
+  const scaledLogoY = logoTranslate.y * heroTransform.travelScale;
   const ctaTranslate = getTranslate(
     ctaProgress,
     "up",
@@ -124,7 +139,7 @@ export function BrandPayoffBlock({
               style={mergeMotionAndEffectStyle(
                 {
                   opacity: logoOpacity,
-                  transform: `translate(${logoTranslate.x}px, ${logoTranslate.y}px) scale(${logoScale})`,
+                  transform: `translate(${scaledLogoX + handoffExit.x + heroTransform.x}px, ${scaledLogoY + handoffExit.y + heroTransform.y}px) scale(${logoScale * heroTransform.scale})`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

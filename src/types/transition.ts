@@ -29,6 +29,11 @@ export type BlockTransition = {
   id: string;
   fromBlockId: string;
   toBlockId: string;
+  /**
+   * Source of truth for the selected transition preset.
+   * See TransitionPresetId in lib/transitions/presets.
+   */
+  presetId?: string;
   type: TransitionType;
   duration: number;
   direction: TransitionDirection;

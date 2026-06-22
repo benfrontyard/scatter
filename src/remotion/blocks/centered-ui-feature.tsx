@@ -4,16 +4,15 @@ import { resolvedRoleToCss } from "@/lib/layout/typography-css";
 import { resolveBlockLayoutFromInstance } from "@/lib/layout";
 import type { BrandPreset, MotionBlockInstance, MotionFormat } from "@/types";
 import { useCurrentFrame } from "remotion";
-import { BlockLayoutZone } from "../BlockLayoutZone";
 import {
   getEnterProgress,
   getFadeOpacity,
   getIntroTiming,
-  getOutroOpacity,
-  getScale,
+  getScaleWithSettle,
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { useBlockEnterProgress, useBlockOutroOpacity, useHandoffExitOffset, useHandoffHeroTransform } from "../block-sequence-context";
 import { getTargetEffectStyle } from "../effect-styles";
 import { CardChrome, StepRail, VoidStage } from "./wave1/primitives";
 
@@ -34,7 +33,7 @@ export function CenteredUiFeatureBlock({
 
   const layout = resolveBlockLayoutFromInstance({ brand, block, format, includeLogo: false });
 
-  const { intensity, speed, stagger, entranceEasing, exitEasing } =
+  const { intensity, speed, stagger, entranceEasing, exitEasing, direction } =
     resolveBlockMotionParams(brand, block);
 
   const headline = block.content.headline ?? "Create Image";
@@ -46,14 +45,41 @@ export function CenteredUiFeatureBlock({
   const typeOnEnabled = block.motion.controls.typeOn !== "false";
 
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.1, exitEasing);
+  const outroOpacity = useBlockOutroOpacity(frame, duration, 0.1, exitEasing);
+  const handoffExit = useHandoffExitOffset(
+    frame,
+    duration,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
 
-  const cardProgress = getEnterProgress(
+  const headlineProgress = getEnterProgress(
     frame,
     timing.primaryStart,
+    Math.round(timing.enterFrames * 0.75),
+    speed,
+    entranceEasing,
+  );
+  const bodyProgress = getEnterProgress(
+    frame,
+    timing.secondaryStart,
+    Math.round(timing.enterFrames * 0.85),
+    speed,
+    entranceEasing,
+  );
+  const cardProgress = useBlockEnterProgress(
+    timing.primaryStart + Math.round(stagger * 0.75),
     timing.enterFrames,
     speed,
     entranceEasing,
+  );
+  const heroTransform = useHandoffHeroTransform(
+    "ui-card",
+    cardProgress,
+    formatWidth,
+    formatHeight,
   );
   const inputProgress = getEnterProgress(
     frame,
@@ -78,7 +104,23 @@ export function CenteredUiFeatureBlock({
   );
 
   const cardOpacity = getFadeOpacity(cardProgress) * outroOpacity;
-  const cardScale = getScale(cardProgress, intensity);
+  const cardScale = getScaleWithSettle(cardProgress, intensity) * heroTransform.scale;
+  const headlineOpacity = getFadeOpacity(headlineProgress) * outroOpacity;
+  const headlineTranslate = getTranslate(
+    headlineProgress,
+    "up",
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
+  const bodyOpacity = getFadeOpacity(bodyProgress) * outroOpacity;
+  const bodyTranslate = getTranslate(
+    bodyProgress,
+    "up",
+    formatWidth,
+    formatHeight,
+    "subtle",
+  );
   const ctaOpacity = getFadeOpacity(ctaProgress) * outroOpacity;
   const railOpacity = getFadeOpacity(railProgress) * outroOpacity;
   const ctaTranslate = getTranslate(
@@ -137,14 +179,24 @@ export function CenteredUiFeatureBlock({
         />
       ) : null}
 
-      <BlockLayoutZone layout={layout}>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: layout.padding,
+        }}
+      >
         <div
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             width: "100%",
-            height: "100%",
+            maxWidth: layout.maxTextWidth,
+            transform: `translate(${handoffExit.x + heroTransform.x}px, ${handoffExit.y + heroTransform.y}px)`,
           }}
         >
           <CardChrome
@@ -167,6 +219,8 @@ export function CenteredUiFeatureBlock({
               {headlineType && fittedHeadlineCss ? (
                 <div
                   style={{
+                    opacity: headlineOpacity,
+                    transform: `translateY(${headlineTranslate.y}px)`,
                     ...fittedHeadlineCss,
                     color: brand.colors.foreground,
                   }}
@@ -178,6 +232,8 @@ export function CenteredUiFeatureBlock({
               {body && fittedBodyCss ? (
                 <div
                   style={{
+                    opacity: bodyOpacity,
+                    transform: `translateY(${bodyTranslate.y}px)`,
                     ...fittedBodyCss,
                     color: brand.colors.muted,
                   }}
@@ -224,7 +280,7 @@ export function CenteredUiFeatureBlock({
             </div>
           </CardChrome>
         </div>
-      </BlockLayoutZone>
+      </div>
     </VoidStage>
   );
 }

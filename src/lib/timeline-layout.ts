@@ -19,7 +19,11 @@ export function getTimelineWidthPx(totalFrames: number, fps: number): number {
 }
 
 export function frameToPx(frame: number, fps: number): number {
-  return TIMELINE_PADDING_START + (frame / fps) * TIMELINE_PX_PER_SECOND;
+  return timeSecToPx(frame / fps);
+}
+
+export function timeSecToPx(timeSec: number): number {
+  return TIMELINE_PADDING_START + timeSec * TIMELINE_PX_PER_SECOND;
 }
 
 export function pxToFrame(px: number, fps: number): number {

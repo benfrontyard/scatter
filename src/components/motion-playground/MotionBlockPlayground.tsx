@@ -21,6 +21,7 @@ import { useEditor } from "@/context/editor-context";
 import {
   MOTION_BLOCK_FAMILIES,
   MOTION_BLOCK_STATUS_LABELS,
+  STUDIO_STATUS_ORDER,
   buildPlaygroundPreviewSequence,
   canUseProductionPlaygroundRenderer,
   duplicateBlock,
@@ -420,7 +421,7 @@ export function MotionBlockPlayground({ embedded = false }: { embedded?: boolean
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
-                {(["draft", "needs-review", "approved", "deprecated"] as const).map((s) => (
+                {STUDIO_STATUS_ORDER.filter((s) => s !== "approved").map((s) => (
                   <SelectItem key={s} value={s}>
                     {MOTION_BLOCK_STATUS_LABELS[s]}
                   </SelectItem>
@@ -663,7 +664,7 @@ export function MotionBlockPlayground({ embedded = false }: { embedded?: boolean
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(["draft", "needs-review", "approved", "deprecated"] as const).map((s) => (
+                {STUDIO_STATUS_ORDER.filter((s) => s !== "approved").map((s) => (
                   <SelectItem key={s} value={s}>
                     {MOTION_BLOCK_STATUS_LABELS[s]}
                   </SelectItem>

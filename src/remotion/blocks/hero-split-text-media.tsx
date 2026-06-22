@@ -10,11 +10,11 @@ import {
   getFadeOpacity,
   getIntroTiming,
   getMaskReveal,
-  getOutroOpacity,
   getScale,
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { useBlockEnterProgress, useBlockOutroOpacity, useHandoffExitOffset, useHandoffHeroTransform } from "../block-sequence-context";
 import { GrainOverlay, getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 import { MediaPlaceholder } from "./wave1/primitives";
 
@@ -53,14 +53,27 @@ export function HeroSplitTextMediaBlock({
   const cta = block.content.cta ?? "";
 
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.1, exitEasing);
-
-  const mediaProgress = getEnterProgress(
+  const outroOpacity = useBlockOutroOpacity(frame, duration, 0.1, exitEasing);
+  const handoffExit = useHandoffExitOffset(
     frame,
+    duration,
+    "up",
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
+
+  const mediaProgress = useBlockEnterProgress(
     timing.secondaryStart,
     Math.round(timing.enterFrames * 0.95),
     speed,
     entranceEasing,
+  );
+  const heroTransform = useHandoffHeroTransform(
+    "split-media",
+    mediaProgress,
+    formatWidth,
+    formatHeight,
   );
   const ctaProgress = getEnterProgress(
     frame,
@@ -84,6 +97,9 @@ export function HeroSplitTextMediaBlock({
   const isLandscape = formatWidth >= formatHeight;
   const mediaOnRight =
     block.layoutOverrides?.formats?.[format.id]?.mediaPosition !== "left";
+  const mediaZone = layout.media.zone;
+
+  const textColumnWidth = layout.contentZone.width;
 
   const headlineType = layout.slots.headline ?? layout.typography.heading;
   const subheadType = layout.slots.subhead ?? layout.typography.body;
@@ -91,25 +107,24 @@ export function HeroSplitTextMediaBlock({
   const ctaType = layout.slots.cta ?? layout.typography.label;
   const captionType = layout.slots.caption ?? layout.typography.caption;
 
+  const withColumnWidth = (slot: typeof headlineType) =>
+    slot ? { ...slot, maxWidth: textColumnWidth } : undefined;
+
   const headlineEffect = getTargetEffectStyle(brand, block, "headline");
   const imageEffect = getTargetEffectStyle(brand, block, "image");
-
-  const mediaWidth = isLandscape ? "46%" : "88%";
-  const mediaHeight = isLandscape ? "72%" : formatHeight * 0.34;
-  const textFlex = isLandscape ? "1 1 44%" : "0 0 auto";
 
   const textColumn = (
     <div
       style={mergeMotionAndEffectStyle(
         {
-          flex: textFlex,
+          width: "100%",
+          maxWidth: textColumnWidth,
           display: "flex",
           flexDirection: "column",
           alignItems: isLandscape ? "flex-start" : "center",
           justifyContent: "center",
           gap: layout.gap,
           textAlign: isLandscape ? "left" : layout.alignment,
-          maxWidth: isLandscape ? undefined : layout.maxTextWidth,
         },
         headlineEffect,
       )}
@@ -126,7 +141,7 @@ export function HeroSplitTextMediaBlock({
           outroOpacity={outroOpacity}
           maxLength={56}
           typographySlot="headline"
-          layoutSlot={headlineType}
+          layoutSlot={withColumnWidth(headlineType)}
         />
       ) : null}
 
@@ -143,7 +158,7 @@ export function HeroSplitTextMediaBlock({
           maxLength={120}
           typographySlot="body"
           color={brand.colors.muted}
-          layoutSlot={subheadType}
+          layoutSlot={withColumnWidth(subheadType)}
         />
       ) : null}
 
@@ -187,10 +202,10 @@ export function HeroSplitTextMediaBlock({
       scale={mediaScale}
       style={mergeMotionAndEffectStyle(
         {
-          flex: isLandscape ? "1 1 46%" : "0 0 auto",
-          width: mediaWidth,
-          height: mediaHeight,
+          width: "100%",
+          height: isLandscape ? "100%" : formatHeight * 0.34,
           clipPath: getMaskReveal(mediaProgress),
+          transform: `translate(${handoffExit.x + heroTransform.x}px, ${handoffExit.y + heroTransform.y}px) scale(${heroTransform.scale})`,
         },
         imageEffect,
       )}
@@ -217,25 +232,34 @@ export function HeroSplitTextMediaBlock({
       />
       <GrainOverlay grain={brand.effects.defaultGrain} />
 
-      <BlockLayoutZone
-        layout={{
-          ...layout,
-          stackDirection: isLandscape ? "row" : "column",
-          alignment: isLandscape ? "left" : layout.alignment,
-        }}
-      >
-        {isLandscape && !mediaOnRight ? (
-          <>
-            {mediaColumn}
-            {textColumn}
-          </>
+      <BlockLayoutZone layout={layout}>
+        {isLandscape ? (
+          textColumn
         ) : (
           <>
             {textColumn}
-            {mediaColumn}
+            <div style={{ width: "100%", maxWidth: formatWidth * 0.88 }}>{mediaColumn}</div>
           </>
         )}
       </BlockLayoutZone>
+
+      {isLandscape && mediaZone ? (
+        <div
+          style={{
+            position: "absolute",
+            left: mediaZone.x,
+            top: mediaZone.y,
+            width: mediaZone.width,
+            height: mediaZone.height,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
+          }}
+        >
+          {mediaColumn}
+        </div>
+      ) : null}
     </div>
   );
 }

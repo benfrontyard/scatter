@@ -36,6 +36,21 @@ export {
   type ApprovalChecklistInput,
 } from "./approval-checklist";
 export {
+  normalizeBlockStatus,
+  getBlockPrimaryAction,
+  isPublishedStatus,
+  STUDIO_STATUS_ORDER,
+  statusBadgeClass,
+} from "./status-lifecycle";
+export { buildBlockQueueRow, sortQueueRows, type BlockQueueRow } from "./block-queue";
+export {
+  buildBlockHandoffPackage,
+  downloadBlockHandoffPackage,
+  generateBlocksTsPatch,
+  copyBlocksTsPatch,
+  type BlockHandoffPackage,
+} from "./publish-package";
+export {
   buildPreviewDiagnostics,
   previewShouldRender,
   getRendererLabel,

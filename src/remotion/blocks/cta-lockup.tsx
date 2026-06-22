@@ -9,11 +9,11 @@ import {
   getEnterProgress,
   getFadeOpacity,
   getIntroTiming,
-  getOutroOpacity,
   getScale,
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { useBlockEnterProgress, useBlockOutroOpacity, useHandoffExitOffset, useHandoffHeroTransform } from "../block-sequence-context";
 import { GrainOverlay, getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 
 type CtaLockupBlockProps = {
@@ -39,7 +39,15 @@ export function CtaLockupBlock({ brand, block, format, assets = [] }: CtaLockupB
   const logoText = block.content.logoText || brand.logos.textFallback || "SCATTER";
 
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.08, exitEasing);
+  const outroOpacity = useBlockOutroOpacity(frame, duration, 0.08, exitEasing);
+  const handoffExit = useHandoffExitOffset(
+    frame,
+    duration,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
 
   const messageProgress = getEnterProgress(
     frame,
@@ -48,12 +56,17 @@ export function CtaLockupBlock({ brand, block, format, assets = [] }: CtaLockupB
     speed,
     entranceEasing,
   );
-  const ctaProgress = getEnterProgress(
-    frame,
+  const ctaProgress = useBlockEnterProgress(
     timing.secondaryStart,
     timing.enterFrames,
     speed,
     entranceEasing,
+  );
+  const heroTransform = useHandoffHeroTransform(
+    "logo-cta",
+    ctaProgress,
+    formatWidth,
+    formatHeight,
   );
   const logoProgress = getEnterProgress(
     frame,
@@ -76,6 +89,7 @@ export function CtaLockupBlock({ brand, block, format, assets = [] }: CtaLockupB
   );
   const ctaTranslate = getTranslate(ctaProgress, "up", formatWidth, formatHeight, intensity);
   const ctaScale = getScale(ctaProgress, intensity);
+  const scaledCtaY = ctaTranslate.y * heroTransform.travelScale;
 
   const buttonScale = Number(block.motion.controls.buttonScale ?? 1);
 
@@ -145,7 +159,7 @@ export function CtaLockupBlock({ brand, block, format, assets = [] }: CtaLockupB
               style={mergeMotionAndEffectStyle(
                 {
                   opacity: ctaOpacity,
-                  transform: `translateY(${ctaTranslate.y}px) scale(${ctaScale})`,
+                  transform: `translateY(${scaledCtaY + handoffExit.y + heroTransform.y}px) translateX(${handoffExit.x + heroTransform.x}px) scale(${ctaScale * heroTransform.scale})`,
                   padding: `${formatHeight * 0.018 * buttonScale}px ${formatWidth * 0.055 * buttonScale}px`,
                   backgroundColor: brand.colors.accent,
                   color: brand.colors.background,

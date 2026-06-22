@@ -8,9 +8,11 @@ export function getPlaygroundBlocks(): MotionBlockLibraryEntry[] {
   return [...motionBlockLibrary];
 }
 
-/** Blocks approved for the user-facing motion block library. */
+/** Blocks published for the user-facing motion block library. */
 export function getApprovedLibraryBlocks(): MotionBlockLibraryEntry[] {
-  return motionBlockLibrary.filter((block) => block.status === "approved");
+  return motionBlockLibrary.filter(
+    (block) => block.status === "approved" || block.status === "published",
+  );
 }
 
 /** Editor timeline definitions for approved blocks that have a renderer bridge. */
@@ -36,7 +38,7 @@ export function getEditorBlockIdForLibraryEntry(
 
 export function isBlockApproved(blockId: string): boolean {
   const libBlock = motionBlockLibrary.find((b) => b.id === blockId);
-  if (libBlock) return libBlock.status === "approved";
+  if (libBlock) return libBlock.status === "approved" || libBlock.status === "published";
   return getUserFacingBlockDefinitions().some((d) => d.id === blockId);
 }
 
@@ -64,12 +66,4 @@ export const MOTION_BLOCK_FAMILIES: {
   { id: "brand-system", label: "Brand System" },
 ];
 
-export const MOTION_BLOCK_STATUS_LABELS: Record<
-  MotionBlockLibraryEntry["status"],
-  string
-> = {
-  draft: "Draft",
-  "needs-review": "Needs Review",
-  approved: "Approved",
-  deprecated: "Deprecated",
-};
+export { MOTION_BLOCK_STATUS_LABELS, statusBadgeClass } from "./status-lifecycle";

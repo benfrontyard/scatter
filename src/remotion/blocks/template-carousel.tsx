@@ -2,7 +2,7 @@ import { clampHeadlineText } from "@/lib/typography";
 import { resolvedRoleToCss } from "@/lib/layout/typography-css";
 import { resolveBlockLayoutFromInstance } from "@/lib/layout";
 import type { BrandPreset, MotionBlockInstance, MotionFormat } from "@/types";
-import { useCurrentFrame } from "remotion";
+import { useCurrentFrame, interpolate } from "remotion";
 import { CarouselCard, StepRail, VoidStage } from "./wave1/primitives";
 import {
   maxCarouselItemsForFormat,
@@ -14,11 +14,11 @@ import {
   getEnterProgress,
   getFadeOpacity,
   getIntroTiming,
-  getOutroOpacity,
-  getScale,
+  getScaleWithSettle,
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { useBlockEnterProgress, useBlockOutroOpacity, useHandoffExitOffset, useHandoffHeroTransform } from "../block-sequence-context";
 import { getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 
 type TemplateCarouselBlockProps = {
@@ -53,7 +53,15 @@ export function TemplateCarouselBlock({
   const showFlanks = showCarouselFlanks(format.aspectRatio);
 
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.1, exitEasing);
+  const outroOpacity = useBlockOutroOpacity(frame, duration, 0.1, exitEasing);
+  const handoffExit = useHandoffExitOffset(
+    frame,
+    duration,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
 
   const labelProgress = getEnterProgress(
     frame,
@@ -62,12 +70,17 @@ export function TemplateCarouselBlock({
     speed,
     entranceEasing,
   );
-  const trackProgress = getEnterProgress(
-    frame,
+  const trackProgress = useBlockEnterProgress(
     timing.primaryStart,
     timing.enterFrames,
     speed,
     entranceEasing,
+  );
+  const heroTransform = useHandoffHeroTransform(
+    "carousel-card",
+    trackProgress,
+    formatWidth,
+    formatHeight,
   );
 
   const labelOpacity = getFadeOpacity(labelProgress) * outroOpacity;
@@ -79,6 +92,8 @@ export function TemplateCarouselBlock({
     formatHeight,
     intensity,
   );
+  const scaledTrackX = trackTranslate.x * heroTransform.travelScale;
+  const scaledTrackY = trackTranslate.y * heroTransform.travelScale;
 
   const labelType = layout.slots.categoryLabel ?? layout.typography.caption;
   const titleType = layout.slots.headline ?? layout.typography.subheading;
@@ -89,8 +104,19 @@ export function TemplateCarouselBlock({
   const cardWidth = formatWidth * cardWidthRatio;
   const cardHeight = formatHeight * (showFlanks ? 0.52 : 0.42);
   const gap = formatWidth * 0.02;
+
+  const carouselStart = Math.round(duration * 0.38);
+  const carouselEnd = Math.round(duration * 0.72);
+  const slideProgress = interpolate(frame, [carouselStart, carouselEnd], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const slideSteps =
+    showFlanks && items.length > 1 ? Math.min(1, items.length - 1 - activeIndex) : 0;
+  const trackSlideOffset = -(cardWidth + gap) * slideProgress * slideSteps;
+
   const trackLeft = showFlanks
-    ? formatWidth * 0.5 - (activeIndex * (cardWidth + gap) + cardWidth / 2)
+    ? formatWidth * 0.5 - (activeIndex * (cardWidth + gap) + cardWidth / 2) + trackSlideOffset
     : formatWidth * 0.08;
   const trackTop = formatHeight * (showFlanks ? 0.28 : 0.34);
 
@@ -125,7 +151,7 @@ export function TemplateCarouselBlock({
           top: trackTop,
           height: cardHeight,
           opacity: trackOpacity,
-          transform: `translate(${trackTranslate.x}px, ${trackTranslate.y}px)`,
+          transform: `translate(${scaledTrackX + handoffExit.x + heroTransform.x}px, ${scaledTrackY + handoffExit.y + heroTransform.y}px) scale(${heroTransform.scale})`,
           display: "flex",
           flexDirection: "row",
           alignItems: "stretch",
@@ -145,7 +171,7 @@ export function TemplateCarouselBlock({
           );
           const cardOpacity = getFadeOpacity(cardProgress) * outroOpacity;
           const isActive = index === activeIndex;
-          const cardScale = getScale(cardProgress, isActive ? intensity : "subtle");
+          const cardScale = getScaleWithSettle(cardProgress, isActive ? intensity : "subtle");
 
           return (
             <div

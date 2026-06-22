@@ -1,4 +1,4 @@
-import { defaultMotionSequence } from "@/config/sequences/default";
+import { buildGoldenDemoSequence } from "@/lib/demo/golden-demo";
 import { CUSTOM_BRAND_ID, duplicateBrandAsCustom, resolveBrand } from "@/lib/brand-utils";
 import { normalizeBlockLayoutOverrides } from "@/lib/block-layout";
 import { normalizeBrandComposition } from "@/lib/brand-composition";
@@ -9,6 +9,7 @@ import { normalizeCameraSettings } from "@/lib/camera";
 import { normalizeBlockTextAnimations } from "@/lib/text-animation";
 import { normalizeBrandColors } from "@/lib/brand-colors";
 import { normalizeBrandTypography } from "@/lib/typography";
+import { migrateBlockTransitions } from "@/lib/transitions/migrate-transition";
 import type { BrandPreset, MotionBlockInstance, MotionSequence, ScatterProject, RecentProjectEntry } from "@/types";
 
 const PROJECTS_KEY = "scatter:projects";
@@ -29,13 +30,13 @@ function writeJson(key: string, value: unknown): void {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-export function createNewProject(name = "Untitled Project"): ScatterProject {
+export function createNewProject(name = "Launch a branded video in minutes"): ScatterProject {
   return {
     version: 1,
     id: crypto.randomUUID(),
     name,
     savedAt: new Date().toISOString(),
-    sequence: structuredClone(defaultMotionSequence),
+    sequence: structuredClone(buildGoldenDemoSequence()),
     customBrands: [],
     assets: [],
   };
@@ -127,6 +128,7 @@ function migrateProject(project: ScatterProject): ScatterProject {
       ...sequence,
       brandPresetId,
       blocks: migrateBlockEffects(sequence.blocks),
+      transitions: migrateBlockTransitions(sequence.transitions ?? []),
       postFx: normalizePostFXSettings(sequence.postFx),
       camera: normalizeCameraSettings(sequence.camera),
     },

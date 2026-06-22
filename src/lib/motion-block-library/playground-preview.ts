@@ -1,5 +1,5 @@
 import { motionBlockMap } from "@/config/blocks";
-import { createBlockInstance } from "@/config/sequences/default";
+import { createBlockInstance } from "@/lib/sequence-factory";
 import type { MotionSequence } from "@/types";
 import type { MotionAspectRatio, MotionBlockLibraryEntry } from "@/types/motion-block-library";
 

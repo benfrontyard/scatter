@@ -22,6 +22,17 @@
   --input: #e4e4e7;
   --ring: #a1a1aa;
   --preview-surface: #e4e4e7;
+  --editor-bg: var(--background);
+  --editor-surface: var(--preview-surface);
+  --editor-panel: var(--card);
+  --editor-border: var(--border);
+  --editor-muted: var(--muted-foreground);
+  --editor-radius: 0.5rem;
+  --editor-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --editor-topbar-height: 2.75rem;
+  --editor-timeline-height: 10.5rem;
+  --editor-sidebar-width: 16rem;
+  --editor-inspector-width: 20rem;
 }
 
 .dark {
@@ -44,6 +55,12 @@
   --input: #262626;
   --ring: #d4d4d4;
   --preview-surface: #0c0c0c;
+  --editor-bg: var(--background);
+  --editor-surface: var(--preview-surface);
+  --editor-panel: var(--card);
+  --editor-border: var(--border);
+  --editor-muted: var(--muted-foreground);
+  --editor-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.25), 0 4px 6px -4px rgb(0 0 0 / 0.2);
 }
 
 @theme inline {
@@ -66,7 +83,13 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-preview-surface: var(--preview-surface);
+  --color-editor-bg: var(--editor-bg);
+  --color-editor-surface: var(--editor-surface);
+  --color-editor-panel: var(--editor-panel);
+  --color-editor-border: var(--editor-border);
+  --color-editor-muted: var(--editor-muted);
   --radius: 0.5rem;
+  --radius-editor: var(--editor-radius);
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 }

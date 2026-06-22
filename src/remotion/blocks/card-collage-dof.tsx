@@ -15,11 +15,11 @@ import {
   getEnterProgress,
   getFadeOpacity,
   getIntroTiming,
-  getOutroOpacity,
   getScale,
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { useBlockEnterProgress, useBlockOutroOpacity, useHandoffExitOffset, useHandoffHeroTransform } from "../block-sequence-context";
 import { getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 
 type CardCollageDofBlockProps = {
@@ -47,7 +47,15 @@ export function CardCollageDofBlock({ brand, block, format }: CardCollageDofBloc
   const stepLabel = block.content.stepLabel ?? block.content.categoryLabel ?? "";
 
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.1, exitEasing);
+  const outroOpacity = useBlockOutroOpacity(frame, duration, 0.1, exitEasing);
+  const handoffExit = useHandoffExitOffset(
+    frame,
+    duration,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
 
   const railProgress = getEnterProgress(
     frame,
@@ -72,6 +80,24 @@ export function CardCollageDofBlock({ brand, block, format }: CardCollageDofBloc
     entranceEasing,
   );
   const headlineOpacity = getFadeOpacity(headlineProgress) * outroOpacity;
+
+  const heroOrder = Math.max(
+    0,
+    cards.findIndex((card) => card.index === heroCardIndex),
+  );
+  const heroCardStart = timing.primaryStart + heroOrder * Math.round(stagger * 0.85);
+  const heroCardProgress = useBlockEnterProgress(
+    heroCardStart,
+    Math.round(timing.enterFrames * 1),
+    speed,
+    entranceEasing,
+  );
+  const heroTransform = useHandoffHeroTransform(
+    "carousel-card",
+    heroCardProgress,
+    formatWidth,
+    formatHeight,
+  );
 
   return (
     <VoidStage
@@ -115,13 +141,15 @@ export function CardCollageDofBlock({ brand, block, format }: CardCollageDofBloc
         const slot = layoutMap[card.index] ?? layoutMap[1];
         const isHero = card.index === heroCardIndex;
         const cardStart = timing.primaryStart + order * Math.round(stagger * 0.85);
-        const cardProgress = getEnterProgress(
-          frame,
-          cardStart,
-          Math.round(timing.enterFrames * (isHero ? 1 : 0.85)),
-          speed,
-          entranceEasing,
-        );
+        const cardProgress = isHero
+          ? heroCardProgress
+          : getEnterProgress(
+              frame,
+              cardStart,
+              Math.round(timing.enterFrames * 0.85),
+              speed,
+              entranceEasing,
+            );
 
         const cardOpacity = getFadeOpacity(cardProgress) * outroOpacity;
         const heroBlur = isHero
@@ -136,6 +164,10 @@ export function CardCollageDofBlock({ brand, block, format }: CardCollageDofBloc
           formatHeight,
           isHero ? intensity : "subtle",
         );
+        const exitX = isHero ? handoffExit.x + heroTransform.x : 0;
+        const exitY = isHero ? handoffExit.y + heroTransform.y : 0;
+        const heroScale = isHero ? heroTransform.scale : 1;
+        const travelScale = isHero ? heroTransform.travelScale : 1;
 
         return (
           <div
@@ -148,7 +180,7 @@ export function CardCollageDofBlock({ brand, block, format }: CardCollageDofBloc
               height: slot.h * formatHeight,
               zIndex: isHero ? 10 : slot.z,
               opacity: cardOpacity,
-              transform: `translate(${cardTranslate.x}px, ${cardTranslate.y}px)`,
+              transform: `translate(${cardTranslate.x * travelScale + exitX}px, ${cardTranslate.y * travelScale + exitY}px) scale(${isHero ? cardScale * heroScale : cardScale})`,
             }}
           >
             <CollageCard

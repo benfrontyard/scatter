@@ -9,12 +9,12 @@ import {
   isApprovedBlockUserLibraryReady,
   LIBRARY_VISIBILITY_WARNING,
 } from "@/lib/motion-block-library";
-import { Download, Upload, Activity, Database, Blocks, AlertTriangle } from "lucide-react";
+import { Download, Upload, Activity, Database, Blocks, AlertTriangle, Palette } from "lucide-react";
 import { useMemo, useState } from "react";
 import { statusBadgeClass } from "@/components/motion-playground/PlaygroundRightPanel";
 
 export function StudioSystem() {
-  const { showToast } = useEditor();
+  const { showToast, setStudioTab } = useEditor();
   const [importText, setImportText] = useState("");
 
   const registryHealth = useMemo(() => {
@@ -58,6 +58,25 @@ export function StudioSystem() {
             Global diagnostics, persistence status, and registry tools for the block factory.
           </p>
         </div>
+
+        <section className="rounded-lg border border-border p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Palette className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-semibold">Brand Motion Kits</h3>
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">
+            Preview Nimbo, Ledgerly, and Draftly demo kits — identity, motion DNA, templates, and CSS
+            motion placeholders.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-xs"
+            onClick={() => setStudioTab("brand-lab")}
+          >
+            Open Fake Brands
+          </Button>
+        </section>
 
         <section className="rounded-lg border border-border p-4">
           <div className="mb-3 flex items-center gap-2">

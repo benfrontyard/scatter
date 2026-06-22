@@ -101,6 +101,23 @@ export function getScale(progress: number, intensity: MotionIntensity): number {
   return interpolate(progress, [0, 1], [from, 1], { extrapolateRight: "clamp" });
 }
 
+/** Premium settle with subtle anticipation and overshoot — not cartoony. */
+export function getScaleWithSettle(progress: number, intensity: MotionIntensity): number {
+  const { scale: scaleDelta } = INTENSITY_MAP[intensity];
+  const from = 1 - scaleDelta;
+  const compress = from * 0.985;
+  const overshoot =
+    intensity === "hero" ? 1.018 : intensity === "standard" ? 1.012 : 1.006;
+
+  if (progress <= 0) return compress;
+  if (progress >= 1) return 1;
+
+  return interpolate(progress, [0, 0.12, 0.78, 1], [compress, from, overshoot, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+}
+
 export function getMaskReveal(progress: number): string {
   const inset = interpolate(progress, [0, 1], [100, 0], { extrapolateRight: "clamp" });
   return `inset(0 0 ${inset}% 0 round 0)`;
@@ -111,13 +128,27 @@ export function getOutroOpacity(
   duration: number,
   outroRatio = 0.12,
   easingPreset?: EasingPreset,
+  transitionOverlapFrames = 0,
 ): number {
-  const outroStart = Math.round(duration * (1 - outroRatio));
+  // Sequence transition overlay handles the handoff — avoid double-fading layers.
+  if (transitionOverlapFrames > 0) {
+    const overlapStart = Math.max(duration - transitionOverlapFrames, 0);
+    if (frame >= overlapStart) return 1;
+  }
+
+  const outroFrames = Math.round(duration * outroRatio);
+  if (outroFrames <= 0) return 1;
+
+  const overlapStart =
+    transitionOverlapFrames > 0 ? Math.max(duration - transitionOverlapFrames, 0) : duration;
+  const outroEnd = Math.min(duration - 1, overlapStart);
+  const outroStart = Math.max(0, outroEnd - outroFrames);
+
   if (frame < outroStart) return 1;
 
   const easingFn = easingPreset ? getEasingFunction(easingPreset) : undefined;
 
-  return interpolate(frame, [outroStart, duration - 1], [1, 0], {
+  return interpolate(frame, [outroStart, outroEnd], [1, 0.92], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     ...(easingFn ? { easing: easingFn } : {}),
@@ -128,12 +159,13 @@ export function getIntroTiming(duration: number, stagger: number, speed: MotionS
   const speedFactor = SPEED_MAP[speed];
   const introFrames = Math.round(duration * 0.45 * speedFactor);
   const enterFrames = Math.max(Math.round(introFrames * 0.6), 12);
+  const staggerOffset = Math.round(enterFrames * 0.32);
 
   return {
     enterFrames,
     primaryStart: 0,
-    secondaryStart: Math.round(enterFrames * 0.2) + stagger,
-    tertiaryStart: Math.round(enterFrames * 0.2) + stagger * 2,
+    secondaryStart: staggerOffset + stagger,
+    tertiaryStart: staggerOffset + stagger * 2,
   };
 }
 

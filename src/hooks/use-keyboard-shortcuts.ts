@@ -28,6 +28,8 @@ export function KeyboardShortcuts() {
     selectedBlockId,
     selectedTransitionId,
     isDirty,
+    sequence,
+    reorderBlock,
   } = useEditor();
 
   useEffect(() => {
@@ -101,12 +103,26 @@ export function KeyboardShortcuts() {
 
       if (event.key === "ArrowLeft") {
         event.preventDefault();
+        if (event.altKey && selectedBlockId) {
+          const fromIndex = sequence.blocks.findIndex((block) => block.id === selectedBlockId);
+          if (fromIndex > 0) {
+            reorderBlock(selectedBlockId, fromIndex - 1);
+          }
+          return;
+        }
         nudgePlayhead(-1);
         return;
       }
 
       if (event.key === "ArrowRight") {
         event.preventDefault();
+        if (event.altKey && selectedBlockId) {
+          const fromIndex = sequence.blocks.findIndex((block) => block.id === selectedBlockId);
+          if (fromIndex >= 0 && fromIndex < sequence.blocks.length - 1) {
+            reorderBlock(selectedBlockId, fromIndex + 1);
+          }
+          return;
+        }
         nudgePlayhead(1);
       }
     };
@@ -128,6 +144,8 @@ export function KeyboardShortcuts() {
     selectedBlockId,
     selectedTransitionId,
     isDirty,
+    sequence,
+    reorderBlock,
   ]);
 
   return null;

@@ -8,20 +8,27 @@ import {
   getRulerMarkers,
   getTimelineWidthPx,
   pxToFrame,
+  timeSecToPx,
   TIMELINE_PADDING_END,
   TIMELINE_PADDING_START,
   TIMELINE_PX_PER_SECOND,
 } from "@/lib/timeline-layout";
-import { framesToSeconds, getSequenceDurationInFrames } from "@/lib/sequence-utils";
+import { framesToSeconds, getBlockStartFrame, getSequenceDurationInFrames } from "@/lib/sequence-utils";
+import { getTransitionPresetId } from "@/lib/transitions/migrate-transition";
+import { getTransitionPreset } from "@/lib/transitions/presets";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Trash2, Wand2 } from "lucide-react";
+import { Trash2, Wand2, Plus, SlidersHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
 import { AudioPanelJumpButton } from "@/components/editor/AudioPanel";
 import { TimelineBlockClip } from "@/components/timeline/TimelineBlockClip";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { TimelineTransitionMarker } from "@/components/timeline/TimelineTransitionMarker";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+const DURATION_PRESETS_SEC = [1, 2, 3, 5] as const;
+const TRANSITION_DURATION_PRESETS_SEC = [0.25, 0.5, 1] as const;
 
 type BlockTimelineProps = {
   className?: string;
@@ -42,26 +49,6 @@ function formatDurationLabel(frames: number, fps: number): string {
   return `${(frames / fps).toFixed(1)}s`;
 }
 
-function TimelineTooltip({
-  label,
-  children,
-}: {
-  label: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <div className="group/tip relative h-full w-full">
-      {children}
-      <div
-        role="tooltip"
-        className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-50 w-max max-w-[220px] -translate-x-1/2 rounded-md border border-border bg-popover px-2.5 py-1.5 text-[11px] leading-snug text-popover-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover/tip:opacity-100 group-focus-visible/tip:opacity-100"
-      >
-        {label}
-      </div>
-    </div>
-  );
-}
-
 function DurationControl({
   label,
   seconds,
@@ -71,6 +58,7 @@ function DurationControl({
   maxFrames,
   onChange,
   compact,
+  presets,
 }: {
   label: string;
   seconds: string;
@@ -80,6 +68,7 @@ function DurationControl({
   maxFrames: number;
   onChange: (frames: number) => void;
   compact?: boolean;
+  presets?: readonly number[];
 }) {
   return (
     <div className={cn("flex min-w-0 items-center gap-2", compact ? "flex-1" : "shrink-0")}>
@@ -102,6 +91,22 @@ function DurationControl({
         className="h-7 w-14 shrink-0 px-2 text-xs tabular-nums sm:w-16"
         aria-label={`${label} in seconds`}
       />
+      {presets && !compact ? (
+        <div className="hidden items-center gap-0.5 sm:flex">
+          {presets.map((sec) => (
+            <Button
+              key={sec}
+              type="button"
+              variant={Math.abs(frames / fps - sec) < 0.05 ? "secondary" : "ghost"}
+              size="sm"
+              className="h-6 px-1.5 text-[10px] tabular-nums"
+              onClick={() => onChange(Math.max(minFrames, Math.round(sec * fps)))}
+            >
+              {sec < 1 ? `${sec * 1000}ms` : `${sec}s`}
+            </Button>
+          ))}
+        </div>
+      ) : null}
       <Slider
         className="min-w-[72px] flex-1 sm:min-w-[96px]"
         value={[frames]}
@@ -120,12 +125,15 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
     sequence,
     fps,
     currentFrame,
+    currentTimeSec,
+    isPlaying,
     selectedBlockId,
     selectedTransitionId,
     selectBlock,
     selectTransition,
     clearSelection,
     deleteSelectedBlock,
+    deleteSelectedTransition,
     deleteBlock,
     updateBlockDuration,
     updateTransitionDuration,
@@ -133,10 +141,13 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
     seekToFrame,
     runMagicEdit,
     isMagicEditRunning,
+    openSettingsInspector,
+    setShowBlockLibraryDrawer,
   } = useEditor();
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [isFocused, setIsFocused] = useState(false);
+  const userScrollingRef = useRef(false);
+  const scrollIdleTimerRef = useRef<number | null>(null);
   const [isDraggingPlayhead, setIsDraggingPlayhead] = useState(false);
   const [draggingBlockId, setDraggingBlockId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
@@ -158,7 +169,41 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
     () => getTimelineWidthPx(totalFrames, fps),
     [totalFrames, fps],
   );
-  const playheadLeft = frameToPx(currentFrame, fps);
+  const playheadLeft = timeSecToPx(currentTimeSec);
+
+  const handleSelectBlock = useCallback(
+    (blockId: string, options?: { seek?: boolean }) => {
+      selectBlock(blockId);
+      if (options?.seek !== false) {
+        const blockIndex = sequence.blocks.findIndex((block) => block.id === blockId);
+        if (blockIndex >= 0) {
+          seekToFrame(getBlockStartFrame(sequence, blockIndex));
+        }
+      }
+    },
+    [selectBlock, seekToFrame, sequence],
+  );
+
+  const handleSelectTransition = useCallback(
+    (transitionId: string, startFrame: number, options?: { seek?: boolean }) => {
+      selectTransition(transitionId);
+      if (options?.seek !== false) {
+        seekToFrame(startFrame);
+      }
+    },
+    [selectTransition, seekToFrame],
+  );
+
+  const moveSelectedBlock = useCallback(
+    (direction: -1 | 1) => {
+      if (!selectedBlockId) return;
+      const fromIndex = sequence.blocks.findIndex((block) => block.id === selectedBlockId);
+      const toIndex = fromIndex + direction;
+      if (fromIndex < 0 || toIndex < 0 || toIndex >= sequence.blocks.length) return;
+      reorderBlock(selectedBlockId, toIndex);
+    },
+    [reorderBlock, selectedBlockId, sequence.blocks],
+  );
 
   const phraseMarkers = useMemo(
     () => (sequence.audio?.markers ?? []).filter((m) => m.type === "phrase"),
@@ -214,36 +259,81 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
   }, []);
 
   useEffect(() => {
-    if (!scrollRef.current || !isFocused) return;
-    const playheadX = playheadLeft;
     const container = scrollRef.current;
+    if (!container || !isPlaying || userScrollingRef.current) return;
+
+    const playheadX = playheadLeft;
     const { scrollLeft, clientWidth } = container;
-    const margin = 80;
+    const margin = 96;
     if (playheadX < scrollLeft + margin) {
       container.scrollLeft = Math.max(0, playheadX - margin);
     } else if (playheadX > scrollLeft + clientWidth - margin) {
       container.scrollLeft = playheadX - clientWidth + margin;
     }
-  }, [currentFrame, playheadLeft, isFocused]);
+  }, [isPlaying, playheadLeft]);
 
   useEffect(() => {
-    if (selectedBlockId && scrollRef.current) {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const markUserScroll = () => {
+      userScrollingRef.current = true;
+      if (scrollIdleTimerRef.current !== null) {
+        window.clearTimeout(scrollIdleTimerRef.current);
+      }
+      scrollIdleTimerRef.current = window.setTimeout(() => {
+        userScrollingRef.current = false;
+      }, 800);
+    };
+
+    container.addEventListener("wheel", markUserScroll, { passive: true });
+    container.addEventListener("scroll", markUserScroll, { passive: true });
+    return () => {
+      container.removeEventListener("wheel", markUserScroll);
+      container.removeEventListener("scroll", markUserScroll);
+      if (scrollIdleTimerRef.current !== null) {
+        window.clearTimeout(scrollIdleTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!scrollRef.current) return;
+
+    const container = scrollRef.current;
+    const margin = 48;
+
+    if (selectedBlockId) {
       const blockItem = layoutItems.find(
         (item) => item.kind === "block" && item.block.id === selectedBlockId,
       );
       if (blockItem && blockItem.kind === "block") {
         const blockRight = blockItem.leftPx + blockItem.widthPx;
-        const container = scrollRef.current;
         const { scrollLeft, clientWidth } = container;
-        const margin = 48;
         if (blockRight > scrollLeft + clientWidth - margin) {
           container.scrollLeft = blockRight - clientWidth + margin;
         } else if (blockItem.leftPx < scrollLeft + margin) {
           container.scrollLeft = Math.max(0, blockItem.leftPx - margin);
         }
       }
+      return;
     }
-  }, [selectedBlockId, layoutItems]);
+
+    if (selectedTransitionId) {
+      const transitionItem = layoutItems.find(
+        (item) => item.kind === "transition" && item.transition.id === selectedTransitionId,
+      );
+      if (transitionItem && transitionItem.kind === "transition") {
+        const centerPx = transitionItem.leftPx + transitionItem.widthPx / 2;
+        const { scrollLeft, clientWidth } = container;
+        if (centerPx > scrollLeft + clientWidth - margin) {
+          container.scrollLeft = centerPx - clientWidth + margin;
+        } else if (centerPx < scrollLeft + margin) {
+          container.scrollLeft = Math.max(0, centerPx - margin);
+        }
+      }
+    }
+  }, [selectedBlockId, selectedTransitionId, layoutItems]);
 
   const handleTrackSeek = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
@@ -309,6 +399,17 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
           </Button>
           {selectedBlock && selectedBlockDef ? (
             <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 shrink-0 gap-1 px-2 text-xs"
+                onClick={openSettingsInspector}
+                title="Open block settings"
+              >
+                <SlidersHorizontal className="h-3 w-3" />
+                {!compact && "Settings"}
+              </Button>
               <span
                 className={cn(
                   "truncate text-xs font-medium",
@@ -317,6 +418,35 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
               >
                 {selectedBlockDef.name}
               </span>
+              <div className="hidden items-center gap-0.5 sm:flex">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0"
+                  disabled={sequence.blocks.findIndex((b) => b.id === selectedBlock.id) <= 0}
+                  onClick={() => moveSelectedBlock(-1)}
+                  aria-label="Move block earlier"
+                  title="Move earlier (Alt+←)"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0"
+                  disabled={
+                    sequence.blocks.findIndex((b) => b.id === selectedBlock.id) >=
+                    sequence.blocks.length - 1
+                  }
+                  onClick={() => moveSelectedBlock(1)}
+                  aria-label="Move block later"
+                  title="Move later (Alt+→)"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
               <DurationControl
                 label="Duration"
                 seconds={framesToSeconds(selectedBlock.duration, fps)}
@@ -326,6 +456,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                 maxFrames={fps * 60}
                 onChange={(duration) => updateBlockDuration(selectedBlock.id, duration)}
                 compact={compact}
+                presets={DURATION_PRESETS_SEC}
               />
               <Button
                 type="button"
@@ -335,12 +466,24 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                 disabled={!canDeleteBlock}
                 onClick={deleteSelectedBlock}
                 aria-label="Delete selected block"
+                title="Delete (Backspace)"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </>
           ) : selectedTransition && selectedTransitionDef ? (
             <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 shrink-0 gap-1 px-2 text-xs"
+                onClick={openSettingsInspector}
+                title="Open transition settings"
+              >
+                <SlidersHorizontal className="h-3 w-3" />
+                {!compact && "Settings"}
+              </Button>
               <span
                 className={cn(
                   "truncate text-xs font-medium",
@@ -349,6 +492,24 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
               >
                 {selectedTransitionDef.name}
               </span>
+              {(() => {
+                const afterIndex = sequence.blocks.findIndex(
+                  (block) => block.id === selectedTransition.fromBlockId,
+                );
+                const fromBlock = afterIndex >= 0 ? sequence.blocks[afterIndex] : undefined;
+                const toBlock =
+                  afterIndex >= 0 ? sequence.blocks[afterIndex + 1] : undefined;
+                const fromName = fromBlock
+                  ? motionBlockMap[fromBlock.blockId]?.name
+                  : undefined;
+                const toName = toBlock ? motionBlockMap[toBlock.blockId]?.name : undefined;
+                if (!fromName || !toName || compact) return null;
+                return (
+                  <span className="hidden truncate text-[10px] text-muted-foreground lg:inline">
+                    {fromName} → {toName}
+                  </span>
+                );
+              })()}
               <DurationControl
                 label="Transition"
                 seconds={framesToSeconds(selectedTransition.duration, fps)}
@@ -360,13 +521,25 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                   updateTransitionDuration(selectedTransition.id, duration)
                 }
                 compact={compact}
+                presets={TRANSITION_DURATION_PRESETS_SEC}
               />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                onClick={deleteSelectedTransition}
+                aria-label="Remove transition"
+                title="Remove transition (Backspace)"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
             </>
           ) : (
             <p className="text-[10px] text-muted-foreground sm:text-xs">
               {sequence.blocks.length === 0
                 ? "Add a motion block to start"
-                : "Drag blocks to reorder · drag handles to trim · Delete to remove"}
+                : "Click blocks or junction markers to edit · drag to reorder"}
             </p>
           )}
         </div>
@@ -378,8 +551,6 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
         tabIndex={0}
         role="group"
         aria-label="Timeline tracks"
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
         onClick={(event) => {
           if (event.target === event.currentTarget) {
             clearSelection();
@@ -390,6 +561,22 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
           className="relative"
           style={{ width: timelineWidth, minHeight: compact ? 88 : 108 }}
         >
+          {/* Unified playhead — single GPU layer, sub-frame position */}
+          <div
+            className="pointer-events-none absolute inset-0 z-[60]"
+            aria-hidden
+          >
+            <div
+              className="absolute top-0 bottom-0 w-px bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.45)]"
+              style={{
+                transform: `translate3d(${playheadLeft}px, 0, 0)`,
+                willChange: "transform",
+              }}
+            >
+              <div className="absolute -top-0.5 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rotate-45 bg-red-500" />
+            </div>
+          </div>
+
           {/* Time ruler */}
           <div
             className="relative h-6 cursor-pointer border-b border-border/60 bg-background/40 select-none"
@@ -415,15 +602,6 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                 <div className="mt-auto h-2 w-px bg-border" />
               </div>
             ))}
-
-            {/* Playhead on ruler */}
-            <div
-              className="pointer-events-none absolute top-0 z-20 h-full w-0.5 -translate-x-1/2 bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.5)]"
-              style={{ left: playheadLeft }}
-              aria-hidden
-            >
-              <div className="absolute -top-0.5 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rotate-45 bg-red-500" />
-            </div>
           </div>
 
           {phraseMarkers.length > 0 ? (
@@ -503,10 +681,13 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                       canDelete={sequence.blocks.length > 1}
                       isDragging={draggingBlockId === item.block.id}
                       previewDuration={previewDuration}
-                      onSelect={() => selectBlock(isSelected ? null : item.block.id)}
+                      onSelect={() => handleSelectBlock(item.block.id)}
+                      onSeek={() => {
+                        seekToFrame(getBlockStartFrame(sequence, item.index));
+                      }}
                       onDelete={() => deleteBlock(item.block.id)}
                       onResizeStart={() => {
-                        selectBlock(item.block.id);
+                        handleSelectBlock(item.block.id, { seek: false });
                         setResizePreview({
                           blockId: item.block.id,
                           duration: item.block.duration,
@@ -521,7 +702,7 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                       }}
                       onReorderStart={() => {
                         setDraggingBlockId(item.block.id);
-                        selectBlock(item.block.id);
+                        handleSelectBlock(item.block.id, { seek: false });
                       }}
                       onReorderMove={(clientX) => {
                         if (!scrollRef.current) return;
@@ -564,69 +745,59 @@ export function BlockTimeline({ className, compact }: BlockTimelineProps) {
                   );
                 }
 
-                const transitionDef = transitionDefinitionMap[item.transition.type];
+                const presetId = getTransitionPresetId(item.transition);
+                const transitionDef = transitionDefinitionMap[presetId];
                 const isSelected = selectedTransitionId === item.transition.id;
-                const transitionName = transitionDef?.name ?? item.transition.type;
+                const transitionName =
+                  transitionDef?.name ?? getTransitionPreset(presetId).name ?? presetId;
                 const durationLabel = formatDurationLabel(item.transition.duration, fps);
                 const overlapLabel = `${Math.round(item.transition.overlap * 100)}% overlap`;
-                const centerPx = item.leftPx + item.widthPx / 2;
-                const hitWidth = 14;
+                const fromBlock = sequence.blocks[item.afterBlockIndex];
+                const toBlock = sequence.blocks[item.afterBlockIndex + 1];
+                const fromBlockName = fromBlock
+                  ? motionBlockMap[fromBlock.blockId]?.name
+                  : undefined;
+                const toBlockName = toBlock
+                  ? motionBlockMap[toBlock.blockId]?.name
+                  : undefined;
 
                 return (
-                  <button
+                  <TimelineTransitionMarker
                     key={item.transition.id}
-                    type="button"
-                    onClick={() =>
-                      selectTransition(isSelected ? null : item.transition.id)
-                    }
-                    style={{
-                      position: "absolute",
-                      left: centerPx - hitWidth / 2,
-                      width: hitWidth,
-                      top: 4,
-                      bottom: 4,
-                      zIndex: 30,
-                    }}
-                    className={cn(
-                      "group/junction flex items-center justify-center transition-all",
-                      isSelected && "z-40",
-                    )}
-                    aria-pressed={isSelected}
-                    aria-label={`${transitionName} transition, ${durationLabel}`}
-                  >
-                    <TimelineTooltip
-                      label={
-                        <div className="space-y-0.5">
-                          <p className="font-medium">{transitionName}</p>
-                          <p className="text-muted-foreground">
-                            {durationLabel} · {overlapLabel}
-                          </p>
-                        </div>
-                      }
-                    >
-                      <div
-                        className={cn(
-                          "h-full w-0.5 rounded-full transition-all",
-                          isSelected
-                            ? "bg-foreground shadow-[0_0_0_2px_var(--color-card),0_0_0_3px_var(--color-foreground)]"
-                            : "bg-foreground/25 group-hover/junction:bg-foreground/60 group-hover/junction:w-1",
-                        )}
-                      />
-                    </TimelineTooltip>
-                  </button>
+                    item={item}
+                    fps={fps}
+                    isSelected={isSelected}
+                    transitionName={transitionName}
+                    durationLabel={durationLabel}
+                    overlapLabel={overlapLabel}
+                    fromBlockName={fromBlockName}
+                    toBlockName={toBlockName}
+                    compact={compact}
+                    onSelect={() => handleSelectTransition(item.transition.id, item.startFrame)}
+                    onSeek={() => seekToFrame(item.startFrame)}
+                  />
                 );
               })
             )}
 
-            {/* Playhead line through tracks */}
-            <div
-              className="pointer-events-none absolute top-0 z-50 w-0.5 -translate-x-1/2 bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.5)]"
+            {/* Add block affordance at end of track */}
+            <button
+              type="button"
+              className="absolute top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md border border-dashed border-border/80 bg-background/60 text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
               style={{
-                left: playheadLeft,
-                height: "100%",
+                left:
+                  layoutItems.length > 0
+                    ? Math.max(
+                        ...layoutItems.map((item) => item.leftPx + item.widthPx),
+                      ) + 8
+                    : TIMELINE_PADDING_START,
               }}
-              aria-hidden
-            />
+              onClick={() => setShowBlockLibraryDrawer(true)}
+              aria-label="Add motion block"
+              title="Add block"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </div>

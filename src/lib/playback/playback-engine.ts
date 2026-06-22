@@ -7,6 +7,7 @@ import type { PostFXQuality } from "@/types/post-fx";
 
 export type PlaybackEngineCallbacks = {
   onFrameChange?: (frame: number) => void;
+  onTimeSecChange?: (timeSec: number) => void;
   onPlayingChange?: (playing: boolean) => void;
   onQualityChange?: (quality: PostFXQuality) => void;
 };
@@ -18,7 +19,7 @@ export type PlaybackEngineOptions = {
   callbacks?: PlaybackEngineCallbacks;
 };
 
-const UI_UPDATE_INTERVAL_MS = 100;
+const UI_UPDATE_INTERVAL_MS = 1000 / 60;
 
 export class PreviewPlaybackEngine {
   private audioEngine: WebAudioEngine;
@@ -142,6 +143,7 @@ export class PreviewPlaybackEngine {
     this.playerRef?.pause();
     this.options.callbacks?.onPlayingChange?.(false);
     this.options.callbacks?.onFrameChange?.(this.currentFrame);
+    this.options.callbacks?.onTimeSecChange?.(this.currentFrame / this.options.fps);
   }
 
   toggle(): void {
@@ -174,6 +176,7 @@ export class PreviewPlaybackEngine {
     }
 
     this.options.callbacks?.onFrameChange?.(clamped);
+    this.options.callbacks?.onTimeSecChange?.(timeSec);
   }
 
   private getTimelineTimeSec(): number {
@@ -232,6 +235,7 @@ export class PreviewPlaybackEngine {
       if (now - this.lastUIUpdate >= UI_UPDATE_INTERVAL_MS) {
         this.lastUIUpdate = now;
         this.options.callbacks?.onFrameChange?.(frame);
+        this.options.callbacks?.onTimeSecChange?.(timeSec);
       }
 
       const durationSec = this.options.durationFrames / this.options.fps;

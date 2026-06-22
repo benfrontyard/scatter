@@ -12,7 +12,7 @@ export type LibraryVisibilityIssue =
 export function getApprovedBlockVisibilityIssues(
   block: MotionBlockLibraryEntry,
 ): LibraryVisibilityIssue[] {
-  if (block.status !== "approved") return [];
+  if (block.status !== "approved" && block.status !== "published") return [];
 
   const issues: LibraryVisibilityIssue[] = [];
 
@@ -42,4 +42,4 @@ export function isApprovedBlockUserLibraryReady(block: MotionBlockLibraryEntry):
 }
 
 export const LIBRARY_VISIBILITY_WARNING =
-  "Approved block is not visible in library. Check required metadata, thumbnail, supported formats, and registry source.";
+  "Published block is not visible in Canvas library. Check required metadata, thumbnail, supported formats, and registry source.";

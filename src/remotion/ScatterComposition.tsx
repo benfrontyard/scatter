@@ -15,6 +15,8 @@ import { Block3DWrapper, CameraWrapper } from "./CameraWrapper";
 import { LoadProjectFont } from "./LoadProjectFont";
 import { PostFXWrapper } from "./PostFXWrapper";
 import { getBlockTransitionOverlay } from "./transitions";
+import { BlockSequenceProvider } from "./block-sequence-context";
+import type { AspectRatioLabel } from "@/lib/transitions/responsive-handoff";
 import { AudioTracks } from "./AudioTracks";
 import { getSequenceDurationInFrames } from "@/lib/sequence-utils";
 
@@ -113,14 +115,22 @@ export function ScatterComposition({
                       customBrands={customBrands}
                       formatWidth={format.width}
                       formatHeight={format.height}
+                      formatAspectRatio={format.aspectRatio}
+                      reducedMotion={reducedMotion}
                     >
-                      {renderBlockContent({
-                        brand,
-                        block,
-                        definition,
-                        format,
-                        assets,
-                      })}
+                      <BlockSequenceProvider
+                        blockIndex={index}
+                        sequence={sequence}
+                        formatAspectRatio={format.aspectRatio}
+                      >
+                        {renderBlockContent({
+                          brand,
+                          block,
+                          definition,
+                          format,
+                          assets,
+                        })}
+                      </BlockSequenceProvider>
                     </BlockWithTransitions>
                   </Block3DWrapper>
                 </RemotionSequence>
@@ -152,6 +162,7 @@ type BlockWithTransitionsProps = {
   customBrands: BrandPreset[];
   formatWidth: number;
   formatHeight: number;
+  reducedMotion?: boolean;
   children: React.ReactNode;
 };
 
@@ -162,10 +173,12 @@ function BlockWithTransitions({
   customBrands,
   formatWidth,
   formatHeight,
+  formatAspectRatio,
+  reducedMotion = false,
   children,
-}: BlockWithTransitionsProps) {
+}: BlockWithTransitionsProps & { formatAspectRatio: AspectRatioLabel }) {
   const localFrame = useCurrentFrame();
-  const { opacity, transform } = getBlockTransitionOverlay(
+  const { opacity, transform, filter, clipPath } = getBlockTransitionOverlay(
     blockIndex,
     localFrame,
     blockDuration,
@@ -173,6 +186,8 @@ function BlockWithTransitions({
     formatWidth,
     formatHeight,
     customBrands,
+    reducedMotion,
+    formatAspectRatio,
   );
 
   return (
@@ -180,6 +195,9 @@ function BlockWithTransitions({
       style={{
         opacity,
         transform,
+        filter,
+        clipPath,
+        willChange: opacity < 1 || transform !== "none" ? "opacity, transform" : undefined,
       }}
     >
       {children}

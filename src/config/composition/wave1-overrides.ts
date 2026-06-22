@@ -12,15 +12,21 @@ export const WAVE1_FORMAT_OVERRIDES: Record<
   },
   "hero-split-text-media": {
     "format-9-16": {
-      contentZone: "upper-third",
+      contentZone: "center-safe",
       stackDirection: "column",
       mediaPosition: "bottom",
     },
     "format-16-9": {
       contentZone: "split-left",
-      stackDirection: "row",
+      stackDirection: "column",
       mediaPosition: "right",
     },
+  },
+  "centered-ui-feature": {
+    "format-16-9": { contentZone: "center" },
+    "format-1-1": { contentZone: "center" },
+    "format-4-5": { contentZone: "center" },
+    "format-9-16": { contentZone: "center-safe" },
   },
   "big-stat-proof": {
     "format-9-16": { contentZone: "center-safe", maxTextWidth: 0.88, textScale: 0.96 },

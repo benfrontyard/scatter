@@ -9,11 +9,11 @@ import {
   getEnterProgress,
   getFadeOpacity,
   getIntroTiming,
-  getOutroOpacity,
   getScale,
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { useBlockEnterProgress, useBlockOutroOpacity, useHandoffExitOffset, useHandoffHeroTransform } from "../block-sequence-context";
 import { GrainOverlay, getTargetEffectStyle } from "../effect-styles";
 import { MediaPlaceholder, PromptBar } from "./wave1/primitives";
 
@@ -56,7 +56,15 @@ export function HeroPromptBarBlock({ brand, block, format }: HeroPromptBarBlockP
   };
 
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.1, exitEasing);
+  const outroOpacity = useBlockOutroOpacity(frame, duration, 0.1, exitEasing);
+  const handoffExit = useHandoffExitOffset(
+    frame,
+    duration,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
 
   const bgProgress = getEnterProgress(
     frame,
@@ -65,12 +73,17 @@ export function HeroPromptBarBlock({ brand, block, format }: HeroPromptBarBlockP
     speed,
     entranceEasing,
   );
-  const barProgress = getEnterProgress(
-    frame,
+  const barProgress = useBlockEnterProgress(
     timing.primaryStart + Math.round(stagger * 0.3),
     timing.enterFrames,
     speed,
     entranceEasing,
+  );
+  const heroTransform = useHandoffHeroTransform(
+    "hero-headline",
+    barProgress,
+    formatWidth,
+    formatHeight,
   );
   const typeProgress = getEnterProgress(
     frame,
@@ -90,6 +103,8 @@ export function HeroPromptBarBlock({ brand, block, format }: HeroPromptBarBlockP
     formatHeight,
     intensity,
   );
+  const scaledBarX = barTranslate.x * heroTransform.travelScale;
+  const scaledBarY = barTranslate.y * heroTransform.travelScale;
 
   const parallaxScale = interpolate(frame, [0, duration], [1.04, 1], {
     extrapolateRight: "clamp",
@@ -174,7 +189,7 @@ export function HeroPromptBarBlock({ brand, block, format }: HeroPromptBarBlockP
             width: `${barWidthFactor * 100}%`,
             maxWidth: layout.maxTextWidth,
             opacity: barOpacity,
-            transform: `translate(${barTranslate.x}px, ${barTranslate.y}px) scale(${barScale})`,
+            transform: `translate(${scaledBarX + handoffExit.x + heroTransform.x}px, ${scaledBarY + handoffExit.y + heroTransform.y}px) scale(${barScale * heroTransform.scale})`,
             ...barEffect,
           }}
         >

@@ -33,6 +33,7 @@ export function usePlaybackEngine({
   const [effectiveQuality, setEffectiveQuality] = useState<PostFXQuality>("medium");
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
+  const [currentTimeSec, setCurrentTimeSec] = useState(0);
 
   const onFrameChangeRef = useRef(onFrameChange);
   const onPlayingChangeRef = useRef(onPlayingChange);
@@ -48,6 +49,9 @@ export function usePlaybackEngine({
         onFrameChange: (frame) => {
           setCurrentFrame(frame);
           onFrameChangeRef.current?.(frame);
+        },
+        onTimeSecChange: (timeSec) => {
+          setCurrentTimeSec(timeSec);
         },
         onPlayingChange: (playing) => {
           previewDisplayState.isPlaying = playing;
@@ -132,6 +136,7 @@ export function usePlaybackEngine({
   return useMemo(
     () => ({
       currentFrame,
+      currentTimeSec,
       isPlaying,
       effectiveQuality,
       timelineCache: timelineCacheRef.current,
@@ -143,6 +148,7 @@ export function usePlaybackEngine({
     }),
     [
       currentFrame,
+      currentTimeSec,
       isPlaying,
       effectiveQuality,
       registerPlayer,

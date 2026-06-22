@@ -9,10 +9,11 @@ import {
   getEnterProgress,
   getFadeOpacity,
   getIntroTiming,
-  getOutroOpacity,
+  getScaleWithSettle,
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { useBlockEnterProgress, useBlockOutroOpacity, useHandoffExitOffset, useHandoffHeroTransform } from "../block-sequence-context";
 import { getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 import { StepRail, VoidStage } from "./wave1/primitives";
 import { applyStatWrapper, resolveStatDisplay } from "./wave1/stat-wrapper";
@@ -42,7 +43,15 @@ export function BigStatProofBlock({ brand, block, format }: BigStatProofBlockPro
   const countUpEnabled = block.motion.controls.countUp !== "false";
 
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.1, exitEasing);
+  const outroOpacity = useBlockOutroOpacity(frame, duration, 0.1, exitEasing);
+  const handoffExit = useHandoffExitOffset(
+    frame,
+    duration,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
 
   const countStart = timing.primaryStart;
   const countFrames = Math.round(timing.enterFrames * 1.15);
@@ -50,12 +59,17 @@ export function BigStatProofBlock({ brand, block, format }: BigStatProofBlockPro
     ? getEnterProgress(frame, countStart, countFrames, speed, entranceEasing)
     : 1;
 
-  const wrapperProgress = getEnterProgress(
-    frame,
+  const wrapperProgress = useBlockEnterProgress(
     timing.primaryStart,
     Math.round(timing.enterFrames * 0.9),
     speed,
     entranceEasing,
+  );
+  const heroTransform = useHandoffHeroTransform(
+    "stat-center",
+    wrapperProgress,
+    formatWidth,
+    formatHeight,
   );
   const railProgress = getEnterProgress(
     frame,
@@ -69,6 +83,7 @@ export function BigStatProofBlock({ brand, block, format }: BigStatProofBlockPro
   const displayText = applyStatWrapper(statWrapper, statDisplay);
 
   const wrapperOpacity = getFadeOpacity(wrapperProgress) * outroOpacity;
+  const wrapperScale = getScaleWithSettle(wrapperProgress, intensity);
   const railOpacity = getFadeOpacity(railProgress) * outroOpacity;
   const wrapperTranslate = getTranslate(
     wrapperProgress,
@@ -77,6 +92,8 @@ export function BigStatProofBlock({ brand, block, format }: BigStatProofBlockPro
     formatHeight,
     intensity,
   );
+  const scaledWrapperX = wrapperTranslate.x * heroTransform.travelScale;
+  const scaledWrapperY = wrapperTranslate.y * heroTransform.travelScale;
 
   const wrapperType = layout.slots.statWrapper ?? layout.typography.heading;
   const stepType = layout.slots.stepLabel ?? layout.typography.label;
@@ -116,7 +133,7 @@ export function BigStatProofBlock({ brand, block, format }: BigStatProofBlockPro
           style={mergeMotionAndEffectStyle(
             {
               opacity: wrapperOpacity,
-              transform: `translate(${wrapperTranslate.x}px, ${wrapperTranslate.y}px)`,
+              transform: `translate(${scaledWrapperX + handoffExit.x + heroTransform.x}px, ${scaledWrapperY + handoffExit.y + heroTransform.y}px) scale(${wrapperScale * heroTransform.scale})`,
               textAlign: layout.alignment,
               width: "100%",
               maxWidth: layout.maxTextWidth,

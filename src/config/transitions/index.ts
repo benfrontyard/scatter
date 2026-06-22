@@ -1,18 +1,26 @@
 import type { TransitionDefinition } from "@/types";
+import {
+  LEGACY_TRANSITION_PRESET_IDS,
+  TRANSITION_PRESETS,
+  V2_TRANSITION_PRESET_IDS,
+  presetToTransitionDefinition,
+  type TransitionPresetId,
+} from "@/lib/transitions/presets";
 
-export const transitionDefinitions: TransitionDefinition[] = [
-  {
-    id: "cut",
-    name: "Cut",
-    type: "cut",
-    defaultDuration: 1,
-    defaultDirection: "left",
-    defaultOverlap: 0,
-    defaultEasingId: "linear",
-  },
+/** Primary V2 transition presets for the editor picker. */
+export const transitionDefinitions: TransitionDefinition[] = V2_TRANSITION_PRESET_IDS.map((id) =>
+  presetToTransitionDefinition(TRANSITION_PRESETS[id]),
+);
+
+/** Legacy presets — compatibility only, gated from auto-selection. */
+export const legacyTransitionDefinitions: TransitionDefinition[] =
+  LEGACY_TRANSITION_PRESET_IDS.map((id) => presetToTransitionDefinition(TRANSITION_PRESETS[id]));
+
+/** Additional legacy definition ids still referenced by block compatibleTransitions. */
+const LEGACY_TRANSITIONS: TransitionDefinition[] = [
   {
     id: "crossfade",
-    name: "Crossfade",
+    name: "Crossfade (Legacy)",
     type: "crossfade",
     defaultDuration: 15,
     defaultDirection: "left",
@@ -21,7 +29,7 @@ export const transitionDefinitions: TransitionDefinition[] = [
   },
   {
     id: "push",
-    name: "Push",
+    name: "Push (Legacy)",
     type: "push",
     defaultDuration: 20,
     defaultDirection: "left",
@@ -29,26 +37,8 @@ export const transitionDefinitions: TransitionDefinition[] = [
     defaultEasingId: "ease-out",
   },
   {
-    id: "wipe",
-    name: "Wipe",
-    type: "wipe",
-    defaultDuration: 18,
-    defaultDirection: "right",
-    defaultOverlap: 0,
-    defaultEasingId: "sharp-in-out",
-  },
-  {
-    id: "mask-reveal",
-    name: "Mask Reveal",
-    type: "mask-reveal",
-    defaultDuration: 22,
-    defaultDirection: "up",
-    defaultOverlap: 0.2,
-    defaultEasingId: "soft-reveal",
-  },
-  {
     id: "scale-through",
-    name: "Scale Through",
+    name: "Scale Through (Legacy)",
     type: "scale-through",
     defaultDuration: 20,
     defaultDirection: "left",
@@ -57,7 +47,7 @@ export const transitionDefinitions: TransitionDefinition[] = [
   },
   {
     id: "frame-split",
-    name: "Frame Split",
+    name: "Frame Split (Legacy)",
     type: "frame-split",
     defaultDuration: 24,
     defaultDirection: "left",
@@ -66,6 +56,16 @@ export const transitionDefinitions: TransitionDefinition[] = [
   },
 ];
 
+export const allTransitionDefinitions: TransitionDefinition[] = [
+  ...transitionDefinitions,
+  ...legacyTransitionDefinitions,
+  ...LEGACY_TRANSITIONS.filter(
+    (legacy) => !transitionDefinitions.some((t) => t.id === legacy.id),
+  ),
+];
+
 export const transitionDefinitionMap = Object.fromEntries(
-  transitionDefinitions.map((transition) => [transition.id, transition]),
+  allTransitionDefinitions.map((transition) => [transition.id, transition]),
 ) as Record<string, TransitionDefinition>;
+
+export { V2_TRANSITION_PRESET_IDS, LEGACY_TRANSITION_PRESET_IDS, type TransitionPresetId };

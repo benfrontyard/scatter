@@ -11,11 +11,11 @@ import {
   getFadeOpacity,
   getFeatureAnnouncementTiming,
   getMaskReveal,
-  getOutroOpacity,
   getScale,
   getTranslate,
   resolveBlockMotionParams,
 } from "./feature-announcement-motion";
+import { useBlockEnterProgress, useBlockOutroOpacity, useHandoffExitOffset, useHandoffHeroTransform } from "../block-sequence-context";
 import { GrainOverlay, getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 
 type FeatureAnnouncementBlockProps = {
@@ -46,7 +46,7 @@ export function FeatureAnnouncementBlock({
     includeLogo: true,
   });
 
-  const { intensity, speed, stagger, entranceEasing, exitEasing } =
+  const { intensity, speed, stagger, entranceEasing, exitEasing, direction } =
     resolveBlockMotionParams(brand, block);
 
   const headline = block.content.headline ?? "Ship faster";
@@ -54,7 +54,15 @@ export function FeatureAnnouncementBlock({
   const logoText = block.content.logoText || brand.logos.textFallback || "SCATTER";
 
   const timing = getFeatureAnnouncementTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.12, exitEasing);
+  const outroOpacity = useBlockOutroOpacity(frame, duration, 0.12, exitEasing);
+  const handoffExit = useHandoffExitOffset(
+    frame,
+    duration,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
 
   const bgProgress = getEnterProgress(
     frame,
@@ -63,12 +71,17 @@ export function FeatureAnnouncementBlock({
     speed,
     entranceEasing,
   );
-  const imageProgress = getEnterProgress(
-    frame,
+  const imageProgress = useBlockEnterProgress(
     timing.imageStart,
     timing.enterFrames,
     speed,
     entranceEasing,
+  );
+  const heroTransform = useHandoffHeroTransform(
+    "split-media",
+    imageProgress,
+    formatWidth,
+    formatHeight,
   );
   const logoProgress = getEnterProgress(
     frame,
@@ -185,7 +198,7 @@ export function FeatureAnnouncementBlock({
                 width: imageWidth,
                 height: imageHeight,
                 opacity: imageOpacity,
-                transform: `scale(${imageScale})`,
+                transform: `translate(${handoffExit.x + heroTransform.x}px, ${handoffExit.y + heroTransform.y}px) scale(${imageScale * heroTransform.scale})`,
                 clipPath: getMaskReveal(imageProgress),
                 display: "flex",
                 flexDirection: "column",

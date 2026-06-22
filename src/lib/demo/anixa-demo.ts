@@ -1,4 +1,4 @@
-import { createBlockInstance, createTransitionBetween } from "@/config/sequences/default";
+import { createBlockInstance, createTransitionBetween } from "@/lib/sequence-factory";
 import { defaultBrandPresetId } from "@/config/brands";
 import { defaultFormatId } from "@/config/formats";
 import { getAudioDuration } from "@/lib/audio";

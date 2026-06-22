@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
-import { defaultMotionSequence } from "@/config/sequences/default";
+import { buildGoldenDemoSequence } from "@/lib/demo/golden-demo";
 import { motionFormats } from "@/config/formats";
 import {
   addBlockToSequence,
@@ -46,6 +46,7 @@ import { getAudioDuration } from "@/lib/audio";
 import { getOrDecodeAudioBuffer } from "@/lib/audio/audio-buffer-cache";
 import { runMagicEditPipeline } from "@/lib/magic-edit";
 import { buildAnixaDemoProject } from "@/lib/demo/anixa-demo";
+import { applyBrandMotionKitToProject } from "@/lib/brand-motion-kit-integration";
 import { EDITOR_FPS, type EditorStep, type MainNavId, type StudioTab, type WorkspaceTab } from "@/types/editor";
 import type { User, UserRole } from "@/types/user";
 import { isInternalRole } from "@/types/user";
@@ -129,6 +130,7 @@ type EditorActions = {
   updateCustomBrand: (updater: (brand: BrandPreset) => BrandPreset) => void;
   commitBrandDraft: (brand: BrandPreset, logoText: string) => void;
   duplicateBrandToCustom: (sourceBrandId: string) => void;
+  applyExampleBrandKit: (kitId: string) => void;
   saveCustomBrand: () => void;
   addAsset: (file: File) => Promise<ProjectAsset | null>;
   addAudioAsset: (file: File) => Promise<ProjectAsset | null>;
@@ -202,6 +204,7 @@ type EditorContextValue = {
   canUndo: boolean;
   canRedo: boolean;
   currentFrame: number;
+  currentTimeSec: number;
   isPlaying: boolean;
   effectivePreviewQuality: import("@/types/post-fx").PostFXQuality;
   showShortcuts: boolean;
@@ -250,7 +253,7 @@ function readAssetAsDataUrl(file: File): Promise<string> {
 }
 
 export function EditorProvider({ children }: { children: ReactNode }) {
-  const initialProject = useMemo(() => createNewProject(defaultMotionSequence.name), []);
+  const initialProject = useMemo(() => createNewProject(buildGoldenDemoSequence().name), []);
   const savedSnapshotRef = useRef<EditorSnapshot>(
     createSnapshot(initialProject.sequence, initialProject.customBrands, initialProject.assets),
   );
@@ -274,7 +277,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const [showBrandPanel, setShowBrandPanel] = useState(false);
   const [timelineCollapsed, setTimelineCollapsed] = useState(false);
   const [showStudio, setShowStudio] = useState(false);
-  const [studioTab, setStudioTab] = useState<StudioTab>("review");
+  const [studioTab, setStudioTab] = useState<StudioTab>("blocks");
   const [showInternalBlocks, setShowInternalBlocks] = useState(false);
   const [workspaceTab, setWorkspaceTab] = useState<WorkspaceTab>("timeline");
   const [mainNav, setMainNav] = useState<MainNavId>("home");
@@ -305,7 +308,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     previewQuality: postFx.previewQuality,
   });
 
-  const { currentFrame, isPlaying, effectiveQuality: effectivePreviewQuality } = playback;
+  const { currentFrame, currentTimeSec, isPlaying, effectiveQuality: effectivePreviewQuality } = playback;
 
   const isDirty = !snapshotsEqual(history.present, savedSnapshotRef.current);
 
@@ -422,6 +425,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       canUndo: history.canUndo,
       canRedo: history.canRedo,
       currentFrame,
+      currentTimeSec,
       isPlaying,
       effectivePreviewQuality,
       showShortcuts,
@@ -852,6 +856,24 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         });
         setShowBrandSystem(true);
       },
+      applyExampleBrandKit: (kitId) => {
+        updateSnapshot((prev) => {
+          const updated = applyBrandMotionKitToProject(kitId, {
+            version: 1,
+            id: projectId,
+            name: prev.sequence.name,
+            savedAt: new Date().toISOString(),
+            sequence: prev.sequence,
+            customBrands: prev.customBrands,
+            assets: prev.assets,
+          });
+          return {
+            ...prev,
+            sequence: updated.sequence,
+            customBrands: updated.customBrands,
+          };
+        });
+      },
       commitBrandDraft: (brandDraft, logoText) => {
         updateSnapshot((prev) => {
           const existing = prev.customBrands.find((b) => b.id === CUSTOM_BRAND_ID);
@@ -1161,6 +1183,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       isDirty,
       history,
       currentFrame,
+      currentTimeSec,
       isPlaying,
       effectivePreviewQuality,
       showShortcuts,

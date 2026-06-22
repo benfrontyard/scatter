@@ -8,10 +8,11 @@ import {
   getEnterProgress,
   getFadeOpacity,
   getIntroTiming,
-  getOutroOpacity,
+  getScaleWithSettle,
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { useBlockEnterProgress, useBlockOutroOpacity, useHandoffExitOffset, useHandoffHeroTransform } from "../block-sequence-context";
 import { getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 import { AccentHeadline, VoidStage } from "./wave1/primitives";
 
@@ -41,14 +42,27 @@ export function EditorialStatementBlock({
   const glowAccent = block.motion.controls.glowAccent !== "false";
 
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.1, exitEasing);
-
-  const headlineProgress = getEnterProgress(
+  const outroOpacity = useBlockOutroOpacity(frame, duration, 0.1, exitEasing);
+  const handoffExit = useHandoffExitOffset(
     frame,
+    duration,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
+
+  const headlineProgress = useBlockEnterProgress(
     timing.primaryStart,
     timing.enterFrames,
     speed,
     entranceEasing,
+  );
+  const heroTransform = useHandoffHeroTransform(
+    "hero-headline",
+    headlineProgress,
+    formatWidth,
+    formatHeight,
   );
   const subheadProgress = getEnterProgress(
     frame,
@@ -68,6 +82,7 @@ export function EditorialStatementBlock({
 
   const headlineOpacity = getFadeOpacity(headlineProgress) * outroOpacity;
   const subheadOpacity = getFadeOpacity(subheadProgress) * outroOpacity;
+  const headlineScale = getScaleWithSettle(headlineProgress, intensity);
   const headlineTranslate = getTranslate(
     headlineProgress,
     direction,
@@ -75,6 +90,8 @@ export function EditorialStatementBlock({
     formatHeight,
     intensity,
   );
+  const scaledHeadlineX = headlineTranslate.x * heroTransform.travelScale;
+  const scaledHeadlineY = headlineTranslate.y * heroTransform.travelScale;
 
   const headlineType = layout.slots.headline ?? layout.typography.display ?? layout.typography.heading;
   const subheadType = layout.slots.subhead ?? layout.typography.body;
@@ -120,7 +137,7 @@ export function EditorialStatementBlock({
             style={mergeMotionAndEffectStyle(
               {
                 opacity: headlineOpacity,
-                transform: `translate(${headlineTranslate.x}px, ${headlineTranslate.y}px)`,
+                transform: `translate(${scaledHeadlineX + handoffExit.x + heroTransform.x}px, ${scaledHeadlineY + handoffExit.y + heroTransform.y}px) scale(${headlineScale * heroTransform.scale})`,
               },
               headlineEffect,
             )}

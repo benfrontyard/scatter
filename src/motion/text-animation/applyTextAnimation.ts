@@ -64,7 +64,7 @@ export function applyUnitStyle(
   unitIndex: number,
 ): CSSProperties {
   if (!timing) {
-    return { opacity: 0 };
+    return { opacity: 0, display: "inline-block", whiteSpace: "pre" };
   }
 
   const absoluteFrame = frame - resolved.startFrame;

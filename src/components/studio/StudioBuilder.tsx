@@ -9,7 +9,7 @@ export function StudioBuilder() {
 
   const handleSaveDraft = (draft: MotionBlockLibraryEntry) => {
     addBlock(draft);
-    setStudioTab("review");
+    setStudioTab("blocks");
     showToast({
       message: `"${draft.name}" saved as draft. Review it across brands and aspect ratios.`,
     });

@@ -11,6 +11,7 @@ import {
   alignmentForComposition,
   resolveIntentZone,
 } from "@/config/composition/defaults";
+import { mergeWave1LayoutOverrides } from "@/config/composition/wave1-overrides";
 import { getFormatLayoutScale } from "@/lib/layout/format-scale";
 import { resolveLogoPlacement } from "@/lib/logo/resolve-logo";
 import { buildFontStack } from "@/lib/google-fonts";
@@ -408,7 +409,7 @@ export function resolveBlockLayoutFromInstance(options: {
     backgroundColor: backgroundColor ?? brand.colors.background,
     blockId: block.blockId,
     layoutIntent: block.layoutIntent,
-    layoutOverrides: block.layoutOverrides,
+    layoutOverrides: mergeWave1LayoutOverrides(block.blockId, block.layoutOverrides),
     format,
     contentSlotRoles: resolveBlockContentSlotRoles(block.blockId),
     includeLogo,

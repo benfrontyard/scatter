@@ -1,5 +1,6 @@
 import { PreviewPanel } from "@/components/editor/PreviewPanel";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { EditorShell } from "@/components/layout/EditorShell";
 import { BlockTimeline } from "@/components/timeline/BlockTimeline";
 import { BlockLibraryDrawer } from "@/components/canvas/BlockLibraryDrawer";
 import { SettingsInspector } from "@/components/canvas/SettingsInspector";
@@ -23,18 +24,19 @@ export function EditorLayout() {
   const totalTime = (totalFrames / fps).toFixed(1);
 
   return (
-    <div className="flex h-dvh max-w-[100vw] flex-col overflow-hidden bg-background text-foreground">
-      <AppHeader compact={isMobile} />
-
-      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+    <EditorShell
+      mode="canvas"
+      topBar={<AppHeader compact={isMobile} />}
+      centerStage={
         <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
           <PreviewPanel showMeta={!isMobile} className="h-full w-full" />
           <CanvasActions />
           <BlockLibraryDrawer />
           <SettingsInspector />
         </div>
-
-        {timelineCollapsed ? (
+      }
+      bottomPanel={
+        timelineCollapsed ? (
           <div className="flex shrink-0 items-center justify-between border-t border-border bg-card px-3 py-1.5">
             <button
               type="button"
@@ -78,11 +80,11 @@ export function EditorLayout() {
             </Button>
             <BlockTimeline compact={isMobile} />
           </div>
-        )}
-      </div>
-
+        )
+      }
+    >
       <ExportModal />
       <BrandPanel />
-    </div>
+    </EditorShell>
   );
 }

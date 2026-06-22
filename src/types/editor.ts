@@ -8,7 +8,7 @@ export type WorkspaceTab = "script" | "timeline" | "blocks" | "brand" | "preview
 
 export type MainNavId = "home" | "projects" | "brand-kits" | "templates" | "exports";
 
-export type StudioTab = "review" | "builder" | "system";
+export type StudioTab = "blocks" | "brand-lab" | "diagnostics";
 
 export type EditorState = {
   step: EditorStep;

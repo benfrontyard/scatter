@@ -19,7 +19,6 @@ import { cn } from "@/lib/utils";
 import type {
   MotionAspectRatio,
   MotionBlockLibraryEntry,
-  MotionBlockStatus,
   PlaygroundDebugLayer,
   PlaygroundTestScenario,
 } from "@/types/motion-block-library";
@@ -239,17 +238,5 @@ export function PlaygroundRightPanel({
   );
 }
 
-export function statusBadgeClass(status: MotionBlockStatus): string {
-  switch (status) {
-    case "approved":
-      return "bg-emerald-500/15 text-emerald-600";
-    case "needs-review":
-      return "bg-amber-500/15 text-amber-600";
-    case "deprecated":
-      return "bg-red-500/15 text-red-600";
-    default:
-      return "bg-muted text-muted-foreground";
-  }
-}
-
+export { statusBadgeClass } from "@/lib/motion-block-library/status-lifecycle";
 export { MOTION_BLOCK_STATUS_LABELS };

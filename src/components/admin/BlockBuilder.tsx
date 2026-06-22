@@ -281,20 +281,20 @@ export function BlockBuilder({
 
             {step === 6 ? (
               <p className="text-sm text-muted-foreground">
-                After saving, you&apos;ll return to Review to test across brands and aspect ratios.
+                After saving, open Block Workbench to test across brands and aspect ratios.
                 Family: {family}, primitive: {primitive}, motion: {motionPreset}.
               </p>
             ) : null}
 
             {step === 7 ? (
-              <div className="space-y-2 rounded-md border border-border p-3 text-sm">
-                <p className="font-medium text-emerald-600">Validation passed</p>
-                <ul className="list-inside list-disc text-muted-foreground">
-                  <li>All required slots defined</li>
-                  <li>Layouts cover all supported formats</li>
-                  <li>Safe areas configured</li>
-                  <li>Motion preset assigned</li>
-                </ul>
+              <div className="space-y-2 rounded-md border border-dashed border-amber-500/40 bg-amber-500/5 p-3 text-sm">
+                <p className="font-medium text-amber-700 dark:text-amber-400">
+                  Validation not run
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Automated validation requires layout rules and a production renderer bridge.
+                  Save as draft and use Block Workbench to run the real test matrix.
+                </p>
               </div>
             ) : null}
 

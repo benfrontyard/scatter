@@ -1,4 +1,5 @@
 import { brandPresetMap, brandPresets } from "@/config/brands";
+import { studioBrandPresetMap, studioBrandPresets } from "@/lib/brand-motion-kit-adapter";
 import { normalizeBrandColors } from "@/lib/brand-colors";
 import { normalizeBrandComposition } from "@/lib/brand-composition";
 import { normalizeBrandLogoSystem } from "@/lib/brand-logo";
@@ -18,7 +19,11 @@ export function resolveBrand(
     brand = customBrands.find((b) => b.id === CUSTOM_BRAND_ID) ?? brandPresets[0];
   } else {
     const custom = customBrands.find((b) => b.id === brandPresetId);
-    brand = custom ?? brandPresetMap[brandPresetId] ?? brandPresets[0];
+    brand =
+      custom ??
+      studioBrandPresetMap[brandPresetId] ??
+      brandPresetMap[brandPresetId] ??
+      brandPresets[0];
   }
 
   return normalizeBrand({
@@ -33,8 +38,10 @@ export function resolveBrand(
 
 export function getAllBrands(customBrands: BrandPreset[]): BrandPreset[] {
   const customIds = new Set(customBrands.map((b) => b.id));
-  const builtins = brandPresets.filter((b) => !customIds.has(b.id));
-  return [...builtins, ...customBrands];
+  const demoIds = new Set(studioBrandPresets.map((b) => b.id));
+  const builtins = brandPresets.filter((b) => !customIds.has(b.id) && !demoIds.has(b.id));
+  const demos = studioBrandPresets.filter((b) => !customIds.has(b.id));
+  return [...builtins, ...demos, ...customBrands];
 }
 
 export function duplicateBrandAsCustom(source: BrandPreset): BrandPreset {

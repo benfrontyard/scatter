@@ -74,7 +74,7 @@ const DEFAULT_DEBUG_LAYERS: PlaygroundDebugLayer[] = [
 ];
 
 export function StudioReview() {
-  const { setStudioTab, showToast } = useEditor();
+  const { showToast } = useEditor();
   const { blocks, selectedBlock, selectedBlockId, setSelectedBlockId, updateBlock, addBlock } =
     useStudio();
 
@@ -276,7 +276,7 @@ export function StudioReview() {
   };
 
   const handleCreateNew = () => {
-    setStudioTab("builder");
+    showToast({ message: "Use Blocks → New Block to create a block." });
   };
 
   const handleStatusChange = (status: MotionBlockStatus) => {

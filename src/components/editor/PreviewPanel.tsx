@@ -17,39 +17,7 @@ type PreviewPanelProps = {
   showMeta?: boolean;
 };
 
-function formatTime(seconds: number): string {
-  const clamped = Math.max(0, seconds);
-  const mins = Math.floor(clamped / 60);
-  const secs = Math.floor(clamped % 60);
-  const frames = Math.floor((clamped % 1) * 100);
-  if (mins > 0) {
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  }
-  return `${secs}.${frames.toString().padStart(2, "0").slice(0, 1)}s`;
-}
-
-function fitCanvasToContainer(
-  containerWidth: number,
-  containerHeight: number,
-  compositionWidth: number,
-  compositionHeight: number,
-): { width: number; height: number } {
-  const aspect = compositionWidth / compositionHeight;
-  const maxWidth = compositionWidth > compositionHeight ? 720 : 360;
-
-  let width = Math.min(containerWidth, maxWidth);
-  let height = width / aspect;
-
-  if (height > containerHeight) {
-    height = containerHeight;
-    width = height * aspect;
-  }
-
-  return {
-    width: Math.max(0, Math.floor(width)),
-    height: Math.max(0, Math.floor(height)),
-  };
-}
+import { fitCanvasToContainer, formatPreviewTime } from "@/lib/editor-canvas";
 
 export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) {
   const {
@@ -152,7 +120,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
               className="font-mono text-[10px] tabular-nums text-muted-foreground sm:text-xs"
               aria-live="polite"
             >
-              {formatTime(currentTime)} / {formatTime(totalTime)}
+              {formatPreviewTime(currentTime)} / {formatPreviewTime(totalTime)}
             </span>
             <Button
               variant="outline"
@@ -213,7 +181,7 @@ export function PreviewPanel({ className, showMeta = true }: PreviewPanelProps) 
       {!showMeta && (
         <div className="flex shrink-0 items-center justify-center gap-3 border-t border-border py-2">
           <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
-            {formatTime(currentTime)} / {formatTime(totalTime)}
+            {formatPreviewTime(currentTime)} / {formatPreviewTime(totalTime)}
           </span>
           <Button
             variant="outline"

@@ -1,0 +1,355 @@
+/* ── Fake brand motion preview system ── */
+
+.fake-brand-preview {
+  --preview-accent: var(--brand-accent);
+  --preview-bg: var(--preview-stage-bg, var(--brand-background));
+  --preview-fg: var(--preview-stage-fg, var(--brand-primary));
+  --preview-surface: var(--brand-surface);
+  --preview-muted: var(--brand-muted);
+  --preview-easing: var(--brand-easing);
+  --preview-easing-exit: var(--brand-easing-exit);
+  --preview-easing-emphasis: var(--brand-easing-emphasis);
+  --preview-duration: var(--brand-timing-standard);
+  --preview-emphasis: var(--brand-timing-emphasis);
+  --preview-hero-duration: var(--brand-timing-hero);
+  --preview-micro: var(--brand-timing-micro);
+  --loop-period: calc(var(--preview-hero-duration) * 2.2);
+}
+
+.fake-brand-preview__frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: var(--preview-bg);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--preview-muted) 18%, transparent),
+    0 1px 2px color-mix(in srgb, var(--preview-fg) 6%, transparent);
+}
+
+.fake-brand-preview__stage {
+  position: relative;
+  overflow: hidden;
+  color: var(--preview-fg);
+  font-family: var(--brand-body-font);
+  min-height: 100%;
+}
+
+.fake-brand-preview__stage::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: calc(var(--brand-focus-blur, 0) * 4);
+  background: radial-gradient(ellipse at 50% 0%, transparent 50%, color-mix(in srgb, var(--preview-fg) 8%, transparent) 100%);
+}
+
+.fake-brand-preview__grain::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  opacity: calc(var(--brand-grain, 0) * 4);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+.fake-brand-preview__vignette::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  opacity: calc(var(--brand-vignette, 0) * 3);
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.65) 100%);
+}
+
+.fake-brand-preview--reduced .fake-brand-preview__el {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  clip-path: none !important;
+  stroke-dashoffset: 0 !important;
+  width: auto !important;
+}
+
+.fake-brand-preview--reduced .fb-chart-line {
+  stroke-dashoffset: 0 !important;
+}
+
+/* Loop helper: animate 0→35%, hold, snap reset */
+@keyframes fb-loop-fade-up {
+  0%, 8% { opacity: 0; transform: translateY(10px); }
+  28%, 72% { opacity: 1; transform: translateY(0); }
+  92%, 100% { opacity: 0; transform: translateY(-4px); }
+}
+
+@keyframes fb-loop-mask-up {
+  0%, 8% { transform: translateY(110%); opacity: 0.4; }
+  28%, 72% { transform: translateY(0); opacity: 1; }
+  92%, 100% { transform: translateY(-110%); opacity: 0; }
+}
+
+@keyframes fb-loop-scale-in {
+  0%, 8% { opacity: 0; transform: scale(0.88); }
+  28%, 72% { opacity: 1; transform: scale(1); }
+  92%, 100% { opacity: 0; transform: scale(1.04); }
+}
+
+@keyframes fb-loop-slide-x {
+  0%, 8% { opacity: 0; transform: translateX(-14px); clip-path: inset(0 100% 0 0); }
+  28%, 72% { opacity: 1; transform: translateX(0); clip-path: inset(0 0 0 0); }
+  92%, 100% { opacity: 0; transform: translateX(8px); clip-path: inset(0 0 0 100%); }
+}
+
+@keyframes fb-loop-draw-line {
+  0%, 8% { transform: scaleX(0); opacity: 0.4; }
+  28%, 72% { transform: scaleX(1); opacity: 1; }
+  92%, 100% { transform: scaleX(0); opacity: 0; }
+}
+
+@keyframes fb-loop-chart {
+  0%, 8% { stroke-dashoffset: 120; opacity: 0.3; }
+  35%, 72% { stroke-dashoffset: 0; opacity: 1; }
+  92%, 100% { stroke-dashoffset: 120; opacity: 0; }
+}
+
+@keyframes fb-loop-pop {
+  0%, 8% { opacity: 0; transform: scale(0.85) translateY(6px); }
+  28%, 72% { opacity: 1; transform: scale(1) translateY(0); }
+  92%, 100% { opacity: 0; transform: scale(0.95) translateY(-3px); }
+}
+
+@keyframes fb-loop-cursor {
+  0%, 10% { opacity: 0; transform: translate(48px, 36px); }
+  25%, 65% { opacity: 1; transform: translate(72px, 52px); }
+  80%, 100% { opacity: 0; transform: translate(88px, 44px); }
+}
+
+@keyframes fb-loop-glow-pulse {
+  0%, 8% { opacity: 0.75; transform: scale(1); box-shadow: 0 0 0 0 color-mix(in srgb, var(--preview-accent) 0%, transparent); }
+  28%, 72% { opacity: 1; transform: scale(1.02); box-shadow: 0 6px 28px color-mix(in srgb, var(--preview-accent) calc(var(--brand-glow, 0.1) * 280%), transparent); }
+  92%, 100% { opacity: 0.8; transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+}
+
+.fake-brand-preview__el {
+  animation-duration: var(--loop-period);
+  animation-timing-function: var(--preview-easing);
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+}
+
+/* ── Logo Reveal ── */
+.fake-brand-preview--brand-nimbo.fake-brand-preview--logoReveal .fb-logo-bar {
+  transform-origin: left center;
+  animation-name: fb-loop-draw-line;
+  animation-timing-function: var(--preview-easing);
+}
+
+.fake-brand-preview--brand-nimbo.fake-brand-preview--logoReveal .fb-logo-wordmark {
+  animation-name: fb-loop-mask-up;
+  animation-delay: calc(var(--preview-micro) * 1.5);
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--logoReveal .fb-logo-mark {
+  animation-name: fb-loop-scale-in;
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--logoReveal .fb-logo-wordmark {
+  animation-name: fb-loop-fade-up;
+  animation-delay: calc(var(--preview-micro) * 2);
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--logoReveal .fb-logo-rule {
+  transform-origin: center;
+  animation-name: fb-loop-draw-line;
+  animation-delay: calc(var(--preview-micro) * 3);
+}
+
+.fake-brand-preview--brand-draftly.fake-brand-preview--logoReveal .fb-logo-tile {
+  animation-name: fb-loop-pop;
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--brand-draftly.fake-brand-preview--logoReveal .fb-logo-wordmark {
+  animation-name: fb-loop-fade-up;
+  animation-delay: calc(var(--preview-micro) * 2.5);
+}
+
+/* ── Hero Text Reveal ── */
+.fake-brand-preview--brand-nimbo.fake-brand-preview--websiteHero .fb-hero-line {
+  animation-name: fb-loop-mask-up;
+}
+
+.fake-brand-preview--brand-nimbo.fake-brand-preview--websiteHero .fb-hero-panel {
+  animation-name: fb-loop-slide-x;
+  animation-delay: calc(var(--preview-micro) * 3);
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--websiteHero .fb-hero-line {
+  animation-name: fb-loop-fade-up;
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--websiteHero .fb-hero-underline {
+  transform-origin: left;
+  animation-name: fb-loop-draw-line;
+  animation-delay: calc(var(--preview-micro) * 2);
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--websiteHero .fb-hero-panel,
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--websiteHero .fb-hero-metric {
+  animation-name: fb-loop-fade-up;
+  animation-delay: calc(var(--preview-micro) * 4);
+}
+
+.fake-brand-preview--brand-draftly.fake-brand-preview--websiteHero .fb-hero-word {
+  animation-name: fb-loop-pop;
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--brand-draftly.fake-brand-preview--websiteHero .fb-hero-card {
+  animation-name: fb-loop-pop;
+  animation-delay: calc(var(--preview-micro) * 4);
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+/* ── Product UI Reveal ── */
+.fake-brand-preview--brand-nimbo.fake-brand-preview--productUiReveal .fb-ui-panel {
+  animation-name: fb-loop-slide-x;
+}
+
+.fake-brand-preview--brand-nimbo.fake-brand-preview--productUiReveal .fb-ui-sidebar {
+  animation-name: fb-loop-fade-up;
+  animation-delay: calc(var(--preview-micro) * 1.5);
+}
+
+.fake-brand-preview--brand-nimbo.fake-brand-preview--productUiReveal .fb-ui-row,
+.fake-brand-preview--brand-nimbo.fake-brand-preview--productUiReveal .fb-ui-callout {
+  animation-name: fb-loop-fade-up;
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--productUiReveal .fb-ui-panel {
+  animation-name: fb-loop-scale-in;
+  animation-timing-function: var(--preview-easing-emphasis);
+  transform-origin: center bottom;
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--productUiReveal .fb-chart-line {
+  stroke-dasharray: 120;
+  animation-name: fb-loop-chart;
+  animation-timing-function: var(--preview-easing);
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--productUiReveal .fb-ui-stat {
+  animation-name: fb-loop-fade-up;
+}
+
+.fake-brand-preview--brand-draftly.fake-brand-preview--productUiReveal .fb-ui-card {
+  animation-name: fb-loop-pop;
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--brand-draftly.fake-brand-preview--productUiReveal .fb-ui-comment {
+  animation-name: fb-loop-pop;
+  animation-delay: calc(var(--preview-micro) * 5);
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--brand-draftly.fake-brand-preview--productUiReveal .fb-ui-cursor {
+  animation-name: fb-loop-cursor;
+  animation-timing-function: var(--preview-easing);
+  animation-duration: calc(var(--loop-period) * 0.9);
+}
+
+/* ── Stat Card ── */
+.fake-brand-preview--brand-nimbo.fake-brand-preview--statCard .fb-stat-value {
+  animation-name: fb-loop-fade-up;
+  animation-timing-function: var(--preview-easing);
+}
+
+.fake-brand-preview--brand-nimbo.fake-brand-preview--statCard .fb-stat-bar {
+  animation-name: fb-loop-draw-line;
+  transform-origin: left;
+  animation-delay: calc(var(--preview-micro) * 2);
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--statCard .fb-stat-value {
+  animation-name: fb-loop-fade-up;
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--statCard .fb-chart-line {
+  stroke-dasharray: 120;
+  animation-name: fb-loop-chart;
+  animation-delay: calc(var(--preview-micro) * 2);
+}
+
+.fake-brand-preview--brand-draftly.fake-brand-preview--statCard .fb-stat-card {
+  animation-name: fb-loop-pop;
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--brand-draftly.fake-brand-preview--statCard .fb-stat-value {
+  animation-name: fb-loop-pop;
+  animation-delay: calc(var(--preview-micro) * 2);
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+/* ── CTA End Card ── */
+.fake-brand-preview--brand-nimbo.fake-brand-preview--ctaEndCard .fb-cta-logo {
+  animation-name: fb-loop-scale-in;
+}
+
+.fake-brand-preview--brand-nimbo.fake-brand-preview--ctaEndCard .fb-cta-button {
+  animation-name: fb-loop-glow-pulse;
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--ctaEndCard .fb-cta-logo {
+  animation-name: fb-loop-fade-up;
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--brand-ledgerly.fake-brand-preview--ctaEndCard .fb-cta-button {
+  animation-name: fb-loop-glow-pulse;
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--brand-draftly.fake-brand-preview--ctaEndCard .fb-cta-sticker {
+  animation-name: fb-loop-pop;
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--brand-draftly.fake-brand-preview--ctaEndCard .fb-cta-logo {
+  animation-name: fb-loop-pop;
+  animation-delay: calc(var(--preview-micro) * 2);
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--brand-draftly.fake-brand-preview--ctaEndCard .fb-cta-button {
+  animation-name: fb-loop-pop;
+  animation-delay: calc(var(--preview-micro) * 4);
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+/* ── Secondary variants (unchanged, lighter) ── */
+.fake-brand-preview--featureCallout .fb-callout-line {
+  transform-origin: left;
+  animation-name: fb-loop-draw-line;
+}
+
+.fake-brand-preview--featureCallout .fb-callout-label {
+  animation-name: fb-loop-fade-up;
+  animation-delay: calc(var(--preview-micro) * 1.5);
+}
+
+.fake-brand-preview--quoteCard .fb-quote-text {
+  animation-name: fb-loop-fade-up;
+  animation-timing-function: var(--preview-easing-emphasis);
+}
+
+.fake-brand-preview--socialAd .fb-social-frame {
+  animation-name: fb-loop-pop;
+  animation-timing-function: var(--preview-easing-emphasis);
+}

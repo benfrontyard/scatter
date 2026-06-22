@@ -6,7 +6,7 @@ import {
 } from "@/lib/timeline-layout";
 import { cn } from "@/lib/utils";
 import type { BlockCategory } from "@/types";
-import { Trash2 } from "lucide-react";
+import { GripVertical, Trash2 } from "lucide-react";
 import { useCallback, useRef, type ReactNode } from "react";
 
 const BLOCK_COLORS: Record<string, string> = {
@@ -90,6 +90,7 @@ type TimelineBlockClipProps = {
   isDragging: boolean;
   previewDuration?: number;
   onSelect: () => void;
+  onSeek: () => void;
   onDelete: () => void;
   onResizeStart: () => void;
   onResize: (duration: number) => void;
@@ -107,6 +108,7 @@ export function TimelineBlockClip({
   isDragging,
   previewDuration,
   onSelect,
+  onSeek,
   onDelete,
   onResizeStart,
   onResize,
@@ -251,37 +253,13 @@ export function TimelineBlockClip({
     >
       <div
         role="slider"
-        aria-label={`Trim start of ${blockName}`}
-        aria-valuemin={TIMELINE_MIN_BLOCK_FRAMES}
-        aria-valuemax={TIMELINE_MAX_BLOCK_FRAMES}
-        aria-valuenow={activeDuration}
-        className={cn(
-          "absolute left-0 top-0 z-20 h-full cursor-ew-resize touch-none rounded-l-md",
-          "w-2 sm:w-2.5",
-          isSelected
-            ? "bg-foreground/15 hover:bg-foreground/25"
-            : "opacity-0 group-hover/clip:opacity-100 group-hover/clip:bg-foreground/10",
-        )}
-        onPointerDown={(event) => handlePointerDown(event, "resize-left")}
-      >
-        <div
-          className={cn(
-            "absolute left-0.5 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-foreground/40",
-            isSelected && "bg-foreground/60",
-          )}
-          aria-hidden
-        />
-      </div>
-
-      <div
-        role="slider"
         aria-label={`Trim end of ${blockName}`}
         aria-valuemin={TIMELINE_MIN_BLOCK_FRAMES}
         aria-valuemax={TIMELINE_MAX_BLOCK_FRAMES}
         aria-valuenow={activeDuration}
         className={cn(
           "absolute right-0 top-0 z-20 h-full cursor-ew-resize touch-none rounded-r-md",
-          "w-2 sm:w-2.5",
+          "w-2.5 sm:w-3",
           isSelected
             ? "bg-foreground/15 hover:bg-foreground/25"
             : "opacity-0 group-hover/clip:opacity-100 group-hover/clip:bg-foreground/10",
@@ -290,8 +268,8 @@ export function TimelineBlockClip({
       >
         <div
           className={cn(
-            "absolute right-0.5 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-foreground/40",
-            isSelected && "bg-foreground/60",
+            "absolute right-0.5 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-foreground/40",
+            isSelected && "bg-foreground/70",
           )}
           aria-hidden
         />
@@ -300,9 +278,13 @@ export function TimelineBlockClip({
       <button
         type="button"
         className="absolute inset-x-2 inset-y-0 z-10 cursor-grab overflow-hidden rounded-sm active:cursor-grabbing"
-        style={{ left: HANDLE_WIDTH_PX, right: HANDLE_WIDTH_PX }}
+        style={{ left: HANDLE_WIDTH_PX + 4, right: HANDLE_WIDTH_PX + 4 }}
         aria-pressed={isSelected}
         aria-label={`${blockName}, ${durationLabel}. Drag to reorder.`}
+        onDoubleClick={(event) => {
+          event.stopPropagation();
+          onSeek();
+        }}
         onPointerDown={(event) => handlePointerDown(event, "reorder")}
       >
         <TimelineTooltip
@@ -313,13 +295,22 @@ export function TimelineBlockClip({
                 {durationLabel}
                 {categoryLabel ? ` · ${categoryLabel}` : ""}
               </p>
-              <p className="text-muted-foreground">Drag to reorder · handles to trim</p>
+              <p className="text-muted-foreground">
+                Click to edit · double-click to preview · drag to reorder
+              </p>
             </div>
           }
         >
-          <div className="flex h-full min-w-0 items-center px-1 sm:px-1.5">
+          <div className="flex h-full min-w-0 items-center gap-1 px-1 sm:px-1.5">
+            <GripVertical
+              className={cn(
+                "h-3 w-3 shrink-0 text-foreground/30",
+                isSelected && "text-foreground/50",
+              )}
+              aria-hidden
+            />
             {showLabel ? (
-              <div className="flex min-w-0 items-center gap-1.5">
+              <div className="flex min-w-0 flex-1 items-center gap-1.5">
                 {category && (
                   <span
                     className={cn(
@@ -336,6 +327,11 @@ export function TimelineBlockClip({
             ) : (
               <span className="sr-only">{blockName}</span>
             )}
+            {isSelected ? (
+              <span className="shrink-0 rounded bg-foreground/10 px-1 py-0.5 font-mono text-[9px] tabular-nums text-foreground/70">
+                {durationLabel}
+              </span>
+            ) : null}
           </div>
         </TimelineTooltip>
       </button>

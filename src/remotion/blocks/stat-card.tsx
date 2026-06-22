@@ -9,10 +9,10 @@ import {
   getEnterProgress,
   getFadeOpacity,
   getIntroTiming,
-  getOutroOpacity,
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { useBlockEnterProgress, useBlockOutroOpacity, useHandoffExitOffset, useHandoffHeroTransform } from "../block-sequence-context";
 import { GrainOverlay, getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 import { formatStatValue, parseStatValue } from "./stat-card-motion";
 
@@ -38,11 +38,25 @@ export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
 
   const parsed = parseStatValue(rawValue);
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.1, exitEasing);
+  const outroOpacity = useBlockOutroOpacity(frame, duration, 0.1, exitEasing);
+  const handoffExit = useHandoffExitOffset(
+    frame,
+    duration,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
 
   const countStart = timing.primaryStart;
   const countFrames = Math.round(timing.enterFrames * 1.1);
-  const countProgress = getEnterProgress(frame, countStart, countFrames, speed, entranceEasing);
+  const countProgress = useBlockEnterProgress(countStart, countFrames, speed, entranceEasing);
+  const heroTransform = useHandoffHeroTransform(
+    "stat-center",
+    countProgress,
+    formatWidth,
+    formatHeight,
+  );
 
   const labelProgress = getEnterProgress(
     frame,
@@ -80,6 +94,8 @@ export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
     formatHeight,
     intensity,
   );
+  const scaledValueX = valueTranslate.x * heroTransform.travelScale;
+  const scaledValueY = valueTranslate.y * heroTransform.travelScale;
   const labelTranslate = getTranslate(
     labelProgress,
     "up",
@@ -142,7 +158,7 @@ export function StatCardBlock({ brand, block, format }: StatCardBlockProps) {
               style={mergeMotionAndEffectStyle(
                 {
                   opacity: valueOpacity,
-                  transform: `translate(${valueTranslate.x}px, ${valueTranslate.y}px)`,
+                  transform: `translate(${scaledValueX + handoffExit.x + heroTransform.x}px, ${scaledValueY + handoffExit.y + heroTransform.y}px) scale(${heroTransform.scale})`,
                 },
                 numberStyle,
               )}

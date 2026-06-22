@@ -3,6 +3,7 @@ import type { Block3DSettings } from "./camera";
 import type { BlockTypographyOverride } from "./typography";
 import type { EffectInstance } from "./effects";
 import type { TextAnimationInstance } from "./text-animation";
+import type { BlockTransitionMetadata } from "./block-transition";
 
 export type MotionBehaviorName =
   | "fade"
@@ -45,6 +46,8 @@ export type MotionBlockDefinition = {
   defaultMotion: BlockMotionDefaults;
   supportedFormats: string[];
   compatibleTransitions: string[];
+  /** Optional transition choreography metadata for block-aware handoffs */
+  transitionMetadata?: BlockTransitionMetadata;
 };
 
 export type MotionBlockInstance = {

@@ -10,8 +10,9 @@ import { EasingPicker } from "@/components/editor/EasingPicker";
 import { motionBlockMap } from "@/config/blocks";
 import { motionFormats } from "@/config/formats";
 import { PLATFORM_DURATION_PRESETS } from "@/config/duration-presets";
-import { transitionDefinitions } from "@/config/transitions";
+import { transitionDefinitions, legacyTransitionDefinitions, transitionDefinitionMap } from "@/config/transitions";
 import { useEditor, useSelectedBlock, useSelectedTransition } from "@/context/editor-context";
+import { getTransitionPresetId } from "@/lib/transitions/migrate-transition";
 import {
   formatContentLabel,
   formatMotionControlLabel,
@@ -34,7 +35,9 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -629,39 +632,62 @@ function TransitionSettings({ className }: { className?: string }) {
   if (!selectedTransition) return null;
 
   const motion = normalizeBrandMotion(brand.motion);
-
-  const transitionDef = transitionDefinitions.find(
-    (definition) => definition.type === selectedTransition.type,
-  );
+  const presetId = getTransitionPresetId(selectedTransition);
+  const transitionDef =
+    transitionDefinitionMap[presetId] ??
+    transitionDefinitions.find((definition) => definition.id === presetId) ??
+    legacyTransitionDefinitions.find((definition) => definition.id === presetId);
 
   return (
     <PanelShell
       className={className}
       icon={Layers}
       title="Transition"
-      subtitle={transitionDef?.name ?? selectedTransition.type}
+      subtitle={transitionDef?.name ?? presetId}
     >
       <div className="space-y-3 p-3">
         <div className="space-y-1.5">
-          <Label>Transition type</Label>
+          <Label>Transition preset</Label>
           <Select
-            value={selectedTransition.type}
-            onValueChange={(type) =>
+            value={presetId}
+            onValueChange={(nextPresetId) => {
+              const definition =
+                transitionDefinitionMap[nextPresetId] ??
+                transitionDefinitions.find((item) => item.id === nextPresetId) ??
+                legacyTransitionDefinitions.find((item) => item.id === nextPresetId);
+              if (!definition) return;
               updateTransition(selectedTransition.id, (transition) => ({
                 ...transition,
-                type: type as typeof transition.type,
-              }))
-            }
+                presetId: nextPresetId,
+                type: definition.type,
+                duration: definition.defaultDuration,
+                direction: definition.defaultDirection,
+                overlap: definition.defaultOverlap,
+                easingId: definition.defaultEasingId,
+              }));
+            }}
           >
             <SelectTrigger className="h-8 w-full text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {transitionDefinitions.map((definition) => (
-                <SelectItem key={definition.id} value={definition.type}>
-                  {definition.name}
-                </SelectItem>
-              ))}
+              <SelectGroup>
+                {transitionDefinitions.map((definition) => (
+                  <SelectItem key={definition.id} value={definition.id}>
+                    {definition.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+              {legacyTransitionDefinitions.length > 0 ? (
+                <SelectGroup>
+                  <SelectLabel>Legacy</SelectLabel>
+                  {legacyTransitionDefinitions.map((definition) => (
+                    <SelectItem key={definition.id} value={definition.id}>
+                      {definition.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ) : null}
             </SelectContent>
           </Select>
         </div>

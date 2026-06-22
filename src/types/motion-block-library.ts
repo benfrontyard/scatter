@@ -7,7 +7,15 @@ export type MotionBlockFamily =
   | "illustration-icon"
   | "brand-system";
 
-export type MotionBlockStatus = "draft" | "needs-review" | "approved" | "deprecated";
+export type MotionBlockStatus =
+  | "draft"
+  | "candidate"
+  | "needs-review"
+  | "ready-to-publish"
+  | "published"
+  | "deprecated"
+  /** @deprecated Use `published`. Kept for existing blocks.ts entries. */
+  | "approved";
 
 export type MotionAspectRatio = "16:9" | "9:16" | "1:1" | "4:5";
 

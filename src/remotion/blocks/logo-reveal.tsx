@@ -10,11 +10,11 @@ import {
   getFadeOpacity,
   getIntroTiming,
   getMaskReveal,
-  getOutroOpacity,
   getScale,
   getTranslate,
   resolveBlockMotionParams,
 } from "../shared-motion";
+import { useBlockEnterProgress, useBlockOutroOpacity, useHandoffExitOffset, useHandoffHeroTransform } from "../block-sequence-context";
 import { GrainOverlay, getTargetEffectStyle, mergeMotionAndEffectStyle } from "../effect-styles";
 
 type LogoRevealBlockProps = {
@@ -38,14 +38,27 @@ export function LogoRevealBlock({ brand, block, format, assets = [] }: LogoRevea
   const tagline = block.content.tagline ?? "";
 
   const timing = getIntroTiming(duration, stagger, speed);
-  const outroOpacity = getOutroOpacity(frame, duration, 0.12, exitEasing);
-
-  const logoProgress = getEnterProgress(
+  const outroOpacity = useBlockOutroOpacity(frame, duration, 0.12, exitEasing);
+  const handoffExit = useHandoffExitOffset(
     frame,
+    duration,
+    direction,
+    formatWidth,
+    formatHeight,
+    intensity,
+  );
+
+  const logoProgress = useBlockEnterProgress(
     timing.primaryStart,
     timing.enterFrames,
     speed,
     entranceEasing,
+  );
+  const heroTransform = useHandoffHeroTransform(
+    "logo-cta",
+    logoProgress,
+    formatWidth,
+    formatHeight,
   );
   const taglineProgress = getEnterProgress(
     frame,
@@ -65,6 +78,8 @@ export function LogoRevealBlock({ brand, block, format, assets = [] }: LogoRevea
     formatHeight,
     intensity,
   );
+  const scaledLogoX = logoTranslate.x * heroTransform.travelScale;
+  const scaledLogoY = logoTranslate.y * heroTransform.travelScale;
   const taglineTranslate = getTranslate(
     taglineProgress,
     "up",
@@ -118,7 +133,7 @@ export function LogoRevealBlock({ brand, block, format, assets = [] }: LogoRevea
             style={mergeMotionAndEffectStyle(
               {
                 opacity: logoOpacity,
-                transform: `translate(${logoTranslate.x}px, ${logoTranslate.y}px) scale(${logoScale})`,
+                transform: `translate(${scaledLogoX + handoffExit.x + heroTransform.x}px, ${scaledLogoY + handoffExit.y + heroTransform.y}px) scale(${logoScale * heroTransform.scale})`,
                 clipPath: getMaskReveal(logoProgress),
                 display: "flex",
                 alignItems: "center",
