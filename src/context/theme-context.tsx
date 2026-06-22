@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { applyFavicon } from "@/lib/favicon";
 
 export type Theme = "light" | "dark";
 
@@ -20,6 +21,7 @@ function readStoredTheme(): Theme {
 function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle("dark", theme === "dark");
   document.documentElement.style.colorScheme = theme;
+  applyFavicon(theme);
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
