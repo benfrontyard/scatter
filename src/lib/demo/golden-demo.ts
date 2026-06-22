@@ -9,6 +9,7 @@ import { legacyEasingToId } from "@/lib/easing";
 import { resolveBrandTransitionPreset, type TransitionPresetId } from "@/lib/transitions/presets";
 import type { MotionSequence, ScatterProject } from "@/types";
 import { DEFAULT_AUDIO_MIX } from "@/types/audio";
+import { publicAssetUrl } from "@/lib/public-asset-url";
 
 export const GOLDEN_DEMO_TITLE = "Launch a branded video in minutes";
 
@@ -20,8 +21,8 @@ export const GOLDEN_DEMO_VO_SCRIPT_B = `Your brand kit, already in motion. Scatt
 export const GOLDEN_DEMO_VO_SCRIPT_C = `Start with a brand kit. Scatter turns it into a motion system — colors, type, logos, timing, transitions, and sound. Pick adaptive blocks, test every format, sync the beat, and export a polished video in minutes.`;
 
 /** Placeholder paths — safe when missing until assets are dropped in. */
-export const GOLDEN_DEMO_MUSIC_URL = "/audio/demo/placeholder-music.mp3";
-export const GOLDEN_DEMO_VO_URL = "/audio/demo/placeholder-vo.mp3";
+export const GOLDEN_DEMO_MUSIC_URL = publicAssetUrl("/audio/demo/placeholder-music.mp3");
+export const GOLDEN_DEMO_VO_URL = publicAssetUrl("/audio/demo/placeholder-vo.mp3");
 
 /** Manually defined beat grid for demo rhythm (frames @ 30fps, ~120 BPM). */
 export const GOLDEN_DEMO_BEAT_MARKERS = [

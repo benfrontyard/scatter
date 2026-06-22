@@ -102,13 +102,15 @@ export function getScatterColors(mode: ScatterThemeMode) {
   return mode === "dark" ? scatterColors : scatterColorsLight;
 }
 
+import { publicAssetUrl } from "@/lib/public-asset-url";
+
 export const scatterBrandAssets = {
   icon: {
-    light: "/branding/scatter-icon-light.png",
-    dark: "/branding/scatter-icon-dark.png",
+    light: publicAssetUrl("/branding/scatter-icon-light.png"),
+    dark: publicAssetUrl("/branding/scatter-icon-dark.png"),
   },
   logo: {
-    light: "/branding/scatter-logo-light.png",
-    dark: "/branding/scatter-logo-dark.png",
+    light: publicAssetUrl("/branding/scatter-logo-light.png"),
+    dark: publicAssetUrl("/branding/scatter-logo-dark.png"),
   },
 } as const;

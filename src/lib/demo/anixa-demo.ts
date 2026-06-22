@@ -2,6 +2,7 @@ import { createBlockInstance, createTransitionBetween } from "@/lib/sequence-fac
 import { defaultBrandPresetId } from "@/config/brands";
 import { defaultFormatId } from "@/config/formats";
 import { getAudioDuration } from "@/lib/audio";
+import { publicAssetUrl } from "@/lib/public-asset-url";
 import type { MotionSequence, ProjectAsset, ScatterProject } from "@/types";
 
 export const ANIXA_SCRIPT = `The immune system can fight cancer, but tumors have learned to hide.
@@ -12,8 +13,8 @@ Our ovarian cancer trial shows patients living far beyond expectations, with one
 
 Invest in cancer defeated by your own immune system. Anixa Biosciences, ANIX on NASDAQ.`;
 
-export const ANIXA_VO_URL = "/audio/test/voiceover.mp3";
-export const ANIXA_MUSIC_URL = "/audio/test/music.mp3";
+export const ANIXA_VO_URL = publicAssetUrl("/audio/test/voiceover.mp3");
+export const ANIXA_MUSIC_URL = publicAssetUrl("/audio/test/music.mp3");
 
 async function fetchAsDataUrl(url: string): Promise<string> {
   const response = await fetch(url);
