@@ -2,21 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/scatter/scatter.svg" />
+    <link rel="icon" type="image/png" href="/scatter/branding/scatter-icon-dark.png" id="scatter-favicon" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Scatter</title>
     <script>
       (function () {
         var theme = localStorage.getItem("scatter-theme");
-        if (theme !== "light") {
+        var isLight = theme === "light";
+        if (!isLight) {
           document.documentElement.classList.add("dark");
           document.documentElement.style.colorScheme = "dark";
         } else {
           document.documentElement.style.colorScheme = "light";
+          var favicon = document.getElementById("scatter-favicon");
+          if (favicon) {
+            favicon.href = favicon.href.replace(
+              "scatter-icon-dark.png",
+              "scatter-icon-light.png",
+            );
+          }
         }
       })();
     </script>
-    <script type="module" crossorigin src="/scatter/assets/index-D8pN-KG5.js"></script>
+    <script type="module" crossorigin src="/scatter/assets/index-Wk3ThZ2b.js"></script>
     <link rel="stylesheet" crossorigin href="/scatter/assets/index-BBuB80qQ.css">
   </head>
   <body>
