@@ -1,0 +1,57 @@
+---
+description: Use motion skills when designing, reviewing, or improving Scatter motion blocks and video sequences. Always review blocks in sequence context with transition-in and transition-out.
+globs:
+  - "**/remotion/**"
+  - "**/motion-block-library/**"
+  - "**/studio/**"
+  - "**/motion-playground/**"
+  - "**/transitions/**"
+  - "**/sequences/**"
+  - "**/ScatterComposition.tsx"
+alwaysApply: false
+---
+
+# Motion Skills
+
+When the user asks about motion blocks, animation polish, pacing, transitions, sequence timing, or making blocks feel alive, read and apply these project skills:
+
+- `.cursor/skills/animation-life-principles/SKILL.md`
+- `.cursor/skills/motion-polish-pass/SKILL.md`
+- `.cursor/skills/story-beat-timing/SKILL.md`
+- `.cursor/skills/block-transition-system/SKILL.md`
+- `.cursor/skills/transition-engine-v2/SKILL.md`
+- `.cursor/skills/motion-review-rubric/SKILL.md`
+
+See also: `.cursor/skills/README.md` for the index and default review order.
+
+For full sequence work, start with **story-beat-timing** and **block-transition-system** — they define block roles, pacing, and handoffs between blocks.
+
+## Sequence Review Rule
+
+Never review a motion block as an isolated animation.
+
+Always review it as part of a sequence with:
+- The **previous block** (what motion carries in, transition-in)
+- The **current block** (hero action, timing, staging, appeal)
+- The **next block** (exit pose, transition-out, eye trace)
+
+Every block review must include transition-in and transition-out recommendations, even when the immediate task is internal animation polish.
+
+## Rules
+
+- Do not make motion cartoony unless the brand is intentionally playful.
+- Prefer anticipation, staging, overlap, and motivated transitions over default fades and slides.
+- Motion should feel like product marketing video, not default UI transitions.
+- Sync motion to VO and music when audio exists.
+- Design for multiple aspect ratios: 16:9, 1:1, 4:5, and 9:16.
+- Effects are the last layer of polish — fix staging, timing, and transitions first.
+
+Default review order:
+1. Identify the block role.
+2. Review staging and hero action.
+3. Improve timing/easing/overlap.
+4. Add anticipation/follow-through.
+5. Design transition-in and transition-out.
+6. Check audio/VO sync.
+7. Check responsive behavior.
+8. Check final appeal.
