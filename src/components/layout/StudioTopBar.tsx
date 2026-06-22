@@ -1,3 +1,4 @@
+import { ScatterLogo } from "@/components/layout/AppChrome";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,14 +34,7 @@ const SECONDARY_TABS: { id: StudioTab; label: string }[] = [
 ];
 
 function ScatterLogoMark() {
-  return (
-    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-foreground sm:h-7 sm:w-7">
-      <div className="flex gap-0.5">
-        <span className="h-1.5 w-1.5 rounded-full bg-background" />
-        <span className="h-1 w-1 rounded-full bg-background/60" />
-      </div>
-    </div>
-  );
+  return <ScatterLogo size="sm" variant="lockup" />;
 }
 
 type StudioTopBarProps = {
@@ -87,7 +81,6 @@ export function StudioTopBar({ compact }: StudioTopBarProps) {
         <ScatterLogoMark />
         <div className="min-w-0 text-left">
           <div className="flex min-w-0 items-center gap-1">
-            <span className="shrink-0 text-sm font-semibold tracking-tight">Scatter</span>
             {!compact && (
               <>
                 <span className="text-muted-foreground/40">/</span>

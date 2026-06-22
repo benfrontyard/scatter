@@ -1,21 +1,15 @@
+import { ScatterBrandLogo } from "@/components/brand/ScatterBrandLogo";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
 type ScatterLogoProps = {
   size?: "sm" | "md";
+  variant?: "icon" | "lockup";
   className?: string;
 };
 
-export function ScatterLogo({ size = "md", className }: ScatterLogoProps) {
-  const dim = size === "sm" ? "h-7 w-7 rounded-md" : "h-8 w-8 rounded-lg";
-  return (
-    <div className={cn("flex shrink-0 items-center justify-center bg-foreground", dim, className)}>
-      <div className="flex gap-0.5">
-        <span className="h-1.5 w-1.5 rounded-full bg-background" />
-        <span className="h-1 w-1 rounded-full bg-background/60" />
-      </div>
-    </div>
-  );
+export function ScatterLogo({ size = "md", variant = "icon", className }: ScatterLogoProps) {
+  return <ScatterBrandLogo variant={variant} size={size} className={className} />;
 }
 
 type AppChromeProps = {

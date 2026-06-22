@@ -18,8 +18,7 @@ export function HomeHeader() {
     <AppChrome
       leading={
         <>
-          <ScatterLogo />
-          <span className="text-sm font-semibold tracking-tight">Scatter</span>
+          <ScatterLogo variant="lockup" />
         </>
       }
       trailing={

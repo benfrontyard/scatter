@@ -21,12 +21,14 @@ import {
 export const brandPresets: BrandPreset[] = [
   {
     id: "default-dark",
-    name: "Default Dark",
+    name: "Scatter",
     colors: {
-      background: "#0a0a0a",
-      foreground: "#fafafa",
-      accent: "#60a5fa",
-      muted: "#737373",
+      background: "#0D0D17",
+      foreground: "#F0F0FF",
+      accent: "#8B82FF",
+      muted: "#A8A8C4",
+      surface: "#1D1D2D",
+      border: "#34344A",
     },
     typography: defaultBrandTypography,
     composition: { ...DEFAULT_BRAND_COMPOSITION, style: "product" },

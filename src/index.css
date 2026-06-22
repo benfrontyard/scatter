@@ -3,32 +3,48 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #f4f4f5;
-  --foreground: #18181b;
+  --scatter-midnight: #0d0d17;
+  --scatter-ink: #151522;
+  --scatter-surface: #ffffff;
+  --scatter-surface-raised: #f5f5fa;
+  --scatter-border: #dbdbef;
+  --scatter-text: #0d0d17;
+  --scatter-text-soft: #151522;
+  --scatter-text-muted: #6f6f8b;
+  --scatter-lavender: #dbdbef;
+  --scatter-periwinkle: #aaaadb;
+  --scatter-violet: #8b82ff;
+  --scatter-signal-blue: #6eebff;
+  --scatter-icon-highlight: #151522;
+  --scatter-icon-shadow: #8b82ff;
+  --scatter-gradient-primary: linear-gradient(135deg, #8b82ff 0%, #aaaadb 45%, #6eebff 100%);
+
+  --background: #f5f5fa;
+  --foreground: #0d0d17;
   --card: #ffffff;
-  --card-foreground: #18181b;
+  --card-foreground: #0d0d17;
   --popover: #ffffff;
-  --popover-foreground: #18181b;
-  --primary: #18181b;
-  --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #3f3f46;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
-  --destructive: #dc2626;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #a1a1aa;
-  --preview-surface: #e4e4e7;
+  --popover-foreground: #0d0d17;
+  --primary: #8b82ff;
+  --primary-foreground: #ffffff;
+  --secondary: #ededf5;
+  --secondary-foreground: #151522;
+  --muted: #ededf5;
+  --muted-foreground: #6f6f8b;
+  --accent: #ededf5;
+  --accent-foreground: #0d0d17;
+  --destructive: #ff7a59;
+  --border: #dbdbef;
+  --input: #dbdbef;
+  --ring: #8b82ff;
+  --preview-surface: #e8e8f2;
   --editor-bg: var(--background);
   --editor-surface: var(--preview-surface);
   --editor-panel: var(--card);
   --editor-border: var(--border);
   --editor-muted: var(--muted-foreground);
   --editor-radius: 0.5rem;
-  --editor-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --editor-shadow: 0 10px 15px -3px rgb(13 13 23 / 0.08), 0 4px 6px -4px rgb(13 13 23 / 0.06);
   --editor-topbar-height: 2.75rem;
   --editor-timeline-height: 10.5rem;
   --editor-sidebar-width: 16rem;
@@ -36,31 +52,41 @@
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #111111;
-  --card-foreground: #fafafa;
-  --popover: #171717;
-  --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #0a0a0a;
-  --secondary: #262626;
-  --secondary-foreground: #fafafa;
-  --muted: #262626;
-  --muted-foreground: #a3a3a3;
-  --accent: #262626;
-  --accent-foreground: #fafafa;
-  --destructive: #f87171;
-  --border: #262626;
-  --input: #262626;
-  --ring: #d4d4d4;
-  --preview-surface: #0c0c0c;
+  --scatter-surface: #1d1d2d;
+  --scatter-surface-raised: #26263a;
+  --scatter-border: #34344a;
+  --scatter-text: #f0f0ff;
+  --scatter-text-soft: #dbdbef;
+  --scatter-text-muted: #a8a8c4;
+  --scatter-icon-highlight: #dbdbef;
+  --scatter-icon-shadow: #aaaadb;
+  --scatter-gradient-primary: linear-gradient(135deg, #aaaadb 0%, #8b82ff 45%, #6eebff 100%);
+
+  --background: #0d0d17;
+  --foreground: #f0f0ff;
+  --card: #1d1d2d;
+  --card-foreground: #f0f0ff;
+  --popover: #26263a;
+  --popover-foreground: #f0f0ff;
+  --primary: #8b82ff;
+  --primary-foreground: #f0f0ff;
+  --secondary: #26263a;
+  --secondary-foreground: #dbdbef;
+  --muted: #1d1d2d;
+  --muted-foreground: #a8a8c4;
+  --accent: #26263a;
+  --accent-foreground: #f0f0ff;
+  --destructive: #ff7a59;
+  --border: #34344a;
+  --input: #34344a;
+  --ring: #8b82ff;
+  --preview-surface: #151522;
   --editor-bg: var(--background);
   --editor-surface: var(--preview-surface);
   --editor-panel: var(--card);
   --editor-border: var(--border);
   --editor-muted: var(--muted-foreground);
-  --editor-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.25), 0 4px 6px -4px rgb(0 0 0 / 0.2);
+  --editor-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.25);
 }
 
 @theme inline {
@@ -88,6 +114,9 @@
   --color-editor-panel: var(--editor-panel);
   --color-editor-border: var(--editor-border);
   --color-editor-muted: var(--editor-muted);
+  --color-scatter-violet: var(--scatter-violet);
+  --color-scatter-periwinkle: var(--scatter-periwinkle);
+  --color-scatter-lavender: var(--scatter-lavender);
   --radius: 0.5rem;
   --radius-editor: var(--editor-radius);
   --animate-accordion-down: accordion-down 0.2s ease-out;

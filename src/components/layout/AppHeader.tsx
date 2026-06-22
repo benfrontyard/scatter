@@ -59,8 +59,7 @@ export function AppHeader({ compact }: AppHeaderProps) {
             onClick={goHome}
             aria-label="Back to home"
           >
-            <ScatterLogo size="sm" />
-            <span className="shrink-0 text-sm font-semibold tracking-tight">Scatter</span>
+            <ScatterLogo size="sm" variant="lockup" />
           </button>
           <button
             type="button"
